@@ -7,107 +7,169 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root { --brown: #8B6F47; --dark-brown: #6B5A3B; --beige: #E8DCC4; --light-gray: #F5F5F0; --green: #6B9F7F; --dark-green: #5A8A6E; }
-        html, body { height: 100%; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--light-gray); min-height: 100vh; }
         
-        /* Top bar - minimal */
-        .top-bar { height: 50px; background: var(--brown); color: white; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; }
-        .top-bar h1 { font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
-        .top-bar h1 span { color: var(--green); }
-        .top-bar-actions { display: flex; gap: 10px; align-items: center; }
-        .btn { padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+        .header { background: var(--brown); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .header h1 { font-size: 1.3rem; }
+        .header h1 span { color: var(--green); }
+        .header-actions { display: flex; gap: 15px; align-items: center; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.3s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 0.95rem; }
         .btn-light { background: rgba(255,255,255,0.2); color: white; }
         .btn-light:hover { background: rgba(255,255,255,0.3); }
-        .btn-green { background: var(--green); color: white; }
-        .btn-green:hover { background: var(--dark-green); }
+        .btn-primary { background: var(--green); color: white; }
+        .btn-primary:hover { background: var(--dark-green); }
+        .btn-secondary { background: var(--beige); color: var(--dark-brown); }
+        .btn-secondary:hover { background: #d9cab3; }
         
-        /* Course content - FULLSCREEN */
-        .course-frame { width: 100%; height: calc(100vh - 50px); border: none; background: white; }
+        .main-content { padding: 20px; max-width: 1400px; margin: 0 auto; }
         
-        /* Side panel (hidden by default) */
-        .side-panel { position: fixed; right: -350px; top: 50px; width: 350px; height: calc(100vh - 50px); background: white; box-shadow: -5px 0 20px rgba(0,0,0,0.1); transition: right 0.3s; z-index: 100; overflow-y: auto; }
-        .side-panel.open { right: 0; }
-        .panel-header { padding: 20px; background: var(--light-gray); display: flex; justify-content: space-between; align-items: center; }
-        .panel-header h3 { color: var(--dark-brown); }
-        .close-panel { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #888; }
-        .panel-content { padding: 20px; }
+        .content-card { background: white; border-radius: 15px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .content-card h2 { color: var(--dark-brown); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; font-size: 1.1rem; }
         
-        /* Progress */
-        .progress-section { margin-bottom: 25px; }
-        .progress-bar { height: 10px; background: var(--beige); border-radius: 5px; overflow: hidden; margin: 10px 0; }
-        .progress-fill { height: 100%; background: var(--green); }
-        .progress-text { font-size: 0.9rem; color: var(--dark-brown); font-weight: 600; }
+        /* Course render container */
+        .course-container { position: relative; }
+        .course-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .course-header h2 { margin-bottom: 0; }
         
-        /* Modules */
-        .module-item { padding: 12px 15px; background: var(--light-gray); border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        /* FULLSCREEN BUTTON - BIG AND VISIBLE */
+        .fullscreen-btn { background: var(--green); color: white; padding: 12px 25px; font-size: 1rem; border-radius: 10px; }
+        .fullscreen-btn:hover { background: var(--dark-green); transform: scale(1.05); }
+        
+        /* Course iframe - LARGE */
+        .course-frame-wrapper { position: relative; border-radius: 12px; overflow: hidden; border: 2px solid var(--beige); }
+        .course-frame { width: 100%; height: 75vh; border: none; background: white; display: block; }
+        
+        /* Fullscreen styles */
+        .course-frame-wrapper:fullscreen { background: white; }
+        .course-frame-wrapper:fullscreen .course-frame { height: 100vh; }
+        .course-frame-wrapper:-webkit-full-screen { background: white; }
+        .course-frame-wrapper:-webkit-full-screen .course-frame { height: 100vh; }
+        
+        /* Exit fullscreen button (visible in fullscreen) */
+        .exit-fullscreen-btn { position: fixed; top: 20px; right: 20px; z-index: 99999; background: rgba(0,0,0,0.7); color: white; padding: 15px 25px; border-radius: 10px; display: none; font-size: 1rem; }
+        .course-frame-wrapper:fullscreen .exit-fullscreen-btn { display: block; }
+        
+        .description { line-height: 1.7; color: #555; }
+        
+        /* Progress section */
+        .progress-grid { display: grid; grid-template-columns: 1fr 300px; gap: 20px; }
+        .progress-bar { height: 12px; background: var(--beige); border-radius: 6px; overflow: hidden; margin: 10px 0; }
+        .progress-fill { height: 100%; background: var(--green); transition: width 0.3s; }
+        .progress-text { font-weight: 600; color: var(--dark-brown); }
+        
+        .modules-list { margin-top: 15px; }
+        .module-item { padding: 12px 15px; background: var(--light-gray); border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.3s; }
         .module-item:hover { background: var(--beige); }
         .module-item.completed { border-left: 3px solid var(--green); }
-        .module-check { width: 22px; height: 22px; border: 2px solid var(--beige); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; background: white; }
+        .module-check { width: 24px; height: 24px; border: 2px solid var(--beige); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; background: white; }
         .module-item.completed .module-check { background: var(--green); color: white; border: none; }
-        .module-title { flex: 1; font-size: 0.85rem; }
+        .module-title { flex: 1; font-size: 0.9rem; }
         
-        /* Complete button */
-        .complete-btn { width: 100%; padding: 15px; margin-top: 20px; }
+        .complete-btn { width: 100%; padding: 15px; margin-top: 15px; font-size: 1rem; }
         
-        /* Description */
-        .description-section { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--beige); }
-        .description-section h4 { color: var(--dark-brown); margin-bottom: 10px; }
-        .description-section p { color: #666; font-size: 0.9rem; line-height: 1.6; }
+        /* Code section - collapsible */
+        .code-toggle { padding: 15px 20px; background: #2d2d2d; color: white; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .code-content { display: none; background: #2d2d2d; border-radius: 0 0 10px 10px; margin-top: -10px; padding: 20px; }
+        .code-content.open { display: block; }
+        .code-tabs { display: flex; gap: 5px; margin-bottom: 15px; }
+        .code-tab { padding: 8px 16px; background: #444; color: white; border: none; cursor: pointer; border-radius: 6px; }
+        .code-tab.active { background: var(--green); }
+        .code-preview { background: #1e1e1e; border-radius: 8px; padding: 15px; overflow-x: auto; max-height: 300px; }
+        .code-preview pre { color: #f8f8f2; font-family: 'Courier New', monospace; font-size: 13px; white-space: pre-wrap; margin: 0; }
         
-        /* Loading */
-        .loading { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: white; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
-        .spinner { width: 50px; height: 50px; border: 4px solid var(--beige); border-top: 4px solid var(--green); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        /* Videos */
+        .video-container { position: relative; padding-bottom: 56.25%; height: 0; border-radius: 10px; overflow: hidden; background: #000; }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        .video-list { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+        .video-item { padding: 10px 15px; background: var(--light-gray); border-radius: 8px; cursor: pointer; }
+        .video-item:hover { background: var(--beige); }
+        .video-item.active { background: var(--green); color: white; }
+        
+        .loading { text-align: center; padding: 100px; }
+        .spinner { width: 50px; height: 50px; border: 4px solid var(--beige); border-top: 4px solid var(--green); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* Overlay */
-        .overlay { position: fixed; top: 50px; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.3); display: none; z-index: 50; }
-        .overlay.open { display: block; }
+        @media (max-width: 900px) {
+            .progress-grid { grid-template-columns: 1fr; }
+            .course-frame { height: 50vh; }
+        }
     </style>
 </head>
 <body>
-    <!-- Loading -->
+    <div class="header">
+        <h1>🎓 Learning<span>Hub</span></h1>
+        <div class="header-actions">
+            <a href="instructor-dashboard.html" class="btn btn-light">← Dashboard</a>
+            <button class="btn btn-light" onclick="handleLogout()">Déconnexion</button>
+        </div>
+    </div>
+
     <div id="loading" class="loading">
         <div class="spinner"></div>
         <p>Chargement du cours...</p>
     </div>
 
-    <!-- Top Bar -->
-    <div class="top-bar" id="top-bar" style="display: none;">
-        <h1>🎓 <span id="course-title">Cours</span></h1>
-        <div class="top-bar-actions">
-            <button class="btn btn-green" onclick="togglePanel()">📊 Progression</button>
-            <a href="instructor-dashboard.html" class="btn btn-light">← Retour</a>
-            <button class="btn btn-light" onclick="handleLogout()">Déconnexion</button>
+    <div id="main-content" class="main-content" style="display: none;">
+        
+        <!-- Course Content -->
+        <div class="content-card course-container">
+            <div class="course-header">
+                <h2>📺 <span id="course-title">Contenu du cours</span></h2>
+                <button class="btn fullscreen-btn" onclick="openFullscreen()">🖥️ PLEIN ÉCRAN</button>
+            </div>
+            <div class="course-frame-wrapper" id="course-wrapper">
+                <iframe class="course-frame" id="course-frame"></iframe>
+                <button class="btn exit-fullscreen-btn" onclick="closeFullscreen()">✕ Quitter plein écran</button>
+            </div>
         </div>
-    </div>
 
-    <!-- Course Content - FULL SCREEN -->
-    <iframe id="course-frame" class="course-frame" style="display: none;"></iframe>
-
-    <!-- Overlay -->
-    <div class="overlay" id="overlay" onclick="togglePanel()"></div>
-
-    <!-- Side Panel -->
-    <div class="side-panel" id="side-panel">
-        <div class="panel-header">
-            <h3>📊 Progression</h3>
-            <button class="close-panel" onclick="togglePanel()">×</button>
+        <!-- Description -->
+        <div class="content-card">
+            <h2>📝 À propos de ce cours</h2>
+            <div class="description" id="course-description">Chargement...</div>
         </div>
-        <div class="panel-content">
-            <div class="progress-section">
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+
+        <!-- Progress + Modules -->
+        <div class="progress-grid">
+            <div>
+                <!-- Videos -->
+                <div class="content-card" id="video-section" style="display: none;">
+                    <h2>🎥 Vidéos</h2>
+                    <div id="video-player"></div>
+                    <div class="video-list" id="video-list"></div>
                 </div>
-                <div class="progress-text"><span id="progress-percent">0</span>% complété</div>
+                
+                <!-- Code -->
+                <div class="content-card" id="code-section">
+                    <div class="code-toggle" onclick="toggleCode()">
+                        <span>💻 Voir le code source</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="code-content" id="code-content">
+                        <div class="code-tabs">
+                            <button class="code-tab active" onclick="showCode('html'); event.stopPropagation();">HTML</button>
+                            <button class="code-tab" onclick="showCode('css'); event.stopPropagation();">CSS</button>
+                            <button class="code-tab" onclick="showCode('js'); event.stopPropagation();">JavaScript</button>
+                        </div>
+                        <div class="code-preview">
+                            <pre id="code-display">Aucun code</pre>
+                        </div>
+                    </div>
+                </div>
             </div>
             
-            <h4 style="color: var(--dark-brown); margin-bottom: 15px;">📖 Modules</h4>
-            <div id="modules-list"></div>
-            
-            <button class="btn btn-green complete-btn" onclick="markAsComplete()">✅ Marquer comme terminé</button>
-            
-            <div class="description-section">
-                <h4>📝 Description</h4>
-                <p id="course-description">Chargement...</p>
+            <div>
+                <div class="content-card">
+                    <h2>📊 Progression</h2>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-text"><span id="progress-percent">0</span>% complété</div>
+                    
+                    <div class="modules-list" id="modules-list"></div>
+                    
+                    <button class="btn btn-primary complete-btn" onclick="markAsComplete()">✅ Marquer comme terminé</button>
+                </div>
             </div>
         </div>
     </div>
@@ -159,21 +221,19 @@
                     const course = courseDoc.data();
                     window.currentCourse = { id: courseId, ...course };
                     
-                    document.getElementById('course-title').textContent = course.title || 'Cours';
+                    document.getElementById('course-title').textContent = course.title || 'Contenu du cours';
                     document.getElementById('course-description').textContent = course.description || 'Aucune description.';
                     
                     window.courseCode = { html: course.codeHtml || '', css: course.codeCss || '', js: course.codeJs || '' };
                     
-                    // Render course content in fullscreen iframe
                     renderCourseContent();
-                    
+                    showCode('html');
                     displayModules(course.modules || []);
+                    displayVideos(course.videos || []);
                     await loadUserProgress(courseId);
                     
-                    // Show content
                     document.getElementById('loading').style.display = 'none';
-                    document.getElementById('top-bar').style.display = 'flex';
-                    document.getElementById('course-frame').style.display = 'block';
+                    document.getElementById('main-content').style.display = 'block';
                 }
             } catch (error) {
                 console.error('Erreur:', error);
@@ -206,55 +266,53 @@
             const js = window.courseCode?.js || '';
             
             if (!html && !css && !js) {
-                iframe.contentDocument.open();
-                iframe.contentDocument.write('<html><body style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#888;"><p>Aucun contenu disponible pour ce cours.</p></body></html>');
-                iframe.contentDocument.close();
+                document.querySelector('.course-container').style.display = 'none';
+                document.getElementById('code-section').style.display = 'none';
                 return;
             }
             
-            const content = `<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            padding: 40px; 
-            min-height: 100vh;
-            background: #fff;
-        }
-        ${css}
-    </style>
-</head>
-<body>
-    ${html}
-    <script>${js}<\/script>
-</body>
-</html>`;
+            const content = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Segoe UI',sans-serif;padding:30px;background:#fff;}${css}</style></head><body>${html}<script>${js}<\/script></body></html>`;
             
             iframe.contentDocument.open();
             iframe.contentDocument.write(content);
             iframe.contentDocument.close();
         }
 
-        function togglePanel() {
-            document.getElementById('side-panel').classList.toggle('open');
-            document.getElementById('overlay').classList.toggle('open');
+        // FULLSCREEN FUNCTIONS
+        function openFullscreen() {
+            const wrapper = document.getElementById('course-wrapper');
+            if (wrapper.requestFullscreen) {
+                wrapper.requestFullscreen();
+            } else if (wrapper.webkitRequestFullscreen) {
+                wrapper.webkitRequestFullscreen();
+            } else if (wrapper.msRequestFullscreen) {
+                wrapper.msRequestFullscreen();
+            }
+        }
+
+        function closeFullscreen() {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        }
+
+        // ESC key to exit fullscreen
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeFullscreen();
+        });
+
+        function toggleCode() {
+            document.getElementById('code-content').classList.toggle('open');
         }
 
         function displayModules(modules) {
             const list = document.getElementById('modules-list');
-            if (!modules?.length) { 
-                list.innerHTML = '<p style="color:#888;font-size:0.85rem;">Aucun module défini</p>'; 
-                return; 
-            }
-            list.innerHTML = modules.map((m, i) => `
-                <div class="module-item" onclick="selectModule(${i})" id="module-${i}">
-                    <div class="module-check" id="check-${i}">${i+1}</div>
-                    <div class="module-title">${m.title}</div>
-                </div>
-            `).join('');
+            if (!modules?.length) { list.innerHTML = '<p style="color:#888;font-size:0.85rem;margin-top:15px;">Aucun module défini</p>'; return; }
+            list.innerHTML = modules.map((m, i) => `<div class="module-item" onclick="selectModule(${i})" id="module-${i}"><div class="module-check" id="check-${i}">${i+1}</div><div class="module-title">${m.title}</div></div>`).join('');
         }
 
         function updateModulesDisplay() {
@@ -266,8 +324,29 @@
             });
         }
 
-        function selectModule(i) {
-            window.currentModuleIndex = i;
+        function selectModule(i) { window.currentModuleIndex = i; }
+
+        function displayVideos(videos) {
+            const section = document.getElementById('video-section');
+            if (!videos?.length) { section.style.display = 'none'; return; }
+            section.style.display = 'block';
+            document.getElementById('video-list').innerHTML = videos.map((v, i) => `<div class="video-item ${i===0?'active':''}" onclick="playVideo('${v.url}',${i})">▶️ ${v.title}</div>`).join('');
+            if (videos.length) playVideo(videos[0].url, 0);
+        }
+
+        function playVideo(url, i) {
+            document.querySelectorAll('.video-item').forEach((el, idx) => el.classList.toggle('active', idx === i));
+            let embed = url;
+            if (url.includes('youtube.com/watch')) embed = 'https://www.youtube.com/embed/' + url.split('v=')[1]?.split('&')[0];
+            else if (url.includes('youtu.be/')) embed = 'https://www.youtube.com/embed/' + url.split('youtu.be/')[1];
+            else if (url.includes('vimeo.com/')) embed = 'https://player.vimeo.com/video/' + url.split('vimeo.com/')[1];
+            document.getElementById('video-player').innerHTML = `<div class="video-container"><iframe src="${embed}" frameborder="0" allowfullscreen></iframe></div>`;
+        }
+
+        function showCode(type) {
+            document.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
+            event?.currentTarget?.classList.add('active');
+            document.getElementById('code-display').textContent = window.courseCode?.[type] || 'Aucun code';
         }
 
         async function markAsComplete() {
@@ -277,21 +356,16 @@
             if (ch) ch.textContent = '✓';
             document.getElementById(`module-${i}`)?.classList.add('completed');
             updateProgressDisplay();
-            
             try {
                 const ref = window.doc(window.firebaseDb, "users", window.currentUser.uid);
                 const snap = await window.getDoc(ref);
                 if (snap.exists()) {
                     const progress = snap.data().progress || {};
                     const mods = window.currentCourse?.modules || [];
-                    progress[window.currentCourse.id] = { 
-                        completedModules: window.completedModules, 
-                        percent: Math.round((window.completedModules.length / Math.max(mods.length, 1)) * 100) 
-                    };
+                    progress[window.currentCourse.id] = { completedModules: window.completedModules, percent: Math.round((window.completedModules.length / Math.max(mods.length, 1)) * 100) };
                     await window.updateDoc(ref, { progress });
                 }
             } catch (e) { console.error(e); }
-            
             alert('✅ Module terminé !');
         }
 
@@ -302,10 +376,7 @@
             document.getElementById('progress-percent').textContent = pct;
         }
 
-        async function handleLogout() { 
-            await window.signOut(window.firebaseAuth); 
-            window.location.href = 'index.html'; 
-        }
+        async function handleLogout() { await window.signOut(window.firebaseAuth); window.location.href = 'index.html'; }
     </script>
 </body>
 </html>
