@@ -69,11 +69,13 @@
         .module-item { padding: 12px 15px; background: var(--light-gray); border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.3s; }
         .module-item:hover { background: var(--beige); }
         .module-item.completed { border-left: 3px solid var(--green); }
+        .module-item.viewed { background: var(--beige); }
         .module-check { width: 24px; height: 24px; border: 2px solid var(--beige); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; background: white; }
         .module-item.completed .module-check { background: var(--green); color: white; border: none; }
         .module-title { flex: 1; font-size: 0.9rem; }
         
         .complete-btn { width: 100%; padding: 15px; margin-top: 15px; font-size: 1rem; }
+        .complete-btn:disabled { background: #ccc; cursor: not-allowed; opacity: 0.7; }
         
         /* Certificate Section */
         .certificate-section { display: none; background: linear-gradient(135deg, #fff9e6, #fff); border: 2px solid #D4AF37; margin-top: 20px; text-align: center; padding: 30px; border-radius: 15px; }
@@ -86,15 +88,6 @@
         .not-eligible.show { display: block; }
         .not-eligible p { color: #666; margin: 0; }
         .not-eligible strong { color: var(--dark-brown); }
-        
-        .code-toggle { padding: 15px 20px; background: #2d2d2d; color: white; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .code-content { display: none; background: #2d2d2d; border-radius: 0 0 10px 10px; margin-top: -10px; padding: 20px; }
-        .code-content.open { display: block; }
-        .code-tabs { display: flex; gap: 5px; margin-bottom: 15px; }
-        .code-tab { padding: 8px 16px; background: #444; color: white; border: none; cursor: pointer; border-radius: 6px; }
-        .code-tab.active { background: var(--green); }
-        .code-preview { background: #1e1e1e; border-radius: 8px; padding: 15px; overflow-x: auto; max-height: 300px; }
-        .code-preview pre { color: #f8f8f2; font-family: 'Courier New', monospace; font-size: 13px; white-space: pre-wrap; margin: 0; }
         
         .video-container { position: relative; padding-bottom: 56.25%; height: 0; border-radius: 10px; overflow: hidden; background: #000; }
         .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
@@ -152,12 +145,6 @@
             .certificate-section { padding: 20px; }
             .certificate-section h3 { font-size: 1.2rem; }
             .btn-gold { padding: 12px 20px; font-size: 1rem; }
-            
-            .code-toggle { padding: 12px 15px; font-size: 0.9rem; }
-            .code-tabs { flex-wrap: wrap; }
-            .code-tab { padding: 6px 12px; font-size: 0.85rem; }
-            .code-preview { padding: 10px; }
-            .code-preview pre { font-size: 11px; }
             
             .video-list { flex-direction: column; }
             .video-item { text-align: center; }
@@ -229,22 +216,6 @@
                     <div class="video-list" id="video-list"></div>
                 </div>
                 
-                <div class="content-card" id="code-section">
-                    <div class="code-toggle" onclick="toggleCode()">
-                        <span>💻 Voir le code source</span>
-                        <span>▼</span>
-                    </div>
-                    <div class="code-content" id="code-content">
-                        <div class="code-tabs">
-                            <button class="code-tab active" onclick="showCode('html'); event.stopPropagation();">HTML</button>
-                            <button class="code-tab" onclick="showCode('css'); event.stopPropagation();">CSS</button>
-                            <button class="code-tab" onclick="showCode('js'); event.stopPropagation();">JavaScript</button>
-                        </div>
-                        <div class="code-preview">
-                            <pre id="code-display">Aucun code</pre>
-                        </div>
-                    </div>
-                </div>
             </div>
             
             <div>
@@ -255,25 +226,39 @@
                     </div>
                     <div class="progress-text"><span id="progress-percent">0</span>% complété</div>
                     
-                    <div class="min-score-info">
-                        🎯 Score minimum requis : <strong><span id="min-score-display">70</span>%</strong> pour obtenir le certificat
+                    <!-- Certificate Section - Visible when completed -->
+                    <div class="certificate-section" id="certificate-section">
+                        <h3>🏆 Félicitations !</h3>
+                        <p>Vous avez atteint le score minimum requis !</p>
+                        <button class="btn btn-gold" onclick="openCertificateModal()">📜 Télécharger mon certificat</button>
                     </div>
-                    
-                    <div class="modules-list" id="modules-list"></div>
-                    
-                    <button class="btn btn-primary complete-btn" onclick="markAsComplete()">✅ Marquer comme terminé</button>
                     
                     <!-- Not eligible message -->
                     <div class="not-eligible" id="not-eligible-section">
                         <p>📈 Continuez ! Il vous faut <strong><span id="remaining-percent">0</span>%</strong> de plus pour obtenir votre certificat.</p>
                     </div>
                     
-                    <!-- Certificate Section -->
-                    <div class="certificate-section" id="certificate-section">
-                        <h3>🏆 Félicitations !</h3>
-                        <p>Vous avez atteint le score minimum requis !</p>
-                        <button class="btn btn-gold" onclick="openCertificateModal()">📜 Télécharger mon certificat</button>
+                    <div class="min-score-info">
+                        🎯 Score minimum requis : <strong><span id="min-score-display">70</span>%</strong> pour obtenir le certificat
                     </div>
+                    
+                    <div class="time-info" style="background: var(--light-gray); padding: 12px 15px; border-radius: 8px; margin-top: 10px; font-size: 0.9rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <span>⏱️ Temps passé :</span>
+                            <strong id="time-spent">0 min</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>📋 Durée requise :</span>
+                            <strong id="duration-display">-</strong>
+                        </div>
+                        <div id="time-warning" style="color: #dc3545; margin-top: 8px; display: none;">
+                            ⚠️ Temps minimum non atteint
+                        </div>
+                    </div>
+                    
+                    <div class="modules-list" id="modules-list"></div>
+                    
+                    <button class="btn btn-primary complete-btn" id="complete-btn" onclick="markAsComplete()" disabled>📖 Parcourez tous les modules</button>
                 </div>
             </div>
         </div>
@@ -343,15 +328,21 @@
                     const course = courseDoc.data();
                     window.currentCourse = { id: courseId, ...course };
                     window.minScore = course.minScore || 70;
+                    window.courseDuration = course.duration || '0 min';
+                    window.startTime = Date.now();
+                    
+                    // Start timer display
+                    updateTimeDisplay();
+                    setInterval(updateTimeDisplay, 1000);
                     
                     document.getElementById('course-title').textContent = course.title || 'Contenu du cours';
                     document.getElementById('course-description').textContent = course.description || 'Aucune description.';
                     document.getElementById('min-score-display').textContent = window.minScore;
+                    document.getElementById('duration-display').textContent = window.courseDuration;
                     
                     window.courseCode = { html: course.codeHtml || '', css: course.codeCss || '', js: course.codeJs || '' };
                     
                     renderCourseContent();
-                    showCode('html');
                     displayModules(course.modules || []);
                     displayVideos(course.videos || []);
                     await loadUserProgress(courseId);
@@ -385,7 +376,74 @@
     <script>
         window.currentModuleIndex = 0;
         window.completedModules = [];
+        window.viewedModules = [];
         window.minScore = 70;
+        window.startTime = Date.now();
+        window.courseDuration = '0 min';
+
+        // Parse duration string to minutes (e.g., "30 min", "1h", "1h30", "2 heures")
+        function parseDurationToMinutes(duration) {
+            if (!duration) return 0;
+            let minutes = 0;
+            
+            // Match hours
+            const hoursMatch = duration.match(/(\d+)\s*h/i);
+            if (hoursMatch) minutes += parseInt(hoursMatch[1]) * 60;
+            
+            // Match "heures"
+            const heuresMatch = duration.match(/(\d+)\s*heure/i);
+            if (heuresMatch) minutes += parseInt(heuresMatch[1]) * 60;
+            
+            // Match minutes
+            const minMatch = duration.match(/(\d+)\s*min/i);
+            if (minMatch) minutes += parseInt(minMatch[1]);
+            
+            // If just a number, assume minutes
+            if (minutes === 0) {
+                const numMatch = duration.match(/(\d+)/);
+                if (numMatch) minutes = parseInt(numMatch[1]);
+            }
+            
+            return minutes;
+        }
+
+        function formatTime(seconds) {
+            const hrs = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            
+            if (hrs > 0) {
+                return `${hrs}h ${mins.toString().padStart(2, '0')}min`;
+            } else {
+                return `${mins} min ${secs.toString().padStart(2, '0')}s`;
+            }
+        }
+
+        function updateTimeDisplay() {
+            const elapsed = Math.floor((Date.now() - window.startTime) / 1000);
+            document.getElementById('time-spent').textContent = formatTime(elapsed);
+            
+            const requiredMinutes = parseDurationToMinutes(window.courseDuration);
+            const elapsedMinutes = elapsed / 60;
+            
+            const warning = document.getElementById('time-warning');
+            if (requiredMinutes > 0 && elapsedMinutes < requiredMinutes) {
+                warning.style.display = 'block';
+                const remaining = Math.ceil(requiredMinutes - elapsedMinutes);
+                warning.textContent = `⚠️ Temps minimum non atteint (encore ${remaining} min)`;
+            } else {
+                warning.style.display = 'none';
+            }
+            
+            updateCompleteButton();
+        }
+
+        function isTimeRequirementMet() {
+            const elapsed = Math.floor((Date.now() - window.startTime) / 1000);
+            const requiredMinutes = parseDurationToMinutes(window.courseDuration);
+            const elapsedMinutes = elapsed / 60;
+            return requiredMinutes === 0 || elapsedMinutes >= requiredMinutes;
+        }
 
         function renderCourseContent() {
             const iframe = document.getElementById('course-frame');
@@ -395,7 +453,6 @@
             
             if (!html && !css && !js) {
                 document.querySelector('.course-container').style.display = 'none';
-                document.getElementById('code-section').style.display = 'none';
                 return;
             }
             
@@ -421,12 +478,16 @@
 
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeFullscreen(); });
 
-        function toggleCode() { document.getElementById('code-content').classList.toggle('open'); }
-
         function displayModules(modules) {
             const list = document.getElementById('modules-list');
-            if (!modules?.length) { list.innerHTML = '<p style="color:#888;font-size:0.85rem;margin-top:15px;">Aucun module défini</p>'; return; }
+            if (!modules?.length) { 
+                list.innerHTML = '<p style="color:#888;font-size:0.85rem;margin-top:15px;">Aucun module défini</p>'; 
+                // If no modules, enable button
+                document.getElementById('complete-btn').disabled = false;
+                return; 
+            }
             list.innerHTML = modules.map((m, i) => `<div class="module-item" onclick="selectModule(${i})" id="module-${i}"><div class="module-check" id="check-${i}">${i+1}</div><div class="module-title">${m.title}</div></div>`).join('');
+            updateCompleteButton();
         }
 
         function updateModulesDisplay() {
@@ -435,10 +496,42 @@
                 const ch = document.getElementById(`check-${i}`);
                 if (el) el.classList.add('completed');
                 if (ch) ch.textContent = '✓';
+                // Also mark as viewed
+                if (!window.viewedModules.includes(i)) window.viewedModules.push(i);
             });
+            updateCompleteButton();
         }
 
-        function selectModule(i) { window.currentModuleIndex = i; }
+        function selectModule(i) { 
+            window.currentModuleIndex = i;
+            // Mark as viewed
+            if (!window.viewedModules.includes(i)) {
+                window.viewedModules.push(i);
+                document.getElementById(`module-${i}`)?.classList.add('viewed');
+            }
+            updateCompleteButton();
+        }
+
+        function updateCompleteButton() {
+            const mods = window.currentCourse?.modules || [];
+            const allViewed = mods.length === 0 || window.viewedModules.length >= mods.length;
+            const timeMet = isTimeRequirementMet();
+            const btn = document.getElementById('complete-btn');
+            
+            btn.disabled = !allViewed || !timeMet;
+            
+            if (!allViewed) {
+                const remaining = mods.length - window.viewedModules.length;
+                btn.textContent = `📖 Parcourez tous les modules (${remaining} restant${remaining > 1 ? 's' : ''})`;
+            } else if (!timeMet) {
+                const elapsed = Math.floor((Date.now() - window.startTime) / 1000);
+                const requiredMinutes = parseDurationToMinutes(window.courseDuration);
+                const remaining = Math.ceil(requiredMinutes - (elapsed / 60));
+                btn.textContent = `⏳ Temps minimum requis (${remaining} min restantes)`;
+            } else {
+                btn.textContent = '✅ Marquer comme terminé';
+            }
+        }
 
         function displayVideos(videos) {
             const section = document.getElementById('video-section');
@@ -457,18 +550,19 @@
             document.getElementById('video-player').innerHTML = `<div class="video-container"><iframe src="${embed}" frameborder="0" allowfullscreen></iframe></div>`;
         }
 
-        function showCode(type) {
-            document.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
-            event?.currentTarget?.classList.add('active');
-            document.getElementById('code-display').textContent = window.courseCode?.[type] || 'Aucun code';
-        }
-
         async function markAsComplete() {
-            const i = window.currentModuleIndex;
-            if (!window.completedModules.includes(i)) window.completedModules.push(i);
-            const ch = document.getElementById(`check-${i}`);
-            if (ch) ch.textContent = '✓';
-            document.getElementById(`module-${i}`)?.classList.add('completed');
+            const mods = window.currentCourse?.modules || [];
+            
+            // Mark all modules as completed
+            for (let i = 0; i < mods.length; i++) {
+                if (!window.completedModules.includes(i)) {
+                    window.completedModules.push(i);
+                }
+                const ch = document.getElementById(`check-${i}`);
+                if (ch) ch.textContent = '✓';
+                document.getElementById(`module-${i}`)?.classList.add('completed');
+            }
+            
             updateProgressDisplay();
             checkCertificateEligibility();
             
@@ -477,12 +571,11 @@
                 const snap = await window.getDoc(ref);
                 if (snap.exists()) {
                     const progress = snap.data().progress || {};
-                    const mods = window.currentCourse?.modules || [];
-                    progress[window.currentCourse.id] = { completedModules: window.completedModules, percent: Math.round((window.completedModules.length / Math.max(mods.length, 1)) * 100) };
+                    progress[window.currentCourse.id] = { completedModules: window.completedModules, percent: 100 };
                     await window.updateDoc(ref, { progress });
                 }
             } catch (e) { console.error(e); }
-            alert('✅ Module terminé !');
+            alert('✅ Cours terminé ! Félicitations !');
         }
 
         function updateProgressDisplay() {
