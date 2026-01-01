@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer un Cours - LearningHub</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --brown: #8B6F47; --dark-brown: #6B5A3B; --beige: #E8DCC4; --light-gray: #F5F5F0; --green: #6B9F7F; --dark-green: #5A8A6E; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--light-gray); min-height: 100vh; padding: 20px; }
+        
+        .container { max-width: 900px; margin: 0 auto; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header h1 { color: var(--dark-brown); display: flex; align-items: center; gap: 10px; }
+        .back-btn { background: var(--beige); border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; color: var(--dark-brown); font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+        .back-btn:hover { background: #d9cab3; }
+        
+        .form-card { background: white; border-radius: 15px; padding: 30px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .form-card h2 { color: var(--dark-brown); margin-bottom: 20px; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: var(--dark-brown); font-weight: 500; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 15px; border: 2px solid var(--beige); border-radius: 10px; font-size: 1rem; transition: all 0.3s; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--green); }
+        .form-group textarea { min-height: 120px; resize: vertical; }
+        
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        
+        .btn { padding: 12px 25px; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s; font-size: 1rem; }
+        .btn-primary { background: var(--green); color: white; }
+        .btn-primary:hover { background: var(--dark-green); }
+        .btn-secondary { background: var(--beige); color: var(--dark-brown); }
+        .btn-secondary:hover { background: #d9cab3; }
+        
+        .actions { display: flex; gap: 15px; justify-content: flex-end; margin-top: 30px; }
+        
+        /* Code Editor */
+        .code-tabs { display: flex; gap: 5px; margin-bottom: 10px; }
+        .code-tab { padding: 10px 20px; background: var(--beige); border: none; cursor: pointer; border-radius: 8px 8px 0 0; }
+        .code-tab.active { background: #2d2d2d; color: white; }
+        .code-editor { background: #2d2d2d; border-radius: 0 10px 10px 10px; padding: 15px; }
+        .code-editor textarea { width: 100%; min-height: 200px; background: transparent; border: none; color: #f8f8f2; font-family: 'Courier New', monospace; font-size: 14px; resize: vertical; }
+        .code-editor textarea:focus { outline: none; }
+        
+        /* Preview */
+        .preview-container { border: 2px solid var(--beige); border-radius: 10px; padding: 20px; min-height: 200px; background: white; }
+        .preview-btn { margin-bottom: 15px; }
+        
+        /* Modules */
+        .module-list { margin-top: 15px; }
+        .module-item { display: flex; align-items: center; gap: 10px; padding: 12px; background: var(--light-gray); border-radius: 8px; margin-bottom: 10px; }
+        .module-item span { flex: 1; }
+        .module-item button { background: none; border: none; cursor: pointer; font-size: 1.1rem; }
+        .add-module { display: flex; gap: 10px; }
+        .add-module input { flex: 1; }
+        
+        /* Messages */
+        .message { padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; display: none; }
+        .message.success { background: #d4edda; color: #155724; display: block; }
+        .message.error { background: #f8d7da; color: #721c24; display: block; }
+        
+        .loading { text-align: center; padding: 20px; }
+        .spinner { width: 30px; height: 30px; border: 3px solid var(--beige); border-top: 3px solid var(--green); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        @media (max-width: 600px) {
+            .form-row { grid-template-columns: 1fr; }
+            .actions { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 <span id="page-title">Créer un Cours</span></h1>
+            <a href="instructor-dashboard.html" class="back-btn">← Retour au Dashboard</a>
+        </div>
+
+        <div id="message" class="message"></div>
+
+        <!-- Informations de base -->
+        <div class="form-card">
+            <h2>📋 Informations de base</h2>
+            <div class="form-group">
+                <label for="title">Titre du cours *</label>
+                <input type="text" id="title" placeholder="Ex: JavaScript pour débutants" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="category">Catégorie</label>
+                    <select id="category">
+                        <option value="">Sélectionner...</option>
+                        <option value="developpement">💻 Développement</option>
+                        <option value="design">🎨 Design</option>
+                        <option value="business">📊 Business</option>
+                        <option value="marketing">📈 Marketing</option>
+                        <option value="photo">📸 Photo & Vidéo</option>
+                        <option value="musique">🎵 Musique</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="price">Prix (€)</label>
+                    <input type="number" id="price" placeholder="0 = Gratuit" min="0">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="level">Niveau</label>
+                    <select id="level">
+                        <option value="debutant">Débutant</option>
+                        <option value="intermediaire">Intermédiaire</option>
+                        <option value="avance">Avancé</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="duration">Durée estimée</label>
+                    <input type="text" id="duration" placeholder="Ex: 10 heures">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" placeholder="Décrivez votre cours..."></textarea>
+            </div>
+        </div>
+
+        <!-- Éditeur de code -->
+        <div class="form-card">
+            <h2>💻 Contenu du cours (Code)</h2>
+            <div class="code-tabs">
+                <button class="code-tab active" onclick="showCodeTab('html')">HTML</button>
+                <button class="code-tab" onclick="showCodeTab('css')">CSS</button>
+                <button class="code-tab" onclick="showCodeTab('js')">JavaScript</button>
+            </div>
+            <div class="code-editor">
+                <textarea id="code-html" placeholder="<!-- Votre code HTML ici -->"></textarea>
+                <textarea id="code-css" style="display:none" placeholder="/* Votre code CSS ici */"></textarea>
+                <textarea id="code-js" style="display:none" placeholder="// Votre code JavaScript ici"></textarea>
+            </div>
+            <button class="btn btn-secondary preview-btn" onclick="previewCode()" style="margin-top: 15px;">👁️ Prévisualiser le code</button>
+            <div class="preview-container" id="preview-container" style="display: none;"></div>
+        </div>
+
+        <!-- Modules -->
+        <div class="form-card">
+            <h2>📖 Modules du cours</h2>
+            <div class="add-module">
+                <input type="text" id="module-title" placeholder="Titre du module">
+                <input type="text" id="module-duration" placeholder="Durée (ex: 30 min)" style="width: 150px;">
+                <button class="btn btn-secondary" onclick="addModule()">+ Ajouter</button>
+            </div>
+            <div class="module-list" id="module-list"></div>
+        </div>
+
+        <!-- Vidéos -->
+        <div class="form-card">
+            <h2>🎥 Vidéos (URLs YouTube/Vimeo)</h2>
+            <div class="add-module">
+                <input type="text" id="video-title" placeholder="Titre de la vidéo">
+                <input type="url" id="video-url" placeholder="URL de la vidéo">
+                <button class="btn btn-secondary" onclick="addVideo()">+ Ajouter</button>
+            </div>
+            <div class="module-list" id="video-list"></div>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions">
+            <button class="btn btn-secondary" onclick="saveDraft()">💾 Enregistrer en brouillon</button>
+            <button class="btn btn-primary" onclick="publishCourse()">🚀 Publier le cours</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, addDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAVO1P9v-IBsyxF_80vQvZDlR5tIqh878U",
+            authDomain: "learncentric.firebaseapp.com",
+            projectId: "learncentric",
+            storageBucket: "learncentric.firebasestorage.app",
+            messagingSenderId: "1083770541694",
+            appId: "1:1083770541694:web:b8dbcd7852ca7d9c8fea2f",
+            measurementId: "G-H84E7J29M3"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        window.firebaseAuth = auth;
+        window.firebaseDb = db;
+        window.doc = doc;
+        window.setDoc = setDoc;
+        window.getDoc = getDoc;
+        window.collection = collection;
+        window.addDoc = addDoc;
+        window.updateDoc = updateDoc;
+
+        // Check authentication and load course if editing
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                window.currentUser = user;
+                
+                // Check if editing existing course
+                const urlParams = new URLSearchParams(window.location.search);
+                const courseId = urlParams.get('id');
+                
+                if (courseId) {
+                    window.editingCourseId = courseId;
+                    document.getElementById('page-title').textContent = 'Modifier le Cours';
+                    await loadCourse(courseId);
+                }
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        // Load existing course
+        async function loadCourse(courseId) {
+            try {
+                const courseDoc = await getDoc(doc(db, "courses", courseId));
+                if (courseDoc.exists()) {
+                    const course = courseDoc.data();
+                    document.getElementById('title').value = course.title || '';
+                    document.getElementById('category').value = course.category || '';
+                    document.getElementById('price').value = course.price || '';
+                    document.getElementById('level').value = course.level || 'debutant';
+                    document.getElementById('duration').value = course.duration || '';
+                    document.getElementById('description').value = course.description || '';
+                    document.getElementById('code-html').value = course.codeHtml || '';
+                    document.getElementById('code-css').value = course.codeCss || '';
+                    document.getElementById('code-js').value = course.codeJs || '';
+                    
+                    // Load modules
+                    if (course.modules) {
+                        window.modules = course.modules;
+                        renderModules();
+                    }
+                    
+                    // Load videos
+                    if (course.videos) {
+                        window.videos = course.videos;
+                        renderVideos();
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur chargement cours:', error);
+            }
+        }
+
+        window.loadCourse = loadCourse;
+    </script>
+
+    <script>
+        // Modules and Videos arrays
+        window.modules = [];
+        window.videos = [];
+
+        // Show message
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = 'message ' + type;
+            window.scrollTo(0, 0);
+        }
+
+        // Code tabs
+        function showCodeTab(tab) {
+            document.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            document.getElementById('code-html').style.display = tab === 'html' ? 'block' : 'none';
+            document.getElementById('code-css').style.display = tab === 'css' ? 'block' : 'none';
+            document.getElementById('code-js').style.display = tab === 'js' ? 'block' : 'none';
+        }
+
+        // Preview code
+        function previewCode() {
+            const html = document.getElementById('code-html').value;
+            const css = document.getElementById('code-css').value;
+            const js = document.getElementById('code-js').value;
+            
+            const previewContainer = document.getElementById('preview-container');
+            previewContainer.style.display = 'block';
+            
+            const iframe = document.createElement('iframe');
+            iframe.style.width = '100%';
+            iframe.style.height = '300px';
+            iframe.style.border = 'none';
+            
+            previewContainer.innerHTML = '';
+            previewContainer.appendChild(iframe);
+            
+            const content = `
+                <!DOCTYPE html>
+                <html>
+                <head><style>${css}</style></head>
+                <body>${html}<script>${js}<\/script></body>
+                </html>
+            `;
+            
+            iframe.contentDocument.open();
+            iframe.contentDocument.write(content);
+            iframe.contentDocument.close();
+        }
+
+        // Add module
+        function addModule() {
+            const title = document.getElementById('module-title').value.trim();
+            const duration = document.getElementById('module-duration').value.trim();
+            
+            if (!title) {
+                alert('Veuillez entrer un titre de module');
+                return;
+            }
+            
+            window.modules.push({ title, duration });
+            renderModules();
+            
+            document.getElementById('module-title').value = '';
+            document.getElementById('module-duration').value = '';
+        }
+
+        // Render modules
+        function renderModules() {
+            const list = document.getElementById('module-list');
+            list.innerHTML = window.modules.map((m, i) => `
+                <div class="module-item">
+                    <span>📖 ${m.title} ${m.duration ? '(' + m.duration + ')' : ''}</span>
+                    <button onclick="removeModule(${i})">🗑️</button>
+                </div>
+            `).join('');
+        }
+
+        // Remove module
+        function removeModule(index) {
+            window.modules.splice(index, 1);
+            renderModules();
+        }
+
+        // Add video
+        function addVideo() {
+            const title = document.getElementById('video-title').value.trim();
+            const url = document.getElementById('video-url').value.trim();
+            
+            if (!title || !url) {
+                alert('Veuillez entrer un titre et une URL');
+                return;
+            }
+            
+            window.videos.push({ title, url });
+            renderVideos();
+            
+            document.getElementById('video-title').value = '';
+            document.getElementById('video-url').value = '';
+        }
+
+        // Render videos
+        function renderVideos() {
+            const list = document.getElementById('video-list');
+            list.innerHTML = window.videos.map((v, i) => `
+                <div class="module-item">
+                    <span>🎥 ${v.title}</span>
+                    <button onclick="removeVideo(${i})">🗑️</button>
+                </div>
+            `).join('');
+        }
+
+        // Remove video
+        function removeVideo(index) {
+            window.videos.splice(index, 1);
+            renderVideos();
+        }
+
+        // Get course data
+        function getCourseData(status) {
+            return {
+                title: document.getElementById('title').value.trim(),
+                category: document.getElementById('category').value,
+                price: parseFloat(document.getElementById('price').value) || 0,
+                level: document.getElementById('level').value,
+                duration: document.getElementById('duration').value.trim(),
+                description: document.getElementById('description').value.trim(),
+                codeHtml: document.getElementById('code-html').value,
+                codeCss: document.getElementById('code-css').value,
+                codeJs: document.getElementById('code-js').value,
+                modules: window.modules,
+                videos: window.videos,
+                status: status,
+                instructorId: window.currentUser.uid,
+                instructorName: window.currentUser.displayName || window.currentUser.email,
+                updatedAt: new Date().toISOString()
+            };
+        }
+
+        // Save draft
+        async function saveDraft() {
+            const title = document.getElementById('title').value.trim();
+            if (!title) {
+                showMessage('❌ Veuillez entrer un titre pour le cours', 'error');
+                return;
+            }
+
+            try {
+                const courseData = getCourseData('draft');
+                
+                if (window.editingCourseId) {
+                    await window.updateDoc(window.doc(window.firebaseDb, "courses", window.editingCourseId), courseData);
+                } else {
+                    courseData.createdAt = new Date().toISOString();
+                    const docRef = await window.addDoc(window.collection(window.firebaseDb, "courses"), courseData);
+                    window.editingCourseId = docRef.id;
+                }
+                
+                showMessage('✅ Brouillon enregistré avec succès !', 'success');
+            } catch (error) {
+                console.error('Erreur:', error);
+                showMessage('❌ Erreur lors de l\'enregistrement', 'error');
+            }
+        }
+
+        // Publish course
+        async function publishCourse() {
+            const title = document.getElementById('title').value.trim();
+            if (!title) {
+                showMessage('❌ Veuillez entrer un titre pour le cours', 'error');
+                return;
+            }
+
+            try {
+                const courseData = getCourseData('published');
+                
+                if (window.editingCourseId) {
+                    await window.updateDoc(window.doc(window.firebaseDb, "courses", window.editingCourseId), courseData);
+                } else {
+                    courseData.createdAt = new Date().toISOString();
+                    await window.addDoc(window.collection(window.firebaseDb, "courses"), courseData);
+                }
+                
+                showMessage('✅ Cours publié avec succès !', 'success');
+                
+                setTimeout(() => {
+                    window.location.href = 'instructor-dashboard.html';
+                }, 1500);
+            } catch (error) {
+                console.error('Erreur:', error);
+                showMessage('❌ Erreur lors de la publication', 'error');
+            }
+        }
+    </script>
+</body>
+</html>
