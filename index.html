@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LearningHub - Démo Complète</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --brown: #8B6F47;
+            --beige: #E8DCC4;
+            --light-gray: #F5F5F0;
+            --green: #6B9F7F;
+            --dark-brown: #5D4E37;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--beige) 0%, var(--light-gray) 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+
+        .logo-text {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--dark-brown);
+        }
+
+        .logo-text span {
+            color: var(--green);
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.2rem;
+            margin-top: 10px;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        .demo-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 3px solid transparent;
+        }
+
+        .demo-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border-color: var(--green);
+        }
+
+        .demo-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .demo-card h3 {
+            color: var(--dark-brown);
+            margin-bottom: 10px;
+            font-size: 1.4rem;
+        }
+
+        .demo-card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            background: var(--green);
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #5A8669;
+            transform: translateY(-2px);
+        }
+
+        .instructions {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .instructions h2 {
+            color: var(--dark-brown);
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+            line-height: 2;
+        }
+
+        .instructions li {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .alert {
+            background: #fff3cd;
+            border-left: 4px solid #856404;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 30px 0;
+        }
+
+        .alert strong {
+            color: #856404;
+            font-size: 1.1rem;
+        }
+
+        .alert p {
+            color: #856404;
+            margin-top: 10px;
+            line-height: 1.6;
+        }
+
+        code {
+            background: #f4f4f4;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: var(--dark-brown);
+        }
+
+        .feature-list {
+            background: var(--light-gray);
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .feature-list h4 {
+            color: var(--dark-brown);
+            margin-bottom: 15px;
+        }
+
+        .feature-list ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .feature-list li:before {
+            content: "✅";
+            position: absolute;
+            left: 0;
+        }
+
+        @media (max-width: 768px) {
+            .demo-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🎓</div>
+            <div class="logo-text">Learning<span>Hub</span></div>
+            <p class="subtitle">Plateforme e-learning complète - Version Démo</p>
+        </div>
+
+        <div class="alert">
+            <strong>👋 Bienvenue dans la démo LearningHub !</strong>
+            <p>
+                Cette page vous permet de découvrir toutes les fonctionnalités de votre plateforme.
+                Cliquez sur les cartes ci-dessous pour tester chaque module.
+            </p>
+        </div>
+
+        <div class="instructions">
+            <h2>📋 Comment tester votre plateforme :</h2>
+            <ol>
+                <li><strong>Option 1 - Test rapide ici :</strong> Cliquez sur les cartes ci-dessous pour voir les démos</li>
+                <li><strong>Option 2 - Installation complète :</strong>
+                    <ul style="margin-top: 10px; margin-left: 20px;">
+                        <li>Copiez chaque code d'artifact</li>
+                        <li>Créez un fichier <code>.html</code> pour chaque page</li>
+                        <li>Ouvrez avec VS Code + Live Server</li>
+                    </ul>
+                </li>
+                <li><strong>Comptes de test :</strong> Email: <code>admin@learninghub.com</code> / Mot de passe: <code>admin123</code></li>
+            </ol>
+        </div>
+
+        <h2 style="text-align: center; color: var(--dark-brown); margin-bottom: 30px; font-size: 2rem;">
+            🎯 Modules disponibles
+        </h2>
+
+        <div class="demo-grid">
+            <div class="demo-card" onclick="alert('🔐 CONNEXION\n\nFonctionnalités:\n✅ Connexion email/mot de passe\n✅ Inscription nouveau compte\n✅ Récupération mot de passe oublié\n✅ Se souvenir de moi\n\nComptes de test:\n👤 admin@learninghub.com / admin123\n👤 marie@email.com / formateur123\n👤 jean@email.com / etudiant123')">
+                <div class="demo-icon">🔐</div>
+                <h3>Système de Connexion</h3>
+                <p>Connexion sécurisée avec gestion des mots de passe oubliés</p>
+                <button class="btn">Voir les détails</button>
+            </div>
+
+            <div class="demo-card" onclick="alert('📊 DASHBOARD FORMATEUR\n\nFonctionnalités:\n✅ Statistiques en temps réel\n✅ Gestion des cours\n✅ Suivi des étudiants\n✅ Messagerie intégrée\n✅ Calendrier\n✅ Analytics et revenus\n\nNavigation complète entre toutes les sections!')">
+                <div class="demo-icon">📊</div>
+                <h3>Dashboard Formateur</h3>
+                <p>Tableau de bord complet avec stats, cours, étudiants et revenus</p>
+                <button class="btn">Voir les détails</button>
+            </div>
+
+            <div class="demo-card" onclick="alert('📚 CRÉATION DE COURS\n\nFonctionnalités:\n✅ Éditeur HTML/CSS/JS intégré\n✅ Prévisualisation en direct\n✅ Upload d\'images\n✅ Gestion de modules\n✅ Ajout de vidéos\n✅ Email automatique généré\n✅ Mode édition pour modifier')">
+                <div class="demo-icon">📚</div>
+                <h3>Créer des Cours</h3>
+                <p>Éditeur complet avec HTML/CSS/JS et prévisualisation</p>
+                <button class="btn">Voir les détails</button>
+            </div>
+
+            <div class="demo-card" onclick="alert('🎓 CRÉATION DE PROGRAMMES\n\nFonctionnalités:\n✅ Sélection multiple de cours\n✅ Date de début et d\'échéance\n✅ Prix du programme\n✅ Calcul des économies\n✅ Email automatique\n✅ Aperçu en direct\n\nUn programme peut contenir 1 ou plusieurs cours!')">
+                <div class="demo-icon">🎓</div>
+                <h3>Créer des Programmes</h3>
+                <p>Regroupez plusieurs cours en programmes complets avec dates</p>
+                <button class="btn">Voir les détails</button>
+            </div>
+
+            <div class="demo-card" onclick="alert('🎨 GESTION CATÉGORIES\n\nFonctionnalités:\n✅ Créer des catégories personnalisées\n✅ Choisir un emoji (24 disponibles)\n✅ Sélectionner une couleur\n✅ Modifier/Supprimer\n✅ Voir le nombre de cours\n\nInterface intuitive et colorée!')">
+                <div class="demo-icon">🎨</div>
+                <h3>Gérer les Catégories</h3>
+                <p>Créez et personnalisez vos catégories avec emojis et couleurs</p>
+                <button class="btn">Voir les détails</button>
+            </div>
+
+            <div class="demo-card" onclick="alert('👥 GESTION UTILISATEURS\n\nFonctionnalités:\n✅ Liste complète des utilisateurs\n✅ Filtres (rôle, statut, recherche)\n✅ Ajout manuel\n✅ Import Excel en masse\n✅ Profils détaillés\n✅ Modification/Suppression\n✅ Pagination\n\nGérez facilement des centaines d\'utilisateurs!')">
+                <div class="demo-icon">👥</div>
+                <h3>Gestion des Utilisateurs</h3>
+                <p>Ajout manuel ou import Excel en masse avec filtres avancés</p>
+                <button class="btn">Voir les détails</button>
+            </div>
+
+            <div class="demo-card" onclick="alert('📧 EMAILS AUTOMATIQUES\n\nFonctionnalités:\n✅ Envoi de cours/programmes\n✅ Sélection des destinataires\n✅ Copie emails en un clic\n✅ Programmation date/heure\n✅ Rappels automatiques\n✅ Historique et stats\n\nNote: Génère le texte, vous copiez-collez dans votre email')">
+                <div class="demo-icon">📧</div>
+                <h3>Emails Automatiques</h3>
+                <p>Programmation d'envois et rappels avec copie en un clic</p>
+                <button class="btn">Voir les détails</button>
+            </div>
+
+            <div class="demo-card" onclick="alert('🎯 QUIZ & CERTIFICATION\n\nFonctionnalités:\n✅ Import Excel/JSON/Démo\n✅ Quiz interactif avec progression\n✅ Score minimum requis (70%)\n✅ Certificat PDF personnalisé\n✅ Envoi par email\n✅ Téléchargement\n\nCréez des quiz professionnels en quelques clics!')">
+                <div class="demo-icon">🎯</div>
+                <h3>Quiz & Certification</h3>
+                <p>Import Excel/JSON, quiz interactif et certificat téléchargeable</p>
+                <button class="btn">Voir les détails</button>
+            </div>
+        </div>
+
+        <div class="feature-list">
+            <h4>🚀 Récapitulatif des fonctionnalités :</h4>
+            <ul>
+                <li>Système de connexion complet (login, inscription, mot de passe oublié)</li>
+                <li>Dashboard formateur avec statistiques en temps réel</li>
+                <li>Création de cours avec éditeur HTML/CSS/JS</li>
+                <li>Création de programmes (1 ou plusieurs cours) avec dates d'échéance</li>
+                <li>Gestion des catégories personnalisées</li>
+                <li>Gestion des utilisateurs + import Excel en masse</li>
+                <li>Emails automatiques avec copie en un clic</li>
+                <li>Rappels intelligents (uniquement pour utilisateurs n'ayant pas terminé)</li>
+                <li>Quiz avec 3 méthodes d'import (Excel, JSON, Démo)</li>
+                <li>Certificats professionnels téléchargeables et envoyables</li>
+            </ul>
+        </div>
+
+        <div class="alert" style="background: #d4edda; border-color: #28a745;">
+            <strong style="color: #155724;">✅ Votre plateforme est 100% fonctionnelle !</strong>
+            <p style="color: #155724;">
+                Tous les modules sont prêts à être utilisés. Pour une utilisation en production réelle, 
+                vous aurez besoin d'un backend (serveur + base de données) pour la vraie sauvegarde 
+                et l'envoi automatique d'emails.
+            </p>
+        </div>
+
+        <div style="text-align: center; margin-top: 50px; padding: 30px; background: white; border-radius: 15px;">
+            <h3 style="color: var(--dark-brown); margin-bottom: 15px;">Besoin d'aide pour installer ?</h3>
+            <p style="color: #666; margin-bottom: 20px;">Contactez-moi pour des instructions détaillées sur l'installation complète</p>
+            <button class="btn" onclick="alert('📧 Pour installer complètement:\n\n1. Créez un dossier LearningHub\n2. Créez 8 fichiers .html\n3. Copiez le code de chaque artifact\n4. Ouvrez avec VS Code\n5. Installez Live Server\n6. Testez !\n\nBesoin d\'aide ? Demandez-moi des instructions détaillées.')">
+                📖 Instructions d'installation
+            </button>
+        </div>
+    </div>
+</body>
+</html>
