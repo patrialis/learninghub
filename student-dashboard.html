@@ -474,6 +474,14 @@
                 const isCompleted = percent >= 100;
                 const canGetCertificate = percent >= minScore;
                 
+                const formatLabels = {
+                    'e-learning': '💻 E-learning',
+                    'presentiel': '🏢 Présentiel',
+                    'distanciel': '🎥 Distanciel',
+                    'hybride': '🔄 Hybride'
+                };
+                const formatDisplay = formatLabels[course.format] || '💻 E-learning';
+                
                 return `
                     <div class="course-card">
                         <div class="course-header">
@@ -492,9 +500,9 @@
                                 </div>
                             </div>
                             <div class="course-meta">
+                                <span>${formatDisplay}</span>
                                 <span>⏱️ ${course.duration || 'Non définie'}</span>
-                                <span>📖 ${course.modules?.length || 0} modules</span>
-                                ${canGetCertificate ? '<span>🏆 Certificat disponible</span>' : ''}
+                                ${canGetCertificate ? '<span>🏆 Certificat</span>' : ''}
                             </div>
                             <button class="course-btn ${isCompleted ? 'completed' : ''}" onclick="openCourse('${course.id}')">
                                 ${isCompleted ? '✅ Revoir le cours' : (percent > 0 ? '▶️ Continuer' : '▶️ Commencer')}

@@ -113,9 +113,20 @@
                     </select>
                 </div>
                 <div class="form-group">
+                    <label for="format">Format</label>
+                    <select id="format">
+                        <option value="e-learning">E-learning</option>
+                        <option value="presentiel">Présentiel</option>
+                        <option value="distanciel">Distanciel (visio)</option>
+                        <option value="hybride">Hybride</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label for="duration">Durée estimée</label>
                     <input type="text" id="duration" placeholder="Ex: 10 heures">
                 </div>
+            </div>
+            <div class="form-row">
                 <div class="form-group">
                     <label for="min-score">Score minimum de réussite</label>
                     <div class="score-input-wrapper">
@@ -283,6 +294,7 @@
                     document.getElementById('category').value = course.category || '';
                     document.getElementById('price').value = course.price || '';
                     document.getElementById('level').value = course.level || 'debutant';
+                    document.getElementById('format').value = course.format || 'e-learning';
                     document.getElementById('duration').value = course.duration || '';
                     document.getElementById('min-score').value = course.minScore || 70;
                     document.getElementById('score-preview-value').textContent = course.minScore || 70;
@@ -419,6 +431,7 @@
                 category: document.getElementById('category').value,
                 price: parseFloat(document.getElementById('price').value) || 0,
                 level: document.getElementById('level').value,
+                format: document.getElementById('format').value,
                 duration: document.getElementById('duration').value.trim(),
                 minScore: parseInt(document.getElementById('min-score').value) || 70,
                 description: document.getElementById('description').value.trim(),
