@@ -24,7 +24,6 @@
         .section { display: none; }
         .section.active { display: block; }
         
-        /* Programs List */
         .programs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
         .program-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); transition: all 0.3s; }
         .program-card:hover { transform: translateY(-5px); box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
@@ -48,7 +47,6 @@
         .btn-view { background: var(--green); color: white; }
         .btn-view:hover { background: var(--dark-green); }
         
-        /* Create Form */
         .form-card { background: white; border-radius: 15px; padding: 30px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .form-card h2 { color: var(--dark-brown); margin-bottom: 20px; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
         
@@ -67,7 +65,6 @@
         .btn-secondary { background: var(--beige); color: var(--dark-brown); }
         .btn-secondary:hover { background: #d9cab3; }
         
-        /* Course Selection */
         .course-selection { border: 2px solid var(--beige); border-radius: 10px; padding: 15px; max-height: 300px; overflow-y: auto; }
         .course-option { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--light-gray); border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: all 0.3s; }
         .course-option:hover { background: var(--beige); }
@@ -79,7 +76,6 @@
         .course-info h4 { font-size: 0.95rem; margin-bottom: 3px; }
         .course-info p { font-size: 0.8rem; opacity: 0.8; }
         
-        /* Selected Courses Order */
         .selected-courses { margin-top: 20px; }
         .selected-courses h3 { font-size: 1rem; color: var(--dark-brown); margin-bottom: 15px; }
         .sortable-list { min-height: 50px; }
@@ -212,7 +208,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
-        import { getFirestore, collection, query, getDocs, doc, addDoc, updateDoc, deleteDoc, orderBy } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+        import { getFirestore, collection, query, getDocs, doc, addDoc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAVO1P9v-IBsyxF_80vQvZDlR5tIqh878U",
@@ -228,14 +224,14 @@
         const db = getFirestore(app);
 
         window.firebaseDb = db;
-        window.collection = collection;
-        window.query = query;
-        window.getDocs = getDocs;
-        window.doc = doc;
-        window.addDoc = addDoc;
-        window.updateDoc = updateDoc;
-        window.deleteDoc = deleteDoc;
-        window.orderBy = orderBy;
+        window.firebaseCollection = collection;
+        window.firebaseQuery = query;
+        window.firebaseGetDocs = getDocs;
+        window.firebaseDoc = doc;
+        window.firebaseAddDoc = addDoc;
+        window.firebaseUpdateDoc = updateDoc;
+        window.firebaseDeleteDoc = deleteDoc;
+        window.firebaseSetDoc = setDoc;
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -276,7 +272,7 @@
                 displayPrograms();
             } catch (error) {
                 console.error('Erreur chargement programmes:', error);
-                document.getElementById('programs-container').innerHTML = '<div class="empty-state"><p>Erreur lors du chargement</p></div>';
+                document.getElementById('programs-container').innerHTML = '<div class="empty-state"><p>Aucun programme pour le moment</p><button class="btn btn-primary" onclick="showTab(\'create\')">➕ Créer mon premier programme</button></div>';
             }
         }
 
@@ -291,10 +287,14 @@
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             
-            event.currentTarget.classList.add('active');
+            if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            } else {
+                document.querySelectorAll('.tab')[tab === 'list' ? 0 : 1].classList.add('active');
+            }
             document.getElementById(tab + '-section').classList.add('active');
             
-            if (tab === 'create') {
+            if (tab === 'create' && !window.editingProgramId) {
                 resetForm();
             }
         }
@@ -316,30 +316,34 @@
                 return;
             }
             
-            container.innerHTML = courses.map(course => `
-                <label class="course-option" onclick="toggleCourse('${course.id}', '${(course.title || '').replace(/'/g, "\\'")}')">
-                    <div class="course-checkbox" id="checkbox-${course.id}"></div>
-                    <div class="course-info">
-                        <h4>${course.title || 'Sans titre'}</h4>
-                        <p>${course.category || 'Non catégorisé'} • ${course.duration || 'Durée non définie'}</p>
+            container.innerHTML = courses.map(course => {
+                const safeTitle = (course.title || 'Sans titre').replace(/'/g, "\\'").replace(/"/g, '\\"');
+                return `
+                    <div class="course-option" data-id="${course.id}" data-title="${safeTitle}" onclick="toggleCourse(this)">
+                        <div class="course-checkbox" id="checkbox-${course.id}"></div>
+                        <div class="course-info">
+                            <h4>${course.title || 'Sans titre'}</h4>
+                            <p>${course.category || 'Non catégorisé'} • ${course.duration || 'Durée non définie'}</p>
+                        </div>
                     </div>
-                </label>
-            `).join('');
+                `;
+            }).join('');
         }
 
-        function toggleCourse(courseId, courseTitle) {
-            const option = document.querySelector(`[onclick*="${courseId}"]`);
+        function toggleCourse(element) {
+            const courseId = element.getAttribute('data-id');
+            const courseTitle = element.getAttribute('data-title');
             const checkbox = document.getElementById('checkbox-' + courseId);
             
             const index = window.selectedCourses.findIndex(c => c.id === courseId);
             
             if (index > -1) {
                 window.selectedCourses.splice(index, 1);
-                option.classList.remove('selected');
+                element.classList.remove('selected');
                 checkbox.textContent = '';
             } else {
                 window.selectedCourses.push({ id: courseId, title: courseTitle });
-                option.classList.add('selected');
+                element.classList.add('selected');
                 checkbox.textContent = '✓';
             }
             
@@ -365,7 +369,6 @@
                 </div>
             `).join('');
             
-            // Add drag and drop
             initDragAndDrop();
         }
 
@@ -374,7 +377,7 @@
             if (index > -1) {
                 window.selectedCourses.splice(index, 1);
                 
-                const option = document.querySelector(`[onclick*="${courseId}"]`);
+                const option = document.querySelector(`.course-option[data-id="${courseId}"]`);
                 const checkbox = document.getElementById('checkbox-' + courseId);
                 if (option) option.classList.remove('selected');
                 if (checkbox) checkbox.textContent = '';
@@ -414,7 +417,6 @@
                 const draggedIndex = items.indexOf(draggedItem);
                 const targetIndex = items.indexOf(this);
                 
-                // Reorder selectedCourses array
                 const [removed] = window.selectedCourses.splice(draggedIndex, 1);
                 window.selectedCourses.splice(targetIndex, 0, removed);
                 
@@ -470,11 +472,10 @@
                                     </div>
                                     <div class="program-courses">
                                         <h4>Cours inclus :</h4>
-                                        ${courseNames.map(name => `<span class="course-tag">${name}</span>`).join('')}
+                                        ${courseNames.length > 0 ? courseNames.map(name => `<span class="course-tag">${name}</span>`).join('') : '<span class="course-tag">Aucun cours</span>'}
                                         ${courseCount > 3 ? `<span class="course-tag">+${courseCount - 3} autres</span>` : ''}
                                     </div>
                                     <div class="program-actions">
-                                        <button class="btn-view" onclick="viewProgram('${program.id}')">👁️ Voir</button>
                                         <button class="btn-edit" onclick="editProgram('${program.id}')">✏️ Modifier</button>
                                         <button class="btn-delete" onclick="deleteProgram('${program.id}')">🗑️</button>
                                     </div>
@@ -487,17 +488,22 @@
         }
 
         function getProgramData(status) {
+            const coursesData = window.selectedCourses.map(c => ({
+                id: c.id || '',
+                title: c.title || ''
+            }));
+            
             return {
-                title: document.getElementById('program-title').value.trim(),
-                category: document.getElementById('program-category').value,
+                title: document.getElementById('program-title').value.trim() || '',
+                category: document.getElementById('program-category').value || '',
                 price: parseFloat(document.getElementById('program-price').value) || 0,
-                duration: document.getElementById('program-duration').value.trim(),
-                level: document.getElementById('program-level').value,
-                description: document.getElementById('program-description').value.trim(),
-                courses: window.selectedCourses,
+                duration: document.getElementById('program-duration').value.trim() || '',
+                level: document.getElementById('program-level').value || 'debutant',
+                description: document.getElementById('program-description').value.trim() || '',
+                courses: coursesData,
                 status: status,
-                instructorId: window.currentUser.uid,
-                instructorName: window.currentUser.displayName || window.currentUser.email,
+                instructorId: window.currentUser?.uid || '',
+                instructorName: window.currentUser?.displayName || window.currentUser?.email || '',
                 updatedAt: new Date().toISOString()
             };
         }
@@ -508,46 +514,52 @@
             
             try {
                 const data = getProgramData('draft');
+                console.log('Saving draft:', data);
                 
                 if (window.editingProgramId) {
-                    await window.updateDoc(window.doc(window.firebaseDb, "programs", window.editingProgramId), data);
+                    const docRef = window.firebaseDoc(window.firebaseDb, "programs", window.editingProgramId);
+                    await window.firebaseUpdateDoc(docRef, data);
                 } else {
                     data.createdAt = new Date().toISOString();
-                    const docRef = await window.addDoc(window.collection(window.firebaseDb, "programs"), data);
+                    const colRef = window.firebaseCollection(window.firebaseDb, "programs");
+                    const docRef = await window.firebaseAddDoc(colRef, data);
                     window.editingProgramId = docRef.id;
                 }
                 
                 showMessage('✅ Brouillon enregistré !', 'success');
                 await window.loadPrograms();
             } catch (error) {
-                console.error('Erreur:', error);
-                showMessage('❌ Erreur lors de l\'enregistrement', 'error');
+                console.error('Erreur détaillée:', error);
+                showMessage('❌ Erreur: ' + error.message, 'error');
             }
         }
 
         async function publishProgram() {
             const title = document.getElementById('program-title').value.trim();
             if (!title) { showMessage('❌ Veuillez entrer un titre', 'error'); return; }
-            if (window.selectedCourses.length === 0) { showMessage('❌ Sélectionnez au moins un cours', 'error'); return; }
             
             try {
                 const data = getProgramData('published');
+                console.log('Publishing program:', data);
                 
                 if (window.editingProgramId) {
-                    await window.updateDoc(window.doc(window.firebaseDb, "programs", window.editingProgramId), data);
+                    const docRef = window.firebaseDoc(window.firebaseDb, "programs", window.editingProgramId);
+                    await window.firebaseUpdateDoc(docRef, data);
                 } else {
                     data.createdAt = new Date().toISOString();
-                    await window.addDoc(window.collection(window.firebaseDb, "programs"), data);
+                    const colRef = window.firebaseCollection(window.firebaseDb, "programs");
+                    await window.firebaseAddDoc(colRef, data);
                 }
                 
                 showMessage('✅ Programme publié !', 'success');
                 resetForm();
-                showTab('list');
-                document.querySelector('.tab').click();
                 await window.loadPrograms();
+                showTab('list');
             } catch (error) {
-                console.error('Erreur:', error);
-                showMessage('❌ Erreur lors de la publication', 'error');
+                console.error('Erreur détaillée:', error);
+                console.error('Error code:', error.code);
+                console.error('Error message:', error.message);
+                showMessage('❌ Erreur: ' + error.message, 'error');
             }
         }
 
@@ -564,12 +576,13 @@
             document.getElementById('program-level').value = program.level || 'debutant';
             document.getElementById('program-description').value = program.description || '';
             
-            // Restore selected courses
-            window.selectedCourses = program.courses || [];
+            window.selectedCourses = (program.courses || []).map(c => ({
+                id: c.id || '',
+                title: c.title || ''
+            }));
             
-            // Update UI
             document.querySelectorAll('.course-option').forEach(opt => {
-                const courseId = opt.getAttribute('onclick').match(/'([^']+)'/)[1];
+                const courseId = opt.getAttribute('data-id');
                 const checkbox = document.getElementById('checkbox-' + courseId);
                 
                 if (window.selectedCourses.find(c => c.id === courseId)) {
@@ -582,27 +595,21 @@
             });
             
             updateSelectedCoursesList();
-            
-            // Switch to create tab
-            document.querySelectorAll('.tab')[1].click();
+            showTab('create');
         }
 
         async function deleteProgram(programId) {
             if (!confirm('Êtes-vous sûr de vouloir supprimer ce programme ?')) return;
             
             try {
-                await window.deleteDoc(window.doc(window.firebaseDb, "programs", programId));
+                const docRef = window.firebaseDoc(window.firebaseDb, "programs", programId);
+                await window.firebaseDeleteDoc(docRef);
                 showMessage('✅ Programme supprimé', 'success');
                 await window.loadPrograms();
             } catch (error) {
                 console.error('Erreur:', error);
-                showMessage('❌ Erreur lors de la suppression', 'error');
+                showMessage('❌ Erreur: ' + error.message, 'error');
             }
-        }
-
-        function viewProgram(programId) {
-            // TODO: Create view-program.html page
-            alert('Page de visualisation du programme à venir !');
         }
 
         function resetForm() {
