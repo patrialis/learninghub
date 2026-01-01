@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cours - LearningHub</title>
+    <!-- jsPDF for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root { --brown: #8B6F47; --dark-brown: #6B5A3B; --beige: #E8DCC4; --light-gray: #F5F5F0; --green: #6B9F7F; --dark-green: #5A8A6E; }
@@ -20,38 +22,34 @@
         .btn-primary:hover { background: var(--dark-green); }
         .btn-secondary { background: var(--beige); color: var(--dark-brown); }
         .btn-secondary:hover { background: #d9cab3; }
+        .btn-gold { background: linear-gradient(135deg, #D4AF37, #F4D03F); color: #333; font-weight: 700; }
+        .btn-gold:hover { transform: scale(1.05); box-shadow: 0 5px 20px rgba(212, 175, 55, 0.4); }
         
         .main-content { padding: 20px; max-width: 1400px; margin: 0 auto; }
         
         .content-card { background: white; border-radius: 15px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .content-card h2 { color: var(--dark-brown); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; font-size: 1.1rem; }
         
-        /* Course render container */
         .course-container { position: relative; }
         .course-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .course-header h2 { margin-bottom: 0; }
         
-        /* FULLSCREEN BUTTON - BIG AND VISIBLE */
         .fullscreen-btn { background: var(--green); color: white; padding: 12px 25px; font-size: 1rem; border-radius: 10px; }
         .fullscreen-btn:hover { background: var(--dark-green); transform: scale(1.05); }
         
-        /* Course iframe - LARGE */
         .course-frame-wrapper { position: relative; border-radius: 12px; overflow: hidden; border: 2px solid var(--beige); }
         .course-frame { width: 100%; height: 75vh; border: none; background: white; display: block; }
         
-        /* Fullscreen styles */
         .course-frame-wrapper:fullscreen { background: white; }
         .course-frame-wrapper:fullscreen .course-frame { height: 100vh; }
         .course-frame-wrapper:-webkit-full-screen { background: white; }
         .course-frame-wrapper:-webkit-full-screen .course-frame { height: 100vh; }
         
-        /* Exit fullscreen button (visible in fullscreen) */
         .exit-fullscreen-btn { position: fixed; top: 20px; right: 20px; z-index: 99999; background: rgba(0,0,0,0.7); color: white; padding: 15px 25px; border-radius: 10px; display: none; font-size: 1rem; }
         .course-frame-wrapper:fullscreen .exit-fullscreen-btn { display: block; }
         
         .description { line-height: 1.7; color: #555; }
         
-        /* Progress section */
         .progress-grid { display: grid; grid-template-columns: 1fr 300px; gap: 20px; }
         .progress-bar { height: 12px; background: var(--beige); border-radius: 6px; overflow: hidden; margin: 10px 0; }
         .progress-fill { height: 100%; background: var(--green); transition: width 0.3s; }
@@ -67,7 +65,13 @@
         
         .complete-btn { width: 100%; padding: 15px; margin-top: 15px; font-size: 1rem; }
         
-        /* Code section - collapsible */
+        /* Certificate Section */
+        .certificate-section { display: none; background: linear-gradient(135deg, #fff9e6, #fff); border: 2px solid #D4AF37; margin-top: 20px; text-align: center; padding: 30px; }
+        .certificate-section.show { display: block; }
+        .certificate-section h3 { color: #B8860B; margin-bottom: 15px; font-size: 1.3rem; }
+        .certificate-section p { color: #666; margin-bottom: 20px; }
+        .certificate-buttons { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
+        
         .code-toggle { padding: 15px 20px; background: #2d2d2d; color: white; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .code-content { display: none; background: #2d2d2d; border-radius: 0 0 10px 10px; margin-top: -10px; padding: 20px; }
         .code-content.open { display: block; }
@@ -77,7 +81,6 @@
         .code-preview { background: #1e1e1e; border-radius: 8px; padding: 15px; overflow-x: auto; max-height: 300px; }
         .code-preview pre { color: #f8f8f2; font-family: 'Courier New', monospace; font-size: 13px; white-space: pre-wrap; margin: 0; }
         
-        /* Videos */
         .video-container { position: relative; padding-bottom: 56.25%; height: 0; border-radius: 10px; overflow: hidden; background: #000; }
         .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         .video-list { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
@@ -88,6 +91,18 @@
         .loading { text-align: center; padding: 100px; }
         .spinner { width: 50px; height: 50px; border: 4px solid var(--beige); border-top: 4px solid var(--green); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; z-index: 1000; }
+        .modal.show { display: flex; }
+        .modal-content { background: white; border-radius: 20px; padding: 40px; max-width: 500px; width: 90%; text-align: center; }
+        .modal-content h2 { color: var(--dark-brown); margin-bottom: 20px; }
+        .modal-content p { color: #666; margin-bottom: 25px; line-height: 1.6; }
+        .modal-content .form-group { margin-bottom: 20px; text-align: left; }
+        .modal-content label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--dark-brown); }
+        .modal-content input { width: 100%; padding: 12px 15px; border: 2px solid var(--beige); border-radius: 10px; font-size: 1rem; }
+        .modal-content input:focus { outline: none; border-color: var(--green); }
+        .modal-buttons { display: flex; gap: 15px; justify-content: center; }
         
         @media (max-width: 900px) {
             .progress-grid { grid-template-columns: 1fr; }
@@ -169,7 +184,39 @@
                     <div class="modules-list" id="modules-list"></div>
                     
                     <button class="btn btn-primary complete-btn" onclick="markAsComplete()">✅ Marquer comme terminé</button>
+                    
+                    <!-- Certificate Section -->
+                    <div class="certificate-section" id="certificate-section">
+                        <h3>🏆 Félicitations !</h3>
+                        <p>Vous avez terminé ce cours avec succès !<br>Obtenez votre certificat officiel.</p>
+                        <div class="certificate-buttons">
+                            <button class="btn btn-gold" onclick="openCertificateModal()">🎓 Obtenir mon certificat</button>
+                        </div>
+                    </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Certificate Modal -->
+    <div class="modal" id="certificate-modal">
+        <div class="modal-content">
+            <h2>🎓 Votre Certificat</h2>
+            <p>Remplissez vos informations pour générer votre certificat personnalisé.</p>
+            
+            <div class="form-group">
+                <label for="cert-name">Votre nom complet</label>
+                <input type="text" id="cert-name" placeholder="Jean Dupont">
+            </div>
+            
+            <div class="form-group">
+                <label for="cert-email">Votre email</label>
+                <input type="email" id="cert-email" placeholder="votre@email.com">
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeCertificateModal()">Annuler</button>
+                <button class="btn btn-gold" onclick="generateCertificate()">📄 Générer & Envoyer</button>
             </div>
         </div>
     </div>
@@ -248,6 +295,11 @@
                     window.completedModules = progress[courseId]?.completedModules || [];
                     updateProgressDisplay();
                     updateModulesDisplay();
+                    checkCertificateEligibility();
+                    
+                    // Pre-fill certificate form
+                    document.getElementById('cert-name').value = window.currentUser.displayName || '';
+                    document.getElementById('cert-email').value = window.currentUser.email || '';
                 }
             } catch (e) { window.completedModules = []; }
         }
@@ -278,36 +330,22 @@
             iframe.contentDocument.close();
         }
 
-        // FULLSCREEN FUNCTIONS
         function openFullscreen() {
             const wrapper = document.getElementById('course-wrapper');
-            if (wrapper.requestFullscreen) {
-                wrapper.requestFullscreen();
-            } else if (wrapper.webkitRequestFullscreen) {
-                wrapper.webkitRequestFullscreen();
-            } else if (wrapper.msRequestFullscreen) {
-                wrapper.msRequestFullscreen();
-            }
+            if (wrapper.requestFullscreen) wrapper.requestFullscreen();
+            else if (wrapper.webkitRequestFullscreen) wrapper.webkitRequestFullscreen();
+            else if (wrapper.msRequestFullscreen) wrapper.msRequestFullscreen();
         }
 
         function closeFullscreen() {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            } else if (document.webkitExitFullscreen) {
-                document.webkitExitFullscreen();
-            } else if (document.msExitFullscreen) {
-                document.msExitFullscreen();
-            }
+            if (document.exitFullscreen) document.exitFullscreen();
+            else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            else if (document.msExitFullscreen) document.msExitFullscreen();
         }
 
-        // ESC key to exit fullscreen
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeFullscreen();
-        });
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeFullscreen(); });
 
-        function toggleCode() {
-            document.getElementById('code-content').classList.toggle('open');
-        }
+        function toggleCode() { document.getElementById('code-content').classList.toggle('open'); }
 
         function displayModules(modules) {
             const list = document.getElementById('modules-list');
@@ -356,6 +394,8 @@
             if (ch) ch.textContent = '✓';
             document.getElementById(`module-${i}`)?.classList.add('completed');
             updateProgressDisplay();
+            checkCertificateEligibility();
+            
             try {
                 const ref = window.doc(window.firebaseDb, "users", window.currentUser.uid);
                 const snap = await window.getDoc(ref);
@@ -375,6 +415,138 @@
             document.getElementById('progress-fill').style.width = pct + '%';
             document.getElementById('progress-percent').textContent = pct;
         }
+
+        // Certificate functions
+        function checkCertificateEligibility() {
+            const mods = window.currentCourse?.modules || [];
+            const pct = Math.round((window.completedModules.length / Math.max(mods.length, 1)) * 100);
+            
+            if (pct >= 100 || (mods.length === 0 && window.completedModules.length > 0)) {
+                document.getElementById('certificate-section').classList.add('show');
+            }
+        }
+
+        function openCertificateModal() {
+            document.getElementById('certificate-modal').classList.add('show');
+        }
+
+        function closeCertificateModal() {
+            document.getElementById('certificate-modal').classList.remove('show');
+        }
+
+        function generateCertificate() {
+            const name = document.getElementById('cert-name').value.trim();
+            const email = document.getElementById('cert-email').value.trim();
+            
+            if (!name) { alert('Veuillez entrer votre nom'); return; }
+            if (!email) { alert('Veuillez entrer votre email'); return; }
+            
+            const courseName = window.currentCourse?.title || 'Formation';
+            const instructorName = window.currentCourse?.instructorName || 'LearningHub';
+            const date = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+            
+            // Generate PDF with jsPDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+            
+            // Background
+            doc.setFillColor(255, 253, 245);
+            doc.rect(0, 0, 297, 210, 'F');
+            
+            // Border
+            doc.setDrawColor(212, 175, 55);
+            doc.setLineWidth(3);
+            doc.rect(10, 10, 277, 190);
+            doc.setLineWidth(1);
+            doc.rect(15, 15, 267, 180);
+            
+            // Header decoration
+            doc.setFillColor(212, 175, 55);
+            doc.rect(20, 20, 257, 2, 'F');
+            
+            // Title
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(36);
+            doc.setTextColor(139, 111, 71);
+            doc.text('CERTIFICAT', 148.5, 50, { align: 'center' });
+            
+            doc.setFontSize(18);
+            doc.setTextColor(107, 159, 127);
+            doc.text('DE RÉUSSITE', 148.5, 62, { align: 'center' });
+            
+            // Decorative line
+            doc.setDrawColor(212, 175, 55);
+            doc.setLineWidth(0.5);
+            doc.line(80, 70, 217, 70);
+            
+            // Certificate text
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(14);
+            doc.setTextColor(80, 80, 80);
+            doc.text('Ce certificat est décerné à', 148.5, 85, { align: 'center' });
+            
+            // Name
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(28);
+            doc.setTextColor(139, 111, 71);
+            doc.text(name, 148.5, 105, { align: 'center' });
+            
+            // Course completion text
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(14);
+            doc.setTextColor(80, 80, 80);
+            doc.text('pour avoir complété avec succès la formation', 148.5, 120, { align: 'center' });
+            
+            // Course name
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(20);
+            doc.setTextColor(107, 159, 127);
+            doc.text(courseName, 148.5, 135, { align: 'center' });
+            
+            // Date
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(12);
+            doc.setTextColor(100, 100, 100);
+            doc.text('Délivré le ' + date, 148.5, 155, { align: 'center' });
+            
+            // Signatures
+            doc.setDrawColor(139, 111, 71);
+            doc.line(50, 175, 120, 175);
+            doc.line(177, 175, 247, 175);
+            
+            doc.setFontSize(10);
+            doc.setTextColor(80, 80, 80);
+            doc.text(instructorName, 85, 182, { align: 'center' });
+            doc.text('Formateur', 85, 188, { align: 'center' });
+            
+            doc.text('LearningHub', 212, 182, { align: 'center' });
+            doc.text('Plateforme de formation', 212, 188, { align: 'center' });
+            
+            // Footer decoration
+            doc.setFillColor(212, 175, 55);
+            doc.rect(20, 188, 257, 2, 'F');
+            
+            // Save PDF
+            const fileName = `Certificat_${courseName.replace(/[^a-zA-Z0-9]/g, '_')}_${name.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+            doc.save(fileName);
+            
+            // Close modal
+            closeCertificateModal();
+            
+            // Open email
+            setTimeout(() => {
+                const subject = encodeURIComponent(`Mon certificat - ${courseName}`);
+                const body = encodeURIComponent(`Bonjour,\n\nVeuillez trouver ci-joint mon certificat de réussite pour la formation "${courseName}".\n\nCordialement,\n${name}`);
+                window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
+                
+                alert('✅ Certificat téléchargé !\n\nUne fenêtre email s\'est ouverte. Joignez le PDF téléchargé et envoyez-le !');
+            }, 500);
+        }
+
+        // Close modal on click outside
+        document.getElementById('certificate-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeCertificateModal();
+        });
 
         async function handleLogout() { await window.signOut(window.firebaseAuth); window.location.href = 'index.html'; }
     </script>
