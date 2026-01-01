@@ -71,6 +71,10 @@
         .module-item:hover { background: var(--beige); border-color: var(--brown); }
         .module-item.completed { border-left: 4px solid var(--green); background: #f0f9f4; }
         .module-item.viewed { background: #fffbf0; border-color: var(--brown); }
+        .module-item.locked { opacity: 0.6; cursor: not-allowed; background: #f0f0f0; }
+        .module-item.locked:hover { background: #f0f0f0; border-color: var(--beige); }
+        .module-item.locked .module-check { background: #ddd; color: #888; }
+        .locked-badge { font-size: 0.75rem; color: #888; background: #e0e0e0; padding: 3px 8px; border-radius: 10px; }
         .module-check { width: 28px; height: 28px; border: 2px solid var(--beige); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; background: white; font-weight: 600; }
         .module-item.completed .module-check { background: var(--green); color: white; border: none; }
         .module-title { flex: 1; font-size: 1rem; font-weight: 500; color: var(--dark-brown); }
@@ -495,28 +499,45 @@
                 return; 
             }
             list.innerHTML = '<div class="modules-list-title">📚 Modules du cours <span style="font-weight:normal;color:#888;">(' + modules.length + ')</span></div>' + 
-                modules.map((m, i) => `<div class="module-item" onclick="selectModule(${i})" id="module-${i}"><div class="module-check" id="check-${i}">${i+1}</div><div class="module-title">${m.title}</div></div>`).join('');
+                modules.map((m, i) => {
+                    const isUnlocked = i === 0 || window.viewedModules.includes(i - 1);
+                    const isViewed = window.viewedModules.includes(i);
+                    const isCompleted = window.completedModules.includes(i);
+                    return `<div class="module-item ${isCompleted ? 'completed' : ''} ${isViewed ? 'viewed' : ''} ${!isUnlocked ? 'locked' : ''}" onclick="selectModule(${i})" id="module-${i}">
+                        <div class="module-check" id="check-${i}">${isCompleted ? '✓' : (!isUnlocked ? '🔒' : i+1)}</div>
+                        <div class="module-title">${m.title}</div>
+                        ${!isUnlocked ? '<span class="locked-badge">Terminez le module précédent</span>' : ''}
+                    </div>`;
+                }).join('');
             updateCompleteButton();
         }
 
         function updateModulesDisplay() {
+            const mods = window.currentCourse?.modules || [];
             window.completedModules.forEach(i => {
-                const el = document.getElementById(`module-${i}`);
-                const ch = document.getElementById(`check-${i}`);
-                if (el) el.classList.add('completed');
-                if (ch) ch.textContent = '✓';
-                // Also mark as viewed
                 if (!window.viewedModules.includes(i)) window.viewedModules.push(i);
             });
-            updateCompleteButton();
+            // Re-render modules to update locked states
+            displayModules(mods);
         }
 
         function selectModule(i) { 
+            const mods = window.currentCourse?.modules || [];
+            
+            // Check if module is unlocked (first module or previous module viewed)
+            const isUnlocked = i === 0 || window.viewedModules.includes(i - 1);
+            
+            if (!isUnlocked) {
+                alert('🔒 Vous devez d\'abord terminer le module précédent.');
+                return;
+            }
+            
             window.currentModuleIndex = i;
             // Mark as viewed
             if (!window.viewedModules.includes(i)) {
                 window.viewedModules.push(i);
-                document.getElementById(`module-${i}`)?.classList.add('viewed');
+                // Re-render to update locked states of next modules
+                displayModules(mods);
             }
             updateCompleteButton();
         }
