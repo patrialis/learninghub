@@ -103,7 +103,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>🎓 LearningHub</h1>
+        <h1>🎓 Learning<span style="color: var(--green);">Hub</span></h1>
         <div class="user-info">
             <div class="user-avatar" id="user-avatar">?</div>
             <div>
@@ -117,7 +117,7 @@
     <div class="container">
         <!-- Welcome -->
         <div class="welcome-section">
-            <h2>👋 Bienvenue, <span id="welcome-name"></span> !</h2>
+            <h2>👋 Bienvenue<span id="welcome-name"></span> !</h2>
             <p>Continuez votre apprentissage et atteignez vos objectifs.</p>
         </div>
 
@@ -203,7 +203,7 @@
                 document.getElementById('user-name').textContent = user.displayName || 'Utilisateur';
                 document.getElementById('user-email').textContent = user.email;
                 document.getElementById('user-avatar').textContent = (user.displayName || user.email || '?').charAt(0).toUpperCase();
-                document.getElementById('welcome-name').textContent = user.displayName || '';
+                document.getElementById('welcome-name').textContent = user.displayName ? ', ' + user.displayName : '';
                 
                 // Load user data and assigned courses
                 await loadUserData(user.uid);
