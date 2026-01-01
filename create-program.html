@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programmes - LearningHub</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --brown: #8B6F47; --dark-brown: #6B5A3B; --beige: #E8DCC4; --light-gray: #F5F5F0; --green: #6B9F7F; --dark-green: #5A8A6E; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--light-gray); min-height: 100vh; padding: 20px; }
+        
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header h1 { color: var(--dark-brown); display: flex; align-items: center; gap: 10px; }
+        .back-btn { background: var(--beige); border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; color: var(--dark-brown); font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+        .back-btn:hover { background: #d9cab3; }
+        
+        .tabs { display: flex; gap: 10px; margin-bottom: 25px; }
+        .tab { padding: 12px 25px; background: white; border: 2px solid var(--beige); border-radius: 10px; cursor: pointer; font-weight: 500; transition: all 0.3s; }
+        .tab.active { background: var(--green); color: white; border-color: var(--green); }
+        .tab:hover:not(.active) { background: var(--beige); }
+        
+        .section { display: none; }
+        .section.active { display: block; }
+        
+        /* Programs List */
+        .programs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
+        .program-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); transition: all 0.3s; }
+        .program-card:hover { transform: translateY(-5px); box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .program-header { background: linear-gradient(135deg, var(--brown), var(--dark-brown)); color: white; padding: 25px; }
+        .program-header h3 { margin-bottom: 5px; }
+        .program-header p { opacity: 0.9; font-size: 0.9rem; }
+        .program-body { padding: 20px; }
+        .program-stats { display: flex; gap: 20px; margin-bottom: 15px; }
+        .program-stat { text-align: center; }
+        .program-stat .number { font-size: 1.5rem; font-weight: 700; color: var(--dark-brown); }
+        .program-stat .label { font-size: 0.8rem; color: #888; }
+        .program-courses { margin-bottom: 15px; }
+        .program-courses h4 { font-size: 0.85rem; color: #888; margin-bottom: 8px; }
+        .course-tag { display: inline-block; background: var(--light-gray); padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; margin: 2px; }
+        .program-actions { display: flex; gap: 10px; }
+        .program-actions button { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.3s; }
+        .btn-edit { background: var(--beige); color: var(--dark-brown); }
+        .btn-edit:hover { background: #d9cab3; }
+        .btn-delete { background: #f8d7da; color: #721c24; }
+        .btn-delete:hover { background: #f1b0b7; }
+        .btn-view { background: var(--green); color: white; }
+        .btn-view:hover { background: var(--dark-green); }
+        
+        /* Create Form */
+        .form-card { background: white; border-radius: 15px; padding: 30px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .form-card h2 { color: var(--dark-brown); margin-bottom: 20px; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: var(--dark-brown); font-weight: 500; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 15px; border: 2px solid var(--beige); border-radius: 10px; font-size: 1rem; transition: all 0.3s; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--green); }
+        .form-group textarea { min-height: 100px; resize: vertical; }
+        .form-group small { color: #888; font-size: 0.85rem; margin-top: 5px; display: block; }
+        
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        
+        .btn { padding: 12px 25px; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s; font-size: 1rem; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary { background: var(--green); color: white; }
+        .btn-primary:hover { background: var(--dark-green); }
+        .btn-secondary { background: var(--beige); color: var(--dark-brown); }
+        .btn-secondary:hover { background: #d9cab3; }
+        
+        /* Course Selection */
+        .course-selection { border: 2px solid var(--beige); border-radius: 10px; padding: 15px; max-height: 300px; overflow-y: auto; }
+        .course-option { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--light-gray); border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: all 0.3s; }
+        .course-option:hover { background: var(--beige); }
+        .course-option.selected { background: var(--green); color: white; }
+        .course-option input { display: none; }
+        .course-checkbox { width: 22px; height: 22px; border: 2px solid var(--beige); border-radius: 5px; display: flex; align-items: center; justify-content: center; background: white; flex-shrink: 0; }
+        .course-option.selected .course-checkbox { background: white; color: var(--green); border-color: white; }
+        .course-info { flex: 1; }
+        .course-info h4 { font-size: 0.95rem; margin-bottom: 3px; }
+        .course-info p { font-size: 0.8rem; opacity: 0.8; }
+        
+        /* Selected Courses Order */
+        .selected-courses { margin-top: 20px; }
+        .selected-courses h3 { font-size: 1rem; color: var(--dark-brown); margin-bottom: 15px; }
+        .sortable-list { min-height: 50px; }
+        .sortable-item { display: flex; align-items: center; gap: 12px; padding: 15px; background: var(--light-gray); border-radius: 10px; margin-bottom: 10px; cursor: grab; }
+        .sortable-item:active { cursor: grabbing; }
+        .drag-handle { color: #888; font-size: 1.2rem; }
+        .sortable-item .order-number { width: 30px; height: 30px; background: var(--green); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+        .sortable-item .course-name { flex: 1; font-weight: 500; }
+        .sortable-item .remove-btn { background: none; border: none; color: #dc3545; cursor: pointer; font-size: 1.2rem; }
+        
+        .empty-state { text-align: center; padding: 40px; color: #888; }
+        .empty-state p { margin-bottom: 20px; }
+        
+        .actions { display: flex; gap: 15px; justify-content: flex-end; margin-top: 30px; }
+        
+        .message { padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; display: none; }
+        .message.success { background: #d4edda; color: #155724; display: block; }
+        .message.error { background: #f8d7da; color: #721c24; display: block; }
+        
+        .loading { text-align: center; padding: 40px; }
+        .spinner { width: 40px; height: 40px; border: 4px solid var(--beige); border-top: 4px solid var(--green); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .status { padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 500; }
+        .status-published { background: #d4edda; color: #155724; }
+        .status-draft { background: #fff3cd; color: #856404; }
+        
+        @media (max-width: 600px) {
+            .form-row { grid-template-columns: 1fr; }
+            .programs-grid { grid-template-columns: 1fr; }
+            .tabs { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 Programmes de Formation</h1>
+            <a href="instructor-dashboard.html" class="back-btn">← Retour au Dashboard</a>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('list')">📋 Mes Programmes</button>
+            <button class="tab" onclick="showTab('create')">➕ Créer un Programme</button>
+        </div>
+
+        <div id="message" class="message"></div>
+
+        <!-- Programs List -->
+        <div id="list-section" class="section active">
+            <div id="programs-container">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Chargement des programmes...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create Program -->
+        <div id="create-section" class="section">
+            <div class="form-card">
+                <h2>📋 Informations du programme</h2>
+                <div class="form-group">
+                    <label for="program-title">Titre du programme *</label>
+                    <input type="text" id="program-title" placeholder="Ex: Parcours Développeur Web Full Stack">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="program-category">Catégorie</label>
+                        <select id="program-category">
+                            <option value="">Sélectionner...</option>
+                            <option value="developpement">💻 Développement</option>
+                            <option value="design">🎨 Design</option>
+                            <option value="business">📊 Business</option>
+                            <option value="marketing">📈 Marketing</option>
+                            <option value="compliance">⚖️ Compliance</option>
+                            <option value="finance">💰 Finance</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="program-price">Prix du programme (€)</label>
+                        <input type="number" id="program-price" placeholder="0 = Gratuit" min="0">
+                        <small>Laissez vide ou 0 pour un programme gratuit</small>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="program-duration">Durée estimée</label>
+                        <input type="text" id="program-duration" placeholder="Ex: 3 mois">
+                    </div>
+                    <div class="form-group">
+                        <label for="program-level">Niveau</label>
+                        <select id="program-level">
+                            <option value="debutant">Débutant</option>
+                            <option value="intermediaire">Intermédiaire</option>
+                            <option value="avance">Avancé</option>
+                            <option value="tous">Tous niveaux</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="program-description">Description</label>
+                    <textarea id="program-description" placeholder="Décrivez ce programme et ce que les étudiants vont apprendre..."></textarea>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <h2>📚 Sélectionner les cours</h2>
+                <p style="color: #888; margin-bottom: 15px;">Cochez les cours à inclure dans ce programme</p>
+                <div class="course-selection" id="course-selection">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Chargement des cours...</p>
+                    </div>
+                </div>
+                
+                <div class="selected-courses" id="selected-courses-section" style="display: none;">
+                    <h3>📖 Ordre des cours (glissez pour réorganiser)</h3>
+                    <div class="sortable-list" id="sortable-list"></div>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button class="btn btn-secondary" onclick="saveProgramDraft()">💾 Enregistrer en brouillon</button>
+                <button class="btn btn-primary" onclick="publishProgram()">🚀 Publier le programme</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+        import { getFirestore, collection, query, getDocs, doc, addDoc, updateDoc, deleteDoc, orderBy } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAVO1P9v-IBsyxF_80vQvZDlR5tIqh878U",
+            authDomain: "learncentric.firebaseapp.com",
+            projectId: "learncentric",
+            storageBucket: "learncentric.firebasestorage.app",
+            messagingSenderId: "1083770541694",
+            appId: "1:1083770541694:web:b8dbcd7852ca7d9c8fea2f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        window.firebaseDb = db;
+        window.collection = collection;
+        window.query = query;
+        window.getDocs = getDocs;
+        window.doc = doc;
+        window.addDoc = addDoc;
+        window.updateDoc = updateDoc;
+        window.deleteDoc = deleteDoc;
+        window.orderBy = orderBy;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                window.currentUser = user;
+                await loadCourses();
+                await loadPrograms();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        async function loadCourses() {
+            try {
+                const coursesQuery = query(collection(db, "courses"));
+                const snapshot = await getDocs(coursesQuery);
+                
+                window.allCourses = [];
+                snapshot.forEach(doc => {
+                    window.allCourses.push({ id: doc.id, ...doc.data() });
+                });
+                
+                displayCourseOptions();
+            } catch (error) {
+                console.error('Erreur chargement cours:', error);
+            }
+        }
+
+        async function loadPrograms() {
+            try {
+                const programsQuery = query(collection(db, "programs"));
+                const snapshot = await getDocs(programsQuery);
+                
+                window.allPrograms = [];
+                snapshot.forEach(doc => {
+                    window.allPrograms.push({ id: doc.id, ...doc.data() });
+                });
+                
+                displayPrograms();
+            } catch (error) {
+                console.error('Erreur chargement programmes:', error);
+                document.getElementById('programs-container').innerHTML = '<div class="empty-state"><p>Erreur lors du chargement</p></div>';
+            }
+        }
+
+        window.loadCourses = loadCourses;
+        window.loadPrograms = loadPrograms;
+    </script>
+
+    <script>
+        window.selectedCourses = [];
+
+        function showTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            
+            event.currentTarget.classList.add('active');
+            document.getElementById(tab + '-section').classList.add('active');
+            
+            if (tab === 'create') {
+                resetForm();
+            }
+        }
+
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = 'message ' + type;
+            window.scrollTo(0, 0);
+            setTimeout(() => { msg.className = 'message'; }, 5000);
+        }
+
+        function displayCourseOptions() {
+            const container = document.getElementById('course-selection');
+            const courses = window.allCourses || [];
+            
+            if (courses.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>Aucun cours disponible. Créez d\'abord des cours.</p></div>';
+                return;
+            }
+            
+            container.innerHTML = courses.map(course => `
+                <label class="course-option" onclick="toggleCourse('${course.id}', '${(course.title || '').replace(/'/g, "\\'")}')">
+                    <div class="course-checkbox" id="checkbox-${course.id}"></div>
+                    <div class="course-info">
+                        <h4>${course.title || 'Sans titre'}</h4>
+                        <p>${course.category || 'Non catégorisé'} • ${course.duration || 'Durée non définie'}</p>
+                    </div>
+                </label>
+            `).join('');
+        }
+
+        function toggleCourse(courseId, courseTitle) {
+            const option = document.querySelector(`[onclick*="${courseId}"]`);
+            const checkbox = document.getElementById('checkbox-' + courseId);
+            
+            const index = window.selectedCourses.findIndex(c => c.id === courseId);
+            
+            if (index > -1) {
+                window.selectedCourses.splice(index, 1);
+                option.classList.remove('selected');
+                checkbox.textContent = '';
+            } else {
+                window.selectedCourses.push({ id: courseId, title: courseTitle });
+                option.classList.add('selected');
+                checkbox.textContent = '✓';
+            }
+            
+            updateSelectedCoursesList();
+        }
+
+        function updateSelectedCoursesList() {
+            const section = document.getElementById('selected-courses-section');
+            const list = document.getElementById('sortable-list');
+            
+            if (window.selectedCourses.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+            
+            section.style.display = 'block';
+            list.innerHTML = window.selectedCourses.map((course, index) => `
+                <div class="sortable-item" draggable="true" data-id="${course.id}">
+                    <span class="drag-handle">☰</span>
+                    <span class="order-number">${index + 1}</span>
+                    <span class="course-name">${course.title}</span>
+                    <button class="remove-btn" onclick="removeCourse('${course.id}')">&times;</button>
+                </div>
+            `).join('');
+            
+            // Add drag and drop
+            initDragAndDrop();
+        }
+
+        function removeCourse(courseId) {
+            const index = window.selectedCourses.findIndex(c => c.id === courseId);
+            if (index > -1) {
+                window.selectedCourses.splice(index, 1);
+                
+                const option = document.querySelector(`[onclick*="${courseId}"]`);
+                const checkbox = document.getElementById('checkbox-' + courseId);
+                if (option) option.classList.remove('selected');
+                if (checkbox) checkbox.textContent = '';
+                
+                updateSelectedCoursesList();
+            }
+        }
+
+        function initDragAndDrop() {
+            const list = document.getElementById('sortable-list');
+            const items = list.querySelectorAll('.sortable-item');
+            
+            items.forEach(item => {
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragover', handleDragOver);
+                item.addEventListener('drop', handleDrop);
+                item.addEventListener('dragend', handleDragEnd);
+            });
+        }
+
+        let draggedItem = null;
+
+        function handleDragStart(e) {
+            draggedItem = this;
+            this.style.opacity = '0.5';
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            if (this !== draggedItem) {
+                const list = document.getElementById('sortable-list');
+                const items = [...list.querySelectorAll('.sortable-item')];
+                const draggedIndex = items.indexOf(draggedItem);
+                const targetIndex = items.indexOf(this);
+                
+                // Reorder selectedCourses array
+                const [removed] = window.selectedCourses.splice(draggedIndex, 1);
+                window.selectedCourses.splice(targetIndex, 0, removed);
+                
+                updateSelectedCoursesList();
+            }
+        }
+
+        function handleDragEnd() {
+            this.style.opacity = '1';
+        }
+
+        function displayPrograms() {
+            const container = document.getElementById('programs-container');
+            const programs = window.allPrograms || [];
+            
+            if (programs.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <p>Aucun programme créé</p>
+                        <button class="btn btn-primary" onclick="showTab('create')">➕ Créer mon premier programme</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="programs-grid">
+                    ${programs.map(program => {
+                        const courseCount = program.courses?.length || 0;
+                        const courseNames = (program.courses || []).map(c => c.title).slice(0, 3);
+                        
+                        return `
+                            <div class="program-card">
+                                <div class="program-header">
+                                    <span class="status ${program.status === 'published' ? 'status-published' : 'status-draft'}">${program.status === 'published' ? 'Publié' : 'Brouillon'}</span>
+                                    <h3>${program.title || 'Sans titre'}</h3>
+                                    <p>${program.category || 'Non catégorisé'}</p>
+                                </div>
+                                <div class="program-body">
+                                    <div class="program-stats">
+                                        <div class="program-stat">
+                                            <div class="number">${courseCount}</div>
+                                            <div class="label">Cours</div>
+                                        </div>
+                                        <div class="program-stat">
+                                            <div class="number">${program.duration || '-'}</div>
+                                            <div class="label">Durée</div>
+                                        </div>
+                                        <div class="program-stat">
+                                            <div class="number">${program.price ? program.price + '€' : 'Gratuit'}</div>
+                                            <div class="label">Prix</div>
+                                        </div>
+                                    </div>
+                                    <div class="program-courses">
+                                        <h4>Cours inclus :</h4>
+                                        ${courseNames.map(name => `<span class="course-tag">${name}</span>`).join('')}
+                                        ${courseCount > 3 ? `<span class="course-tag">+${courseCount - 3} autres</span>` : ''}
+                                    </div>
+                                    <div class="program-actions">
+                                        <button class="btn-view" onclick="viewProgram('${program.id}')">👁️ Voir</button>
+                                        <button class="btn-edit" onclick="editProgram('${program.id}')">✏️ Modifier</button>
+                                        <button class="btn-delete" onclick="deleteProgram('${program.id}')">🗑️</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        function getProgramData(status) {
+            return {
+                title: document.getElementById('program-title').value.trim(),
+                category: document.getElementById('program-category').value,
+                price: parseFloat(document.getElementById('program-price').value) || 0,
+                duration: document.getElementById('program-duration').value.trim(),
+                level: document.getElementById('program-level').value,
+                description: document.getElementById('program-description').value.trim(),
+                courses: window.selectedCourses,
+                status: status,
+                instructorId: window.currentUser.uid,
+                instructorName: window.currentUser.displayName || window.currentUser.email,
+                updatedAt: new Date().toISOString()
+            };
+        }
+
+        async function saveProgramDraft() {
+            const title = document.getElementById('program-title').value.trim();
+            if (!title) { showMessage('❌ Veuillez entrer un titre', 'error'); return; }
+            
+            try {
+                const data = getProgramData('draft');
+                
+                if (window.editingProgramId) {
+                    await window.updateDoc(window.doc(window.firebaseDb, "programs", window.editingProgramId), data);
+                } else {
+                    data.createdAt = new Date().toISOString();
+                    const docRef = await window.addDoc(window.collection(window.firebaseDb, "programs"), data);
+                    window.editingProgramId = docRef.id;
+                }
+                
+                showMessage('✅ Brouillon enregistré !', 'success');
+                await window.loadPrograms();
+            } catch (error) {
+                console.error('Erreur:', error);
+                showMessage('❌ Erreur lors de l\'enregistrement', 'error');
+            }
+        }
+
+        async function publishProgram() {
+            const title = document.getElementById('program-title').value.trim();
+            if (!title) { showMessage('❌ Veuillez entrer un titre', 'error'); return; }
+            if (window.selectedCourses.length === 0) { showMessage('❌ Sélectionnez au moins un cours', 'error'); return; }
+            
+            try {
+                const data = getProgramData('published');
+                
+                if (window.editingProgramId) {
+                    await window.updateDoc(window.doc(window.firebaseDb, "programs", window.editingProgramId), data);
+                } else {
+                    data.createdAt = new Date().toISOString();
+                    await window.addDoc(window.collection(window.firebaseDb, "programs"), data);
+                }
+                
+                showMessage('✅ Programme publié !', 'success');
+                resetForm();
+                showTab('list');
+                document.querySelector('.tab').click();
+                await window.loadPrograms();
+            } catch (error) {
+                console.error('Erreur:', error);
+                showMessage('❌ Erreur lors de la publication', 'error');
+            }
+        }
+
+        function editProgram(programId) {
+            const program = window.allPrograms.find(p => p.id === programId);
+            if (!program) return;
+            
+            window.editingProgramId = programId;
+            
+            document.getElementById('program-title').value = program.title || '';
+            document.getElementById('program-category').value = program.category || '';
+            document.getElementById('program-price').value = program.price || '';
+            document.getElementById('program-duration').value = program.duration || '';
+            document.getElementById('program-level').value = program.level || 'debutant';
+            document.getElementById('program-description').value = program.description || '';
+            
+            // Restore selected courses
+            window.selectedCourses = program.courses || [];
+            
+            // Update UI
+            document.querySelectorAll('.course-option').forEach(opt => {
+                const courseId = opt.getAttribute('onclick').match(/'([^']+)'/)[1];
+                const checkbox = document.getElementById('checkbox-' + courseId);
+                
+                if (window.selectedCourses.find(c => c.id === courseId)) {
+                    opt.classList.add('selected');
+                    if (checkbox) checkbox.textContent = '✓';
+                } else {
+                    opt.classList.remove('selected');
+                    if (checkbox) checkbox.textContent = '';
+                }
+            });
+            
+            updateSelectedCoursesList();
+            
+            // Switch to create tab
+            document.querySelectorAll('.tab')[1].click();
+        }
+
+        async function deleteProgram(programId) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer ce programme ?')) return;
+            
+            try {
+                await window.deleteDoc(window.doc(window.firebaseDb, "programs", programId));
+                showMessage('✅ Programme supprimé', 'success');
+                await window.loadPrograms();
+            } catch (error) {
+                console.error('Erreur:', error);
+                showMessage('❌ Erreur lors de la suppression', 'error');
+            }
+        }
+
+        function viewProgram(programId) {
+            // TODO: Create view-program.html page
+            alert('Page de visualisation du programme à venir !');
+        }
+
+        function resetForm() {
+            window.editingProgramId = null;
+            window.selectedCourses = [];
+            
+            document.getElementById('program-title').value = '';
+            document.getElementById('program-category').value = '';
+            document.getElementById('program-price').value = '';
+            document.getElementById('program-duration').value = '';
+            document.getElementById('program-level').value = 'debutant';
+            document.getElementById('program-description').value = '';
+            
+            document.querySelectorAll('.course-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            document.querySelectorAll('[id^="checkbox-"]').forEach(cb => {
+                cb.textContent = '';
+            });
+            
+            document.getElementById('selected-courses-section').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
