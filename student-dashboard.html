@@ -117,7 +117,7 @@
     <div class="container">
         <!-- Welcome -->
         <div class="welcome-section">
-            <h2>👋 Bienvenue, <span id="welcome-name">Apprenant</span> !</h2>
+            <h2>👋 Bienvenue, <span id="welcome-name"></span> !</h2>
             <p>Continuez votre apprentissage et atteignez vos objectifs.</p>
         </div>
 
@@ -203,7 +203,7 @@
                 document.getElementById('user-name').textContent = user.displayName || 'Utilisateur';
                 document.getElementById('user-email').textContent = user.email;
                 document.getElementById('user-avatar').textContent = (user.displayName || user.email || '?').charAt(0).toUpperCase();
-                document.getElementById('welcome-name').textContent = user.displayName || 'Apprenant';
+                document.getElementById('welcome-name').textContent = user.displayName || '';
                 
                 // Load user data and assigned courses
                 await loadUserData(user.uid);
