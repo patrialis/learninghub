@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LearningHub - Démo Complète</title>
+    <title>Connexion - LearningHub</title>
     <style>
         * {
             margin: 0;
@@ -13,320 +13,738 @@
 
         :root {
             --brown: #8B6F47;
+            --dark-brown: #6B5A3B;
             --beige: #E8DCC4;
             --light-gray: #F5F5F0;
             --green: #6B9F7F;
-            --dark-brown: #5D4E37;
+            --dark-green: #5A8A6E;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, var(--beige) 0%, var(--light-gray) 100%);
+            background: linear-gradient(135deg, var(--light-gray) 0%, var(--beige) 100%);
             min-height: 100vh;
-            padding: 40px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
 
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(139, 111, 71, 0.2);
+            overflow: hidden;
+            width: 100%;
+            max-width: 450px;
         }
 
-        .header {
+        .login-header {
+            background: var(--brown);
+            color: white;
+            padding: 40px;
             text-align: center;
-            margin-bottom: 50px;
         }
 
-        .logo {
-            font-size: 4rem;
-            margin-bottom: 15px;
+        .login-header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
         }
 
-        .logo-text {
-            font-size: 3rem;
-            font-weight: bold;
-            color: var(--dark-brown);
-        }
-
-        .logo-text span {
+        .login-header h1 span {
             color: var(--green);
         }
 
-        .subtitle {
-            color: #666;
-            font-size: 1.2rem;
-            margin-top: 10px;
+        .login-header p {
+            opacity: 0.9;
+            font-size: 0.95rem;
         }
 
-        .demo-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
-            margin-bottom: 50px;
-        }
-
-        .demo-card {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-            transition: all 0.3s;
-            cursor: pointer;
-            border: 3px solid transparent;
-        }
-
-        .demo-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            border-color: var(--green);
-        }
-
-        .demo-icon {
-            font-size: 3rem;
-            margin-bottom: 20px;
-        }
-
-        .demo-card h3 {
-            color: var(--dark-brown);
-            margin-bottom: 10px;
-            font-size: 1.4rem;
-        }
-
-        .demo-card p {
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 12px 25px;
-            background: var(--green);
-            color: white;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn:hover {
-            background: #5A8669;
-            transform: translateY(-2px);
-        }
-
-        .instructions {
-            background: white;
+        .login-body {
             padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .tabs {
+            display: flex;
             margin-bottom: 30px;
+            border-bottom: 2px solid var(--beige);
         }
 
-        .instructions h2 {
-            color: var(--dark-brown);
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 1rem;
+            color: var(--brown);
+            opacity: 0.6;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            opacity: 1;
+            border-bottom: 3px solid var(--green);
+            margin-bottom: -2px;
+            font-weight: 600;
+        }
+
+        .tab:hover {
+            opacity: 1;
+        }
+
+        .form-section {
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+        }
+
+        .form-group {
             margin-bottom: 20px;
-            font-size: 1.8rem;
         }
 
-        .instructions ol {
-            margin-left: 20px;
-            line-height: 2;
-        }
-
-        .instructions li {
-            margin-bottom: 15px;
-            color: #333;
-        }
-
-        .alert {
-            background: #fff3cd;
-            border-left: 4px solid #856404;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 30px 0;
-        }
-
-        .alert strong {
-            color: #856404;
-            font-size: 1.1rem;
-        }
-
-        .alert p {
-            color: #856404;
-            margin-top: 10px;
-            line-height: 1.6;
-        }
-
-        code {
-            background: #f4f4f4;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-family: monospace;
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
             color: var(--dark-brown);
+            font-weight: 500;
         }
 
-        .feature-list {
-            background: var(--light-gray);
-            padding: 25px;
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--beige);
             border-radius: 10px;
-            margin: 20px 0;
+            font-size: 1rem;
+            transition: all 0.3s;
         }
 
-        .feature-list h4 {
-            color: var(--dark-brown);
-            margin-bottom: 15px;
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--green);
+            box-shadow: 0 0 0 3px rgba(107, 159, 127, 0.1);
         }
 
-        .feature-list ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .feature-list li {
-            padding: 8px 0;
-            padding-left: 30px;
+        .password-field {
             position: relative;
         }
 
-        .feature-list li:before {
-            content: "✅";
-            position: absolute;
-            left: 0;
+        .password-field input {
+            padding-right: 50px;
         }
 
-        @media (max-width: 768px) {
-            .demo-grid {
-                grid-template-columns: 1fr;
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            opacity: 0.6;
+        }
+
+        .password-toggle:hover {
+            opacity: 1;
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            font-size: 0.9rem;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .remember-me input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--green);
+        }
+
+        .forgot-password {
+            color: var(--green);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .forgot-password:hover {
+            text-decoration: underline;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: var(--green);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--dark-green);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(107, 159, 127, 0.4);
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 25px 0;
+            color: #999;
+            font-size: 0.85rem;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--beige);
+        }
+
+        .divider span {
+            padding: 0 15px;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--beige);
+            border-top: 4px solid var(--green);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Reset Password Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .modal-content h2 {
+            color: var(--dark-brown);
+            margin-bottom: 15px;
+        }
+
+        .modal-content p {
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .modal-buttons .btn {
+            flex: 1;
+        }
+
+        .btn-secondary {
+            background: var(--beige);
+            color: var(--dark-brown);
+        }
+
+        .btn-secondary:hover {
+            background: #d9cab3;
+        }
+
+        .footer-text {
+            text-align: center;
+            margin-top: 25px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .footer-text a {
+            color: var(--green);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer-text a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 480px) {
+            .login-header {
+                padding: 30px 20px;
+            }
+
+            .login-body {
+                padding: 30px 20px;
+            }
+
+            .login-header h1 {
+                font-size: 1.6rem;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="logo">🎓</div>
-            <div class="logo-text">Learning<span>Hub</span></div>
-            <p class="subtitle">Plateforme e-learning complète - Version Démo</p>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>🎓 Learning<span>Hub</span></h1>
+            <p>Votre plateforme e-learning professionnelle</p>
         </div>
 
-        <div class="alert">
-            <strong>👋 Bienvenue dans la démo LearningHub !</strong>
-            <p>
-                Cette page vous permet de découvrir toutes les fonctionnalités de votre plateforme.
-                Cliquez sur les cartes ci-dessous pour tester chaque module.
-            </p>
-        </div>
-
-        <div class="instructions">
-            <h2>📋 Comment tester votre plateforme :</h2>
-            <ol>
-                <li><strong>Option 1 - Test rapide ici :</strong> Cliquez sur les cartes ci-dessous pour voir les démos</li>
-                <li><strong>Option 2 - Installation complète :</strong>
-                    <ul style="margin-top: 10px; margin-left: 20px;">
-                        <li>Copiez chaque code d'artifact</li>
-                        <li>Créez un fichier <code>.html</code> pour chaque page</li>
-                        <li>Ouvrez avec VS Code + Live Server</li>
-                    </ul>
-                </li>
-                <li><strong>Comptes de test :</strong> Email: <code>admin@learninghub.com</code> / Mot de passe: <code>admin123</code></li>
-            </ol>
-        </div>
-
-        <h2 style="text-align: center; color: var(--dark-brown); margin-bottom: 30px; font-size: 2rem;">
-            🎯 Modules disponibles
-        </h2>
-
-        <div class="demo-grid">
-            <div class="demo-card" onclick="alert('🔐 CONNEXION\n\nFonctionnalités:\n✅ Connexion email/mot de passe\n✅ Inscription nouveau compte\n✅ Récupération mot de passe oublié\n✅ Se souvenir de moi\n\nComptes de test:\n👤 admin@learninghub.com / admin123\n👤 marie@email.com / formateur123\n👤 jean@email.com / etudiant123')">
-                <div class="demo-icon">🔐</div>
-                <h3>Système de Connexion</h3>
-                <p>Connexion sécurisée avec gestion des mots de passe oubliés</p>
-                <button class="btn">Voir les détails</button>
+        <div class="login-body">
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('login')">Connexion</button>
+                <button class="tab" onclick="showTab('register')">Inscription</button>
             </div>
 
-            <div class="demo-card" onclick="alert('📊 DASHBOARD FORMATEUR\n\nFonctionnalités:\n✅ Statistiques en temps réel\n✅ Gestion des cours\n✅ Suivi des étudiants\n✅ Messagerie intégrée\n✅ Calendrier\n✅ Analytics et revenus\n\nNavigation complète entre toutes les sections!')">
-                <div class="demo-icon">📊</div>
-                <h3>Dashboard Formateur</h3>
-                <p>Tableau de bord complet avec stats, cours, étudiants et revenus</p>
-                <button class="btn">Voir les détails</button>
+            <div id="message" class="message"></div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Chargement...</p>
             </div>
 
-            <div class="demo-card" onclick="alert('📚 CRÉATION DE COURS\n\nFonctionnalités:\n✅ Éditeur HTML/CSS/JS intégré\n✅ Prévisualisation en direct\n✅ Upload d\'images\n✅ Gestion de modules\n✅ Ajout de vidéos\n✅ Email automatique généré\n✅ Mode édition pour modifier')">
-                <div class="demo-icon">📚</div>
-                <h3>Créer des Cours</h3>
-                <p>Éditeur complet avec HTML/CSS/JS et prévisualisation</p>
-                <button class="btn">Voir les détails</button>
+            <!-- Login Form -->
+            <div id="login-form" class="form-section active">
+                <form onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label for="login-email">Adresse email</label>
+                        <input type="email" id="login-email" placeholder="votre@email.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="login-password">Mot de passe</label>
+                        <div class="password-field">
+                            <input type="password" id="login-password" placeholder="Votre mot de passe" required>
+                            <button type="button" class="password-toggle" onclick="togglePassword('login-password')">👁️</button>
+                        </div>
+                    </div>
+
+                    <div class="form-options">
+                        <label class="remember-me">
+                            <input type="checkbox" id="remember-me">
+                            Se souvenir de moi
+                        </label>
+                        <a class="forgot-password" onclick="showResetModal()">Mot de passe oublié ?</a>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="login-btn">Se connecter</button>
+                </form>
+
+                <div class="footer-text">
+                    Pas encore de compte ? <a href="#" onclick="showTab('register')">S'inscrire</a>
+                </div>
             </div>
 
-            <div class="demo-card" onclick="alert('🎓 CRÉATION DE PROGRAMMES\n\nFonctionnalités:\n✅ Sélection multiple de cours\n✅ Date de début et d\'échéance\n✅ Prix du programme\n✅ Calcul des économies\n✅ Email automatique\n✅ Aperçu en direct\n\nUn programme peut contenir 1 ou plusieurs cours!')">
-                <div class="demo-icon">🎓</div>
-                <h3>Créer des Programmes</h3>
-                <p>Regroupez plusieurs cours en programmes complets avec dates</p>
-                <button class="btn">Voir les détails</button>
+            <!-- Register Form -->
+            <div id="register-form" class="form-section">
+                <form onsubmit="handleRegister(event)">
+                    <div class="form-group">
+                        <label for="register-name">Nom complet</label>
+                        <input type="text" id="register-name" placeholder="Jean Dupont" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-email">Adresse email</label>
+                        <input type="email" id="register-email" placeholder="votre@email.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-password">Mot de passe</label>
+                        <div class="password-field">
+                            <input type="password" id="register-password" placeholder="Minimum 6 caractères" required minlength="6">
+                            <button type="button" class="password-toggle" onclick="togglePassword('register-password')">👁️</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-confirm">Confirmer le mot de passe</label>
+                        <div class="password-field">
+                            <input type="password" id="register-confirm" placeholder="Confirmez votre mot de passe" required>
+                            <button type="button" class="password-toggle" onclick="togglePassword('register-confirm')">👁️</button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="register-btn">S'inscrire</button>
+                </form>
+
+                <div class="footer-text">
+                    Déjà un compte ? <a href="#" onclick="showTab('login')">Se connecter</a>
+                </div>
             </div>
-
-            <div class="demo-card" onclick="alert('🎨 GESTION CATÉGORIES\n\nFonctionnalités:\n✅ Créer des catégories personnalisées\n✅ Choisir un emoji (24 disponibles)\n✅ Sélectionner une couleur\n✅ Modifier/Supprimer\n✅ Voir le nombre de cours\n\nInterface intuitive et colorée!')">
-                <div class="demo-icon">🎨</div>
-                <h3>Gérer les Catégories</h3>
-                <p>Créez et personnalisez vos catégories avec emojis et couleurs</p>
-                <button class="btn">Voir les détails</button>
-            </div>
-
-            <div class="demo-card" onclick="alert('👥 GESTION UTILISATEURS\n\nFonctionnalités:\n✅ Liste complète des utilisateurs\n✅ Filtres (rôle, statut, recherche)\n✅ Ajout manuel\n✅ Import Excel en masse\n✅ Profils détaillés\n✅ Modification/Suppression\n✅ Pagination\n\nGérez facilement des centaines d\'utilisateurs!')">
-                <div class="demo-icon">👥</div>
-                <h3>Gestion des Utilisateurs</h3>
-                <p>Ajout manuel ou import Excel en masse avec filtres avancés</p>
-                <button class="btn">Voir les détails</button>
-            </div>
-
-            <div class="demo-card" onclick="alert('📧 EMAILS AUTOMATIQUES\n\nFonctionnalités:\n✅ Envoi de cours/programmes\n✅ Sélection des destinataires\n✅ Copie emails en un clic\n✅ Programmation date/heure\n✅ Rappels automatiques\n✅ Historique et stats\n\nNote: Génère le texte, vous copiez-collez dans votre email')">
-                <div class="demo-icon">📧</div>
-                <h3>Emails Automatiques</h3>
-                <p>Programmation d'envois et rappels avec copie en un clic</p>
-                <button class="btn">Voir les détails</button>
-            </div>
-
-            <div class="demo-card" onclick="alert('🎯 QUIZ & CERTIFICATION\n\nFonctionnalités:\n✅ Import Excel/JSON/Démo\n✅ Quiz interactif avec progression\n✅ Score minimum requis (70%)\n✅ Certificat PDF personnalisé\n✅ Envoi par email\n✅ Téléchargement\n\nCréez des quiz professionnels en quelques clics!')">
-                <div class="demo-icon">🎯</div>
-                <h3>Quiz & Certification</h3>
-                <p>Import Excel/JSON, quiz interactif et certificat téléchargeable</p>
-                <button class="btn">Voir les détails</button>
-            </div>
-        </div>
-
-        <div class="feature-list">
-            <h4>🚀 Récapitulatif des fonctionnalités :</h4>
-            <ul>
-                <li>Système de connexion complet (login, inscription, mot de passe oublié)</li>
-                <li>Dashboard formateur avec statistiques en temps réel</li>
-                <li>Création de cours avec éditeur HTML/CSS/JS</li>
-                <li>Création de programmes (1 ou plusieurs cours) avec dates d'échéance</li>
-                <li>Gestion des catégories personnalisées</li>
-                <li>Gestion des utilisateurs + import Excel en masse</li>
-                <li>Emails automatiques avec copie en un clic</li>
-                <li>Rappels intelligents (uniquement pour utilisateurs n'ayant pas terminé)</li>
-                <li>Quiz avec 3 méthodes d'import (Excel, JSON, Démo)</li>
-                <li>Certificats professionnels téléchargeables et envoyables</li>
-            </ul>
-        </div>
-
-        <div class="alert" style="background: #d4edda; border-color: #28a745;">
-            <strong style="color: #155724;">✅ Votre plateforme est 100% fonctionnelle !</strong>
-            <p style="color: #155724;">
-                Tous les modules sont prêts à être utilisés. Pour une utilisation en production réelle, 
-                vous aurez besoin d'un backend (serveur + base de données) pour la vraie sauvegarde 
-                et l'envoi automatique d'emails.
-            </p>
-        </div>
-
-        <div style="text-align: center; margin-top: 50px; padding: 30px; background: white; border-radius: 15px;">
-            <h3 style="color: var(--dark-brown); margin-bottom: 15px;">Besoin d'aide pour installer ?</h3>
-            <p style="color: #666; margin-bottom: 20px;">Contactez-moi pour des instructions détaillées sur l'installation complète</p>
-            <button class="btn" onclick="alert('📧 Pour installer complètement:\n\n1. Créez un dossier LearningHub\n2. Créez 8 fichiers .html\n3. Copiez le code de chaque artifact\n4. Ouvrez avec VS Code\n5. Installez Live Server\n6. Testez !\n\nBesoin d\'aide ? Demandez-moi des instructions détaillées.')">
-                📖 Instructions d'installation
-            </button>
         </div>
     </div>
+
+    <!-- Reset Password Modal -->
+    <div class="modal" id="reset-modal">
+        <div class="modal-content">
+            <h2>🔐 Mot de passe oublié ?</h2>
+            <p>Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.</p>
+            
+            <div class="form-group">
+                <label for="reset-email">Adresse email</label>
+                <input type="email" id="reset-email" placeholder="votre@email.com">
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeResetModal()">Annuler</button>
+                <button class="btn btn-primary" onclick="handleResetPassword()">Envoyer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAVO1P9v-IBsyxF_80vQvZDlR5tIqh878U",
+            authDomain: "learncentric.firebaseapp.com",
+            projectId: "learncentric",
+            storageBucket: "learncentric.firebasestorage.app",
+            messagingSenderId: "1083770541694",
+            appId: "1:1083770541694:web:b8dbcd7852ca7d9c8fea2f",
+            measurementId: "G-H84E7J29M3"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Make functions globally available
+        window.firebaseAuth = auth;
+        window.firebaseDb = db;
+        window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
+        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+        window.sendPasswordResetEmail = sendPasswordResetEmail;
+        window.doc = doc;
+        window.setDoc = setDoc;
+        window.getDoc = getDoc;
+        window.updateProfile = updateProfile;
+
+        // Check if user is already logged in
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is signed in, redirect to dashboard
+                console.log("Utilisateur connecté:", user.email);
+                window.location.href = "instructor-dashboard.html";
+            }
+        });
+
+        console.log("✅ Firebase initialisé avec succès !");
+    </script>
+
+    <script>
+        // Tab switching
+        function showTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.form-section').forEach(f => f.classList.remove('active'));
+            
+            if (tab === 'login') {
+                document.querySelector('.tab:first-child').classList.add('active');
+                document.getElementById('login-form').classList.add('active');
+            } else {
+                document.querySelector('.tab:last-child').classList.add('active');
+                document.getElementById('register-form').classList.add('active');
+            }
+            hideMessage();
+        }
+
+        // Toggle password visibility
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        // Show/hide messages
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = 'message ' + type;
+        }
+
+        function hideMessage() {
+            document.getElementById('message').className = 'message';
+        }
+
+        // Show/hide loading
+        function showLoading() {
+            document.getElementById('loading').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').classList.remove('active');
+        }
+
+        // Handle Login
+        async function handleLogin(e) {
+            e.preventDefault();
+            hideMessage();
+            showLoading();
+
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const userCredential = await window.signInWithEmailAndPassword(window.firebaseAuth, email, password);
+                const user = userCredential.user;
+                
+                showMessage('✅ Connexion réussie ! Redirection...', 'success');
+                
+                // Save to localStorage if "remember me" is checked
+                if (document.getElementById('remember-me').checked) {
+                    localStorage.setItem('userEmail', email);
+                }
+
+                // Redirect after 1 second
+                setTimeout(() => {
+                    window.location.href = 'instructor-dashboard.html';
+                }, 1000);
+
+            } catch (error) {
+                console.error('Erreur de connexion:', error);
+                let errorMessage = 'Erreur de connexion';
+                
+                switch (error.code) {
+                    case 'auth/user-not-found':
+                        errorMessage = '❌ Aucun compte trouvé avec cet email';
+                        break;
+                    case 'auth/wrong-password':
+                        errorMessage = '❌ Mot de passe incorrect';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage = '❌ Adresse email invalide';
+                        break;
+                    case 'auth/invalid-credential':
+                        errorMessage = '❌ Email ou mot de passe incorrect';
+                        break;
+                    case 'auth/too-many-requests':
+                        errorMessage = '❌ Trop de tentatives. Réessayez plus tard.';
+                        break;
+                    default:
+                        errorMessage = '❌ ' + error.message;
+                }
+                showMessage(errorMessage, 'error');
+            }
+            
+            hideLoading();
+        }
+
+        // Handle Register
+        async function handleRegister(e) {
+            e.preventDefault();
+            hideMessage();
+
+            const name = document.getElementById('register-name').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const confirm = document.getElementById('register-confirm').value;
+
+            // Validate passwords match
+            if (password !== confirm) {
+                showMessage('❌ Les mots de passe ne correspondent pas', 'error');
+                return;
+            }
+
+            // Validate password length
+            if (password.length < 6) {
+                showMessage('❌ Le mot de passe doit contenir au moins 6 caractères', 'error');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                // Create user in Firebase Auth
+                const userCredential = await window.createUserWithEmailAndPassword(window.firebaseAuth, email, password);
+                const user = userCredential.user;
+
+                // Update display name
+                await window.updateProfile(user, {
+                    displayName: name
+                });
+
+                // Save user data to Firestore
+                await window.setDoc(window.doc(window.firebaseDb, "users", user.uid), {
+                    name: name,
+                    email: email,
+                    role: 'student',
+                    createdAt: new Date().toISOString(),
+                    courses: [],
+                    progress: {}
+                });
+
+                showMessage('✅ Compte créé avec succès ! Redirection...', 'success');
+
+                // Redirect after 1.5 seconds
+                setTimeout(() => {
+                    window.location.href = 'instructor-dashboard.html';
+                }, 1500);
+
+            } catch (error) {
+                console.error('Erreur d\'inscription:', error);
+                let errorMessage = 'Erreur lors de l\'inscription';
+                
+                switch (error.code) {
+                    case 'auth/email-already-in-use':
+                        errorMessage = '❌ Cette adresse email est déjà utilisée';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage = '❌ Adresse email invalide';
+                        break;
+                    case 'auth/weak-password':
+                        errorMessage = '❌ Mot de passe trop faible';
+                        break;
+                    default:
+                        errorMessage = '❌ ' + error.message;
+                }
+                showMessage(errorMessage, 'error');
+            }
+            
+            hideLoading();
+        }
+
+        // Reset Password Modal
+        function showResetModal() {
+            document.getElementById('reset-modal').classList.add('active');
+        }
+
+        function closeResetModal() {
+            document.getElementById('reset-modal').classList.remove('active');
+        }
+
+        // Handle Reset Password
+        async function handleResetPassword() {
+            const email = document.getElementById('reset-email').value;
+            
+            if (!email) {
+                alert('Veuillez entrer votre adresse email');
+                return;
+            }
+
+            try {
+                await window.sendPasswordResetEmail(window.firebaseAuth, email);
+                closeResetModal();
+                showMessage('✅ Email de réinitialisation envoyé ! Vérifiez votre boîte mail.', 'success');
+            } catch (error) {
+                console.error('Erreur:', error);
+                let errorMessage = 'Erreur lors de l\'envoi';
+                
+                switch (error.code) {
+                    case 'auth/user-not-found':
+                        errorMessage = '❌ Aucun compte trouvé avec cet email';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage = '❌ Adresse email invalide';
+                        break;
+                    default:
+                        errorMessage = '❌ ' + error.message;
+                }
+                alert(errorMessage);
+            }
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('reset-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeResetModal();
+            }
+        });
+
+        // Load saved email if "remember me" was checked
+        window.onload = function() {
+            const savedEmail = localStorage.getItem('userEmail');
+            if (savedEmail) {
+                document.getElementById('login-email').value = savedEmail;
+                document.getElementById('remember-me').checked = true;
+            }
+        };
+    </script>
 </body>
 </html>
