@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cours - LearningHub</title>
-    <!-- jsPDF for PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -22,7 +21,7 @@
         .btn-primary:hover { background: var(--dark-green); }
         .btn-secondary { background: var(--beige); color: var(--dark-brown); }
         .btn-secondary:hover { background: #d9cab3; }
-        .btn-gold { background: linear-gradient(135deg, #D4AF37, #F4D03F); color: #333; font-weight: 700; }
+        .btn-gold { background: linear-gradient(135deg, #D4AF37, #F4D03F); color: #333; font-weight: 700; padding: 15px 30px; font-size: 1.1rem; }
         .btn-gold:hover { transform: scale(1.05); box-shadow: 0 5px 20px rgba(212, 175, 55, 0.4); }
         
         .main-content { padding: 20px; max-width: 1400px; margin: 0 auto; }
@@ -66,11 +65,10 @@
         .complete-btn { width: 100%; padding: 15px; margin-top: 15px; font-size: 1rem; }
         
         /* Certificate Section */
-        .certificate-section { display: none; background: linear-gradient(135deg, #fff9e6, #fff); border: 2px solid #D4AF37; margin-top: 20px; text-align: center; padding: 30px; }
+        .certificate-section { display: none; background: linear-gradient(135deg, #fff9e6, #fff); border: 2px solid #D4AF37; margin-top: 20px; text-align: center; padding: 30px; border-radius: 15px; }
         .certificate-section.show { display: block; }
-        .certificate-section h3 { color: #B8860B; margin-bottom: 15px; font-size: 1.3rem; }
+        .certificate-section h3 { color: #B8860B; margin-bottom: 10px; font-size: 1.4rem; }
         .certificate-section p { color: #666; margin-bottom: 20px; }
-        .certificate-buttons { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
         
         .code-toggle { padding: 15px 20px; background: #2d2d2d; color: white; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .code-content { display: none; background: #2d2d2d; border-radius: 0 0 10px 10px; margin-top: -10px; padding: 20px; }
@@ -95,12 +93,11 @@
         /* Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; z-index: 1000; }
         .modal.show { display: flex; }
-        .modal-content { background: white; border-radius: 20px; padding: 40px; max-width: 500px; width: 90%; text-align: center; }
-        .modal-content h2 { color: var(--dark-brown); margin-bottom: 20px; }
-        .modal-content p { color: #666; margin-bottom: 25px; line-height: 1.6; }
-        .modal-content .form-group { margin-bottom: 20px; text-align: left; }
+        .modal-content { background: white; border-radius: 20px; padding: 40px; max-width: 450px; width: 90%; text-align: center; }
+        .modal-content h2 { color: #B8860B; margin-bottom: 20px; }
+        .modal-content .form-group { margin-bottom: 25px; text-align: left; }
         .modal-content label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--dark-brown); }
-        .modal-content input { width: 100%; padding: 12px 15px; border: 2px solid var(--beige); border-radius: 10px; font-size: 1rem; }
+        .modal-content input { width: 100%; padding: 14px 15px; border: 2px solid var(--beige); border-radius: 10px; font-size: 1rem; }
         .modal-content input:focus { outline: none; border-color: var(--green); }
         .modal-buttons { display: flex; gap: 15px; justify-content: center; }
         
@@ -126,7 +123,6 @@
 
     <div id="main-content" class="main-content" style="display: none;">
         
-        <!-- Course Content -->
         <div class="content-card course-container">
             <div class="course-header">
                 <h2>📺 <span id="course-title">Contenu du cours</span></h2>
@@ -138,23 +134,19 @@
             </div>
         </div>
 
-        <!-- Description -->
         <div class="content-card">
             <h2>📝 À propos de ce cours</h2>
             <div class="description" id="course-description">Chargement...</div>
         </div>
 
-        <!-- Progress + Modules -->
         <div class="progress-grid">
             <div>
-                <!-- Videos -->
                 <div class="content-card" id="video-section" style="display: none;">
                     <h2>🎥 Vidéos</h2>
                     <div id="video-player"></div>
                     <div class="video-list" id="video-list"></div>
                 </div>
                 
-                <!-- Code -->
                 <div class="content-card" id="code-section">
                     <div class="code-toggle" onclick="toggleCode()">
                         <span>💻 Voir le code source</span>
@@ -188,10 +180,8 @@
                     <!-- Certificate Section -->
                     <div class="certificate-section" id="certificate-section">
                         <h3>🏆 Félicitations !</h3>
-                        <p>Vous avez terminé ce cours avec succès !<br>Obtenez votre certificat officiel.</p>
-                        <div class="certificate-buttons">
-                            <button class="btn btn-gold" onclick="openCertificateModal()">🎓 Obtenir mon certificat</button>
-                        </div>
+                        <p>Vous avez terminé ce cours !</p>
+                        <button class="btn btn-gold" onclick="openCertificateModal()">📜 Télécharger mon certificat</button>
                     </div>
                 </div>
             </div>
@@ -202,21 +192,15 @@
     <div class="modal" id="certificate-modal">
         <div class="modal-content">
             <h2>🎓 Votre Certificat</h2>
-            <p>Remplissez vos informations pour générer votre certificat personnalisé.</p>
             
             <div class="form-group">
-                <label for="cert-name">Votre nom complet</label>
+                <label for="cert-name">Votre nom complet (tel qu'il apparaîtra sur le certificat)</label>
                 <input type="text" id="cert-name" placeholder="Jean Dupont">
-            </div>
-            
-            <div class="form-group">
-                <label for="cert-email">Votre email</label>
-                <input type="email" id="cert-email" placeholder="votre@email.com">
             </div>
             
             <div class="modal-buttons">
                 <button class="btn btn-secondary" onclick="closeCertificateModal()">Annuler</button>
-                <button class="btn btn-gold" onclick="generateCertificate()">📄 Générer & Envoyer</button>
+                <button class="btn btn-gold" onclick="downloadCertificate()">📥 Télécharger PDF</button>
             </div>
         </div>
     </div>
@@ -297,9 +281,7 @@
                     updateModulesDisplay();
                     checkCertificateEligibility();
                     
-                    // Pre-fill certificate form
                     document.getElementById('cert-name').value = window.currentUser.displayName || '';
-                    document.getElementById('cert-email').value = window.currentUser.email || '';
                 }
             } catch (e) { window.completedModules = []; }
         }
@@ -416,7 +398,6 @@
             document.getElementById('progress-percent').textContent = pct;
         }
 
-        // Certificate functions
         function checkCertificateEligibility() {
             const mods = window.currentCourse?.modules || [];
             const pct = Math.round((window.completedModules.length / Math.max(mods.length, 1)) * 100);
@@ -434,18 +415,15 @@
             document.getElementById('certificate-modal').classList.remove('show');
         }
 
-        function generateCertificate() {
+        function downloadCertificate() {
             const name = document.getElementById('cert-name').value.trim();
-            const email = document.getElementById('cert-email').value.trim();
             
             if (!name) { alert('Veuillez entrer votre nom'); return; }
-            if (!email) { alert('Veuillez entrer votre email'); return; }
             
             const courseName = window.currentCourse?.title || 'Formation';
             const instructorName = window.currentCourse?.instructorName || 'LearningHub';
             const date = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
             
-            // Generate PDF with jsPDF
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
             
@@ -527,23 +505,13 @@
             doc.rect(20, 188, 257, 2, 'F');
             
             // Save PDF
-            const fileName = `Certificat_${courseName.replace(/[^a-zA-Z0-9]/g, '_')}_${name.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+            const fileName = `Certificat_${courseName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
             doc.save(fileName);
             
-            // Close modal
             closeCertificateModal();
-            
-            // Open email
-            setTimeout(() => {
-                const subject = encodeURIComponent(`Mon certificat - ${courseName}`);
-                const body = encodeURIComponent(`Bonjour,\n\nVeuillez trouver ci-joint mon certificat de réussite pour la formation "${courseName}".\n\nCordialement,\n${name}`);
-                window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
-                
-                alert('✅ Certificat téléchargé !\n\nUne fenêtre email s\'est ouverte. Joignez le PDF téléchargé et envoyez-le !');
-            }, 500);
+            alert('✅ Certificat téléchargé !');
         }
 
-        // Close modal on click outside
         document.getElementById('certificate-modal').addEventListener('click', function(e) {
             if (e.target === this) closeCertificateModal();
         });
