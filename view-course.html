@@ -54,6 +54,10 @@
         .progress-fill { height: 100%; background: var(--green); transition: width 0.3s; }
         .progress-text { font-weight: 600; color: var(--dark-brown); }
         
+        /* Min score info */
+        .min-score-info { background: var(--light-gray); padding: 10px 15px; border-radius: 8px; margin-top: 10px; font-size: 0.85rem; color: #666; }
+        .min-score-info strong { color: var(--dark-brown); }
+        
         .modules-list { margin-top: 15px; }
         .module-item { padding: 12px 15px; background: var(--light-gray); border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.3s; }
         .module-item:hover { background: var(--beige); }
@@ -69,6 +73,12 @@
         .certificate-section.show { display: block; }
         .certificate-section h3 { color: #B8860B; margin-bottom: 10px; font-size: 1.4rem; }
         .certificate-section p { color: #666; margin-bottom: 20px; }
+        
+        /* Not eligible */
+        .not-eligible { background: var(--light-gray); border: 2px solid var(--beige); margin-top: 20px; text-align: center; padding: 20px; border-radius: 15px; display: none; }
+        .not-eligible.show { display: block; }
+        .not-eligible p { color: #666; margin: 0; }
+        .not-eligible strong { color: var(--dark-brown); }
         
         .code-toggle { padding: 15px 20px; background: #2d2d2d; color: white; border-radius: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .code-content { display: none; background: #2d2d2d; border-radius: 0 0 10px 10px; margin-top: -10px; padding: 20px; }
@@ -173,14 +183,23 @@
                     </div>
                     <div class="progress-text"><span id="progress-percent">0</span>% complété</div>
                     
+                    <div class="min-score-info">
+                        🎯 Score minimum requis : <strong><span id="min-score-display">70</span>%</strong> pour obtenir le certificat
+                    </div>
+                    
                     <div class="modules-list" id="modules-list"></div>
                     
                     <button class="btn btn-primary complete-btn" onclick="markAsComplete()">✅ Marquer comme terminé</button>
                     
+                    <!-- Not eligible message -->
+                    <div class="not-eligible" id="not-eligible-section">
+                        <p>📈 Continuez ! Il vous faut <strong><span id="remaining-percent">0</span>%</strong> de plus pour obtenir votre certificat.</p>
+                    </div>
+                    
                     <!-- Certificate Section -->
                     <div class="certificate-section" id="certificate-section">
                         <h3>🏆 Félicitations !</h3>
-                        <p>Vous avez terminé ce cours !</p>
+                        <p>Vous avez atteint le score minimum requis !</p>
                         <button class="btn btn-gold" onclick="openCertificateModal()">📜 Télécharger mon certificat</button>
                     </div>
                 </div>
@@ -251,9 +270,11 @@
                 if (courseDoc.exists()) {
                     const course = courseDoc.data();
                     window.currentCourse = { id: courseId, ...course };
+                    window.minScore = course.minScore || 70;
                     
                     document.getElementById('course-title').textContent = course.title || 'Contenu du cours';
                     document.getElementById('course-description').textContent = course.description || 'Aucune description.';
+                    document.getElementById('min-score-display').textContent = window.minScore;
                     
                     window.courseCode = { html: course.codeHtml || '', css: course.codeCss || '', js: course.codeJs || '' };
                     
@@ -292,6 +313,7 @@
     <script>
         window.currentModuleIndex = 0;
         window.completedModules = [];
+        window.minScore = 70;
 
         function renderCourseContent() {
             const iframe = document.getElementById('course-frame');
@@ -401,9 +423,21 @@
         function checkCertificateEligibility() {
             const mods = window.currentCourse?.modules || [];
             const pct = Math.round((window.completedModules.length / Math.max(mods.length, 1)) * 100);
+            const minScore = window.minScore || 70;
             
-            if (pct >= 100 || (mods.length === 0 && window.completedModules.length > 0)) {
-                document.getElementById('certificate-section').classList.add('show');
+            const certSection = document.getElementById('certificate-section');
+            const notEligibleSection = document.getElementById('not-eligible-section');
+            
+            if (pct >= minScore) {
+                certSection.classList.add('show');
+                notEligibleSection.classList.remove('show');
+            } else if (pct > 0) {
+                certSection.classList.remove('show');
+                notEligibleSection.classList.add('show');
+                document.getElementById('remaining-percent').textContent = minScore - pct;
+            } else {
+                certSection.classList.remove('show');
+                notEligibleSection.classList.remove('show');
             }
         }
 
@@ -427,22 +461,18 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
             
-            // Background
             doc.setFillColor(255, 253, 245);
             doc.rect(0, 0, 297, 210, 'F');
             
-            // Border
             doc.setDrawColor(212, 175, 55);
             doc.setLineWidth(3);
             doc.rect(10, 10, 277, 190);
             doc.setLineWidth(1);
             doc.rect(15, 15, 267, 180);
             
-            // Header decoration
             doc.setFillColor(212, 175, 55);
             doc.rect(20, 20, 257, 2, 'F');
             
-            // Title
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(36);
             doc.setTextColor(139, 111, 71);
@@ -452,42 +482,35 @@
             doc.setTextColor(107, 159, 127);
             doc.text('DE RÉUSSITE', 148.5, 62, { align: 'center' });
             
-            // Decorative line
             doc.setDrawColor(212, 175, 55);
             doc.setLineWidth(0.5);
             doc.line(80, 70, 217, 70);
             
-            // Certificate text
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(14);
             doc.setTextColor(80, 80, 80);
             doc.text('Ce certificat est décerné à', 148.5, 85, { align: 'center' });
             
-            // Name
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(28);
             doc.setTextColor(139, 111, 71);
             doc.text(name, 148.5, 105, { align: 'center' });
             
-            // Course completion text
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(14);
             doc.setTextColor(80, 80, 80);
             doc.text('pour avoir complété avec succès la formation', 148.5, 120, { align: 'center' });
             
-            // Course name
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(20);
             doc.setTextColor(107, 159, 127);
             doc.text(courseName, 148.5, 135, { align: 'center' });
             
-            // Date
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(12);
             doc.setTextColor(100, 100, 100);
             doc.text('Délivré le ' + date, 148.5, 155, { align: 'center' });
             
-            // Signatures
             doc.setDrawColor(139, 111, 71);
             doc.line(50, 175, 120, 175);
             doc.line(177, 175, 247, 175);
@@ -500,11 +523,9 @@
             doc.text('LearningHub', 212, 182, { align: 'center' });
             doc.text('Plateforme de formation', 212, 188, { align: 'center' });
             
-            // Footer decoration
             doc.setFillColor(212, 175, 55);
             doc.rect(20, 188, 257, 2, 'F');
             
-            // Save PDF
             const fileName = `Certificat_${courseName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
             doc.save(fileName);
             
