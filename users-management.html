@@ -243,6 +243,41 @@
         </div>
     </div>
 
+    <!-- Edit User Modal -->
+    <div class="modal" id="edit-user-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>✏️ Modifier l'utilisateur</h2>
+                <p>Modifier les informations de l'utilisateur</p>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-user-id">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nom complet</label>
+                        <input type="text" id="edit-user-name" placeholder="Jean Dupont">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="edit-user-email" placeholder="jean@example.com">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Rôle</label>
+                    <select id="edit-user-role">
+                        <option value="student">Étudiant</option>
+                        <option value="instructor">Formateur</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeEditModal()">Annuler</button>
+                <button class="btn btn-primary" onclick="saveUserEdit()">💾 Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
@@ -374,7 +409,8 @@
                         <td>
                             <div class="action-buttons">
                                 <button class="btn btn-secondary btn-small" onclick="openAssignModal('${user.id}')">📝 Assigner</button>
-                                <button class="btn btn-small" style="background:#e3f2fd;color:#1976d2;" onclick="editUser('${user.id}')">✏️</button>
+                                <button class="btn btn-small" style="background:#e3f2fd;color:#1976d2;" onclick="openEditModal('${user.id}')">✏️</button>
+                                <button class="btn btn-small" style="background:#f8d7da;color:#721c24;" onclick="deleteUser('${user.id}')">🗑️</button>
                             </div>
                         </td>
                     </tr>
@@ -549,12 +585,81 @@
             alert('Fonctionnalité à venir : modifier l\'utilisateur');
         }
 
+        // Edit User Modal
+        function openEditModal(userId) {
+            const user = window.allUsers.find(u => u.id === userId);
+            if (!user) return;
+            
+            document.getElementById('edit-user-id').value = userId;
+            document.getElementById('edit-user-name').value = user.name || '';
+            document.getElementById('edit-user-email').value = user.email || '';
+            document.getElementById('edit-user-role').value = user.role || 'student';
+            
+            document.getElementById('edit-user-modal').classList.add('show');
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-user-modal').classList.remove('show');
+        }
+
+        async function saveUserEdit() {
+            const userId = document.getElementById('edit-user-id').value;
+            const name = document.getElementById('edit-user-name').value.trim();
+            const email = document.getElementById('edit-user-email').value.trim();
+            const role = document.getElementById('edit-user-role').value;
+            
+            if (!name || !email) {
+                showMessage('❌ Veuillez remplir tous les champs', 'error');
+                return;
+            }
+            
+            try {
+                const userRef = window.doc(window.firebaseDb, "users", userId);
+                await window.updateDoc(userRef, {
+                    name: name,
+                    email: email,
+                    role: role,
+                    updatedAt: new Date().toISOString()
+                });
+                
+                showMessage('✅ Utilisateur modifié !', 'success');
+                closeEditModal();
+                await window.loadAllData();
+            } catch (error) {
+                console.error('Erreur:', error);
+                showMessage('❌ Erreur: ' + error.message, 'error');
+            }
+        }
+
+        async function deleteUser(userId) {
+            const user = window.allUsers.find(u => u.id === userId);
+            if (!user) return;
+            
+            if (!confirm(`⚠️ Supprimer l'utilisateur "${user.name || user.email}" ?\n\nCette action est irréversible.`)) {
+                return;
+            }
+            
+            try {
+                const userRef = window.doc(window.firebaseDb, "users", userId);
+                await window.deleteDoc(userRef);
+                
+                showMessage('✅ Utilisateur supprimé !', 'success');
+                await window.loadAllData();
+            } catch (error) {
+                console.error('Erreur:', error);
+                showMessage('❌ Erreur: ' + error.message, 'error');
+            }
+        }
+
         // Close modals on outside click
         document.getElementById('assign-modal').addEventListener('click', function(e) {
             if (e.target === this) closeAssignModal();
         });
         document.getElementById('add-user-modal').addEventListener('click', function(e) {
             if (e.target === this) closeAddUserModal();
+        });
+        document.getElementById('edit-user-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeEditModal();
         });
     </script>
 </body>
