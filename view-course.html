@@ -28,8 +28,8 @@
         .btn-primary:hover { background: var(--dark-green); }
         .btn-secondary { background: var(--beige); color: var(--dark-brown); }
         .btn-secondary:hover { background: #d9cab3; }
-        .btn-gold { background: linear-gradient(135deg, #D4AF37, #F4D03F); color: #333; font-weight: 700; padding: 15px 30px; font-size: 1.1rem; }
-        .btn-gold:hover { transform: scale(1.05); box-shadow: 0 5px 20px rgba(212, 175, 55, 0.4); }
+        .btn-gold { background: var(--brown); color: white; font-weight: 700; padding: 15px 30px; font-size: 1.1rem; }
+        .btn-gold:hover { background: var(--dark-brown); transform: scale(1.02); box-shadow: 0 5px 15px rgba(107, 90, 59, 0.3); }
         
         .main-content { padding: 20px; max-width: 1400px; margin: 0 auto; }
         
@@ -83,10 +83,10 @@
         .complete-btn:disabled { background: #ccc; cursor: not-allowed; opacity: 0.7; }
         
         /* Certificate Section */
-        .certificate-section { display: none; background: linear-gradient(135deg, #fff9e6, #fff); border: 2px solid #D4AF37; text-align: center; padding: 20px; border-radius: 15px; }
+        .certificate-section { display: none; background: var(--beige); border: 2px solid var(--brown); text-align: center; padding: 20px; border-radius: 15px; }
         .certificate-section.show { display: block; }
-        .certificate-section h3 { color: #B8860B; margin-bottom: 8px; font-size: 1.3rem; }
-        .certificate-section p { color: #666; margin-bottom: 15px; font-size: 0.9rem; }
+        .certificate-section h3 { color: var(--dark-brown); margin-bottom: 8px; font-size: 1.3rem; }
+        .certificate-section p { color: var(--dark-brown); margin-bottom: 15px; font-size: 0.9rem; opacity: 0.8; }
         
         /* Not eligible */
         .not-eligible { background: var(--light-gray); border: 2px solid var(--beige); text-align: center; padding: 15px; border-radius: 15px; display: none; }
@@ -260,14 +260,11 @@
                     <div id="video-player"></div>
                     <div class="video-list" id="video-list"></div>
                 </div>
-                
-                <div class="content-card">
-                    <div class="modules-list" id="modules-list">
-                        <div class="modules-list-title">📚 Modules du cours</div>
-                    </div>
-                </div>
             </div>
         </div>
+        
+        <!-- Hidden modules list for JS -->
+        <div id="modules-list" style="display: none;"></div>
     </div>
 
     <!-- Certificate Modal -->
@@ -492,23 +489,15 @@
         function displayModules(modules) {
             const list = document.getElementById('modules-list');
             if (!modules?.length) { 
-                list.innerHTML = '<div class="modules-list-title">📚 Modules du cours</div><p style="color:#888;font-size:0.9rem;padding:15px;">Aucun module défini - Vous pouvez valider directement le cours.</p>'; 
                 // If no modules, enable button
                 document.getElementById('complete-btn').disabled = false;
                 document.getElementById('complete-btn').textContent = '✅ Marquer comme terminé';
                 return; 
             }
-            list.innerHTML = '<div class="modules-list-title">📚 Modules du cours <span style="font-weight:normal;color:#888;">(' + modules.length + ')</span></div>' + 
-                modules.map((m, i) => {
-                    const isUnlocked = i === 0 || window.viewedModules.includes(i - 1);
-                    const isViewed = window.viewedModules.includes(i);
-                    const isCompleted = window.completedModules.includes(i);
-                    return `<div class="module-item ${isCompleted ? 'completed' : ''} ${isViewed ? 'viewed' : ''} ${!isUnlocked ? 'locked' : ''}" onclick="selectModule(${i})" id="module-${i}">
-                        <div class="module-check" id="check-${i}">${isCompleted ? '✓' : (!isUnlocked ? '🔒' : i+1)}</div>
-                        <div class="module-title">${m.title}</div>
-                        ${!isUnlocked ? '<span class="locked-badge">Terminez le module précédent</span>' : ''}
-                    </div>`;
-                }).join('');
+            // Modules hidden - auto-mark all as viewed so user can complete
+            for (let i = 0; i < modules.length; i++) {
+                if (!window.viewedModules.includes(i)) window.viewedModules.push(i);
+            }
             updateCompleteButton();
         }
 
@@ -517,8 +506,7 @@
             window.completedModules.forEach(i => {
                 if (!window.viewedModules.includes(i)) window.viewedModules.push(i);
             });
-            // Re-render modules to update locked states
-            displayModules(mods);
+            updateCompleteButton();
         }
 
         function selectModule(i) { 
