@@ -199,18 +199,7 @@
 
     <div id="main-content" class="main-content" style="display: none;">
         
-        <div class="content-card course-container">
-            <div class="course-header">
-                <h2>📺 <span id="course-title">Contenu du cours</span></h2>
-                <button class="btn fullscreen-btn" onclick="openFullscreen()">🖥️ PLEIN ÉCRAN</button>
-            </div>
-            <div class="course-frame-wrapper" id="course-wrapper">
-                <iframe class="course-frame" id="course-frame"></iframe>
-                <button class="btn exit-fullscreen-btn" onclick="closeFullscreen()">✕ Quitter plein écran</button>
-            </div>
-        </div>
-
-        <!-- Progression Panel - Now at top -->
+        <!-- Progression Panel - At top before course -->
         <div class="content-card" id="progression-panel" style="margin-bottom: 20px;">
             <div style="display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: start;">
                 <div>
@@ -250,6 +239,17 @@
                     
                     <button class="btn btn-primary complete-btn" id="complete-btn" onclick="markAsComplete()" disabled style="margin-top: 10px;">📖 Parcourez tous les modules</button>
                 </div>
+            </div>
+        </div>
+
+        <div class="content-card course-container">
+            <div class="course-header">
+                <h2>📺 <span id="course-title">Contenu du cours</span></h2>
+                <button class="btn fullscreen-btn" onclick="openFullscreen()">🖥️ PLEIN ÉCRAN</button>
+            </div>
+            <div class="course-frame-wrapper" id="course-wrapper">
+                <iframe class="course-frame" id="course-frame"></iframe>
+                <button class="btn exit-fullscreen-btn" onclick="closeFullscreen()">✕ Quitter plein écran</button>
             </div>
         </div>
 
