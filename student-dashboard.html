@@ -227,7 +227,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, collection, query, getDocs, where, updateDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, collection, query, getDocs, where, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAVO1P9v-IBsyxF_80vQvZDlR5tIqh878U",
@@ -251,6 +251,7 @@
         window.query = query;
         window.getDocs = getDocs;
         window.updateDoc = updateDoc;
+        window.setDoc = setDoc;
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -300,16 +301,22 @@
                         userData.assignedPrograms = emailData.assignedPrograms || [];
                         userData.nom = userData.nom || emailData.nom;
                         userData.prenom = userData.prenom || emailData.prenom;
-                        userData.progress = { ...emailData.progress, ...userData.progress };
+                        userData.progress = { ...(emailData.progress || {}), ...(userData.progress || {}) };
                         
-                        // Update the UID-based document with merged data
-                        await window.updateDoc(doc(db, "users", userId), {
-                            assignedCourses: userData.assignedCourses,
-                            assignedPrograms: userData.assignedPrograms,
-                            nom: userData.nom,
-                            prenom: userData.prenom,
-                            progress: userData.progress
-                        });
+                        // Update or create the UID-based document with merged data
+                        try {
+                            await setDoc(doc(db, "users", userId), {
+                                assignedCourses: userData.assignedCourses,
+                                assignedPrograms: userData.assignedPrograms,
+                                nom: userData.nom,
+                                prenom: userData.prenom,
+                                progress: userData.progress,
+                                email: userEmail,
+                                role: 'student'
+                            }, { merge: true });
+                        } catch (e) {
+                            console.log('Erreur fusion données:', e);
+                        }
                     }
                 }
                 
