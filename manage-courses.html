@@ -28,7 +28,6 @@
         .message.success { background: #d4edda; color: #155724; display: block; }
         .message.error { background: #f8d7da; color: #721c24; display: block; }
         
-        /* Courses Grid */
         .courses-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
         
         .course-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); transition: all 0.3s; }
@@ -48,6 +47,8 @@
         
         .course-meta { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; }
         .course-meta span { font-size: 0.8rem; color: #666; background: var(--light-gray); padding: 5px 10px; border-radius: 5px; }
+        .course-meta span.deadline { background: #fff3cd; color: #856404; }
+        .course-meta span.deadline-passed { background: #f8d7da; color: #721c24; }
         
         .course-actions { display: flex; gap: 10px; }
         .course-actions button { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.3s; font-size: 0.9rem; }
@@ -58,7 +59,6 @@
         .btn-delete { background: #f8d7da; color: #721c24; }
         .btn-delete:hover { background: #f1b0b7; }
         
-        /* Create Form */
         .form-card { background: white; border-radius: 15px; padding: 30px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .form-card h2 { color: var(--dark-brown); margin-bottom: 20px; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
         
@@ -143,7 +143,7 @@
                 <h2>📋 Informations de base</h2>
                 <div class="form-group">
                     <label for="title">Titre du cours *</label>
-                    <input type="text" id="title" placeholder="Ex: JavaScript pour débutants">
+                    <input type="text" id="title" placeholder="Ex: Formation Compliance AML">
                 </div>
                 <div class="form-row">
                     <div class="form-group">
@@ -168,14 +168,25 @@
                     </div>
                     <div class="form-group">
                         <label for="duration">Durée estimée</label>
-                        <input type="text" id="duration" placeholder="Ex: 10 heures">
+                        <input type="text" id="duration" placeholder="Ex: 2 heures">
                     </div>
                     <div class="form-group">
-                        <label for="min-score">Score minimum réussite</label>
+                        <label for="min-score">Score minimum</label>
                         <div class="score-input-wrapper">
                             <input type="number" id="min-score" value="70" min="0" max="100">
                             <span class="score-suffix">%</span>
                         </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="deadline">📅 Date limite (deadline)</label>
+                        <input type="date" id="deadline">
+                        <small>Date avant laquelle les étudiants doivent terminer le cours</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="deadline-time">⏰ Heure limite (optionnel)</label>
+                        <input type="time" id="deadline-time" value="23:59">
                     </div>
                 </div>
                 <div class="form-group">
@@ -228,7 +239,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
-        import { getFirestore, collection, query, getDocs, doc, addDoc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+        import { getFirestore, collection, query, getDocs, doc, addDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAVO1P9v-IBsyxF_80vQvZDlR5tIqh878U",
@@ -251,7 +262,6 @@
         window.firebaseAddDoc = addDoc;
         window.firebaseUpdateDoc = updateDoc;
         window.firebaseDeleteDoc = deleteDoc;
-        window.firebaseGetDoc = getDoc;
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -345,6 +355,15 @@
             return categoryId || '-';
         }
 
+        function formatDeadline(deadline) {
+            if (!deadline) return null;
+            const date = new Date(deadline);
+            const now = new Date();
+            const isPassed = date < now;
+            const formatted = date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            return { formatted, isPassed };
+        }
+
         function displayCourses() {
             const container = document.getElementById('courses-container');
             const courses = window.allCourses || [];
@@ -363,7 +382,9 @@
             
             container.innerHTML = `
                 <div class="courses-grid">
-                    ${courses.map(course => `
+                    ${courses.map(course => {
+                        const deadlineInfo = formatDeadline(course.deadline);
+                        return `
                         <div class="course-card">
                             <div class="course-header">
                                 <span class="course-status ${course.status === 'published' ? 'status-published' : 'status-draft'}">
@@ -389,8 +410,8 @@
                                 </div>
                                 <div class="course-meta">
                                     <span>⏱️ ${course.duration || 'Non définie'}</span>
-                                    <span>📊 ${course.level || 'Tous niveaux'}</span>
                                     <span>💰 ${course.price ? course.price + '€' : 'Gratuit'}</span>
+                                    ${deadlineInfo ? `<span class="deadline ${deadlineInfo.isPassed ? 'deadline-passed' : ''}">📅 ${deadlineInfo.formatted}${deadlineInfo.isPassed ? ' (passée)' : ''}</span>` : ''}
                                 </div>
                                 <div class="course-actions">
                                     <button class="btn-view" onclick="viewCourse('${course.id}')">👁️ Voir</button>
@@ -399,7 +420,7 @@
                                 </div>
                             </div>
                         </div>
-                    `).join('')}
+                    `}).join('')}
                 </div>
             `;
         }
@@ -424,6 +445,16 @@
             document.getElementById('code-html').value = course.codeHtml || '';
             document.getElementById('code-css').value = course.codeCss || '';
             document.getElementById('code-js').value = course.codeJs || '';
+            
+            // Deadline
+            if (course.deadline) {
+                const deadlineDate = new Date(course.deadline);
+                document.getElementById('deadline').value = deadlineDate.toISOString().split('T')[0];
+                document.getElementById('deadline-time').value = deadlineDate.toTimeString().slice(0, 5);
+            } else {
+                document.getElementById('deadline').value = '';
+                document.getElementById('deadline-time').value = '23:59';
+            }
             
             window.modules = course.modules || [];
             window.videos = course.videos || [];
@@ -496,6 +527,14 @@
         }
 
         function getCourseData(status) {
+            // Build deadline
+            let deadline = null;
+            const deadlineDate = document.getElementById('deadline').value;
+            const deadlineTime = document.getElementById('deadline-time').value || '23:59';
+            if (deadlineDate) {
+                deadline = new Date(`${deadlineDate}T${deadlineTime}`).toISOString();
+            }
+            
             return {
                 title: document.getElementById('title').value.trim(),
                 category: document.getElementById('category').value,
@@ -503,6 +542,7 @@
                 level: document.getElementById('level').value,
                 duration: document.getElementById('duration').value.trim(),
                 minScore: parseInt(document.getElementById('min-score').value) || 70,
+                deadline: deadline,
                 description: document.getElementById('description').value.trim(),
                 codeHtml: document.getElementById('code-html').value,
                 codeCss: document.getElementById('code-css').value,
@@ -572,6 +612,8 @@
             document.getElementById('level').value = 'debutant';
             document.getElementById('duration').value = '';
             document.getElementById('min-score').value = '70';
+            document.getElementById('deadline').value = '';
+            document.getElementById('deadline-time').value = '23:59';
             document.getElementById('description').value = '';
             document.getElementById('code-html').value = '';
             document.getElementById('code-css').value = '';

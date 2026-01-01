@@ -24,31 +24,12 @@
         .section { display: none; }
         .section.active { display: block; }
         
-        .programs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
-        .program-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); transition: all 0.3s; }
-        .program-card:hover { transform: translateY(-5px); box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
-        .program-header { background: linear-gradient(135deg, var(--brown), var(--dark-brown)); color: white; padding: 25px; }
-        .program-header h3 { margin-bottom: 5px; }
-        .program-header p { opacity: 0.9; font-size: 0.9rem; }
-        .program-body { padding: 20px; }
-        .program-stats { display: flex; gap: 20px; margin-bottom: 15px; }
-        .program-stat { text-align: center; }
-        .program-stat .number { font-size: 1.5rem; font-weight: 700; color: var(--dark-brown); }
-        .program-stat .label { font-size: 0.8rem; color: #888; }
-        .program-courses { margin-bottom: 15px; }
-        .program-courses h4 { font-size: 0.85rem; color: #888; margin-bottom: 8px; }
-        .course-tag { display: inline-block; background: var(--light-gray); padding: 5px 10px; border-radius: 5px; font-size: 0.8rem; margin: 2px; }
-        .program-actions { display: flex; gap: 10px; }
-        .program-actions button { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.3s; }
-        .btn-edit { background: var(--beige); color: var(--dark-brown); }
-        .btn-edit:hover { background: #d9cab3; }
-        .btn-delete { background: #f8d7da; color: #721c24; }
-        .btn-delete:hover { background: #f1b0b7; }
-        .btn-view { background: var(--green); color: white; }
-        .btn-view:hover { background: var(--dark-green); }
+        .message { padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; display: none; }
+        .message.success { background: #d4edda; color: #155724; display: block; }
+        .message.error { background: #f8d7da; color: #721c24; display: block; }
         
-        .form-card { background: white; border-radius: 15px; padding: 30px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .form-card h2 { color: var(--dark-brown); margin-bottom: 20px; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+        .card { background: white; border-radius: 15px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .card h2 { color: var(--dark-brown); margin-bottom: 20px; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
         
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; margin-bottom: 8px; color: var(--dark-brown); font-weight: 500; }
@@ -65,48 +46,60 @@
         .btn-secondary { background: var(--beige); color: var(--dark-brown); }
         .btn-secondary:hover { background: #d9cab3; }
         
-        .course-selection { border: 2px solid var(--beige); border-radius: 10px; padding: 15px; max-height: 300px; overflow-y: auto; }
-        .course-option { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--light-gray); border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: all 0.3s; }
-        .course-option:hover { background: var(--beige); }
-        .course-option.selected { background: var(--green); color: white; }
-        .course-option input { display: none; }
-        .course-checkbox { width: 22px; height: 22px; border: 2px solid var(--beige); border-radius: 5px; display: flex; align-items: center; justify-content: center; background: white; flex-shrink: 0; }
-        .course-option.selected .course-checkbox { background: white; color: var(--green); border-color: white; }
-        .course-info { flex: 1; }
-        .course-info h4 { font-size: 0.95rem; margin-bottom: 3px; }
-        .course-info p { font-size: 0.8rem; opacity: 0.8; }
+        .programs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
         
-        .selected-courses { margin-top: 20px; }
-        .selected-courses h3 { font-size: 1rem; color: var(--dark-brown); margin-bottom: 15px; }
-        .sortable-list { min-height: 50px; }
-        .sortable-item { display: flex; align-items: center; gap: 12px; padding: 15px; background: var(--light-gray); border-radius: 10px; margin-bottom: 10px; cursor: grab; }
-        .sortable-item:active { cursor: grabbing; }
-        .drag-handle { color: #888; font-size: 1.2rem; }
-        .sortable-item .order-number { width: 30px; height: 30px; background: var(--green); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; }
-        .sortable-item .course-name { flex: 1; font-weight: 500; }
-        .sortable-item .remove-btn { background: none; border: none; color: #dc3545; cursor: pointer; font-size: 1.2rem; }
+        .program-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); transition: all 0.3s; }
+        .program-card:hover { transform: translateY(-5px); box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .program-header { background: linear-gradient(135deg, var(--brown), var(--dark-brown)); color: white; padding: 25px; position: relative; }
+        .program-header h3 { font-size: 1.2rem; margin-bottom: 8px; }
+        .program-header p { opacity: 0.9; font-size: 0.9rem; }
+        .program-status { position: absolute; top: 15px; right: 15px; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 500; background: rgba(255,255,255,0.2); }
         
-        .empty-state { text-align: center; padding: 40px; color: #888; }
-        .empty-state p { margin-bottom: 20px; }
+        .program-body { padding: 20px; }
+        .program-courses { margin-bottom: 15px; }
+        .program-courses h4 { font-size: 0.85rem; color: #888; margin-bottom: 10px; }
+        .course-tag { display: inline-block; background: var(--light-gray); padding: 5px 12px; border-radius: 15px; font-size: 0.8rem; margin: 3px; }
+        
+        .program-meta { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; }
+        .program-meta span { font-size: 0.8rem; color: #666; background: var(--light-gray); padding: 5px 10px; border-radius: 5px; }
+        .program-meta span.deadline { background: #fff3cd; color: #856404; }
+        .program-meta span.deadline-passed { background: #f8d7da; color: #721c24; }
+        
+        .program-actions { display: flex; gap: 10px; }
+        .program-actions button { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 0.9rem; }
+        .btn-edit { background: var(--beige); color: var(--dark-brown); }
+        .btn-edit:hover { background: #d9cab3; }
+        .btn-delete { background: #f8d7da; color: #721c24; }
+        .btn-delete:hover { background: #f1b0b7; }
+        
+        .courses-list { max-height: 300px; overflow-y: auto; border: 2px solid var(--beige); border-radius: 10px; padding: 10px; }
+        .course-item { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+        .course-item:hover { background: var(--light-gray); }
+        .course-item.selected { background: #d4edda; }
+        .course-item input { width: 18px; height: 18px; cursor: pointer; }
+        .course-item .info { flex: 1; }
+        .course-item .title { font-weight: 500; color: var(--dark-brown); }
+        .course-item .meta { font-size: 0.8rem; color: #888; }
+        
+        .selected-courses { margin-top: 15px; }
+        .selected-courses h4 { font-size: 0.9rem; color: var(--dark-brown); margin-bottom: 10px; }
+        .selected-list { display: flex; flex-wrap: wrap; gap: 8px; }
+        .selected-tag { background: var(--green); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
+        .selected-tag button { background: none; border: none; color: white; cursor: pointer; font-size: 1rem; }
         
         .actions { display: flex; gap: 15px; justify-content: flex-end; margin-top: 30px; }
         
-        .message { padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; display: none; }
-        .message.success { background: #d4edda; color: #155724; display: block; }
-        .message.error { background: #f8d7da; color: #721c24; display: block; }
+        .empty-state { text-align: center; padding: 60px 20px; background: white; border-radius: 15px; }
+        .empty-state .icon { font-size: 4rem; margin-bottom: 15px; }
+        .empty-state p { color: #888; margin-bottom: 20px; }
         
-        .loading { text-align: center; padding: 40px; }
-        .spinner { width: 40px; height: 40px; border: 4px solid var(--beige); border-top: 4px solid var(--green); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+        .loading { text-align: center; padding: 60px; }
+        .spinner { width: 50px; height: 50px; border: 4px solid var(--beige); border-top: 4px solid var(--green); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        .status { padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 500; }
-        .status-published { background: #d4edda; color: #155724; }
-        .status-draft { background: #fff3cd; color: #856404; }
-        
-        @media (max-width: 600px) {
+        @media (max-width: 768px) {
             .form-row { grid-template-columns: 1fr; }
             .programs-grid { grid-template-columns: 1fr; }
-            .tabs { flex-wrap: wrap; }
         }
     </style>
 </head>
@@ -114,7 +107,7 @@
     <div class="container">
         <div class="header">
             <h1>🎓 Programmes de Formation</h1>
-            <a href="instructor-dashboard.html" class="back-btn">← Retour au Dashboard</a>
+            <a href="instructor-dashboard.html" class="back-btn">← Retour</a>
         </div>
 
         <div class="tabs">
@@ -129,78 +122,58 @@
             <div id="programs-container">
                 <div class="loading">
                     <div class="spinner"></div>
-                    <p>Chargement des programmes...</p>
+                    <p>Chargement...</p>
                 </div>
             </div>
         </div>
 
         <!-- Create Program -->
         <div id="create-section" class="section">
-            <div class="form-card">
+            <div class="card">
                 <h2>📋 Informations du programme</h2>
+                
                 <div class="form-group">
-                    <label for="program-title">Titre du programme *</label>
-                    <input type="text" id="program-title" placeholder="Ex: Parcours Développeur Web Full Stack">
+                    <label>Titre du programme *</label>
+                    <input type="text" id="title" placeholder="Ex: Parcours Compliance 2025">
                 </div>
+                
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="description" placeholder="Décrivez ce programme..."></textarea>
+                </div>
+                
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="program-category">Catégorie</label>
-                        <select id="program-category">
-                            <option value="">Sélectionner...</option>
-                            <option value="developpement">💻 Développement</option>
-                            <option value="design">🎨 Design</option>
-                            <option value="business">📊 Business</option>
-                            <option value="marketing">📈 Marketing</option>
-                            <option value="compliance">⚖️ Compliance</option>
-                            <option value="finance">💰 Finance</option>
-                        </select>
+                        <label>📅 Date limite (deadline)</label>
+                        <input type="date" id="deadline">
+                        <small>Date avant laquelle les étudiants doivent terminer</small>
                     </div>
                     <div class="form-group">
-                        <label for="program-price">Prix du programme (€)</label>
-                        <input type="number" id="program-price" placeholder="0 = Gratuit" min="0">
-                        <small>Laissez vide ou 0 pour un programme gratuit</small>
+                        <label>⏰ Heure limite</label>
+                        <input type="time" id="deadline-time" value="23:59">
                     </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="program-duration">Durée estimée</label>
-                        <input type="text" id="program-duration" placeholder="Ex: 3 mois">
-                    </div>
-                    <div class="form-group">
-                        <label for="program-level">Niveau</label>
-                        <select id="program-level">
-                            <option value="debutant">Débutant</option>
-                            <option value="intermediaire">Intermédiaire</option>
-                            <option value="avance">Avancé</option>
-                            <option value="tous">Tous niveaux</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="program-description">Description</label>
-                    <textarea id="program-description" placeholder="Décrivez ce programme et ce que les étudiants vont apprendre..."></textarea>
                 </div>
             </div>
 
-            <div class="form-card">
-                <h2>📚 Sélectionner les cours</h2>
-                <p style="color: #888; margin-bottom: 15px;">Cochez les cours à inclure dans ce programme</p>
-                <div class="course-selection" id="course-selection">
+            <div class="card">
+                <h2>📚 Cours inclus</h2>
+                <p style="color: #888; margin-bottom: 15px;">Sélectionnez les cours à inclure :</p>
+                
+                <div class="courses-list" id="courses-list">
                     <div class="loading">
                         <div class="spinner"></div>
-                        <p>Chargement des cours...</p>
                     </div>
                 </div>
                 
-                <div class="selected-courses" id="selected-courses-section" style="display: none;">
-                    <h3>📖 Ordre des cours (glissez pour réorganiser)</h3>
-                    <div class="sortable-list" id="sortable-list"></div>
+                <div class="selected-courses" id="selected-courses-container" style="display: none;">
+                    <h4>📋 Cours sélectionnés :</h4>
+                    <div class="selected-list" id="selected-list"></div>
                 </div>
             </div>
 
             <div class="actions">
-                <button class="btn btn-secondary" onclick="saveProgramDraft()">💾 Enregistrer en brouillon</button>
-                <button class="btn btn-primary" onclick="publishProgram()">🚀 Publier le programme</button>
+                <button class="btn btn-secondary" onclick="saveDraft()">💾 Brouillon</button>
+                <button class="btn btn-primary" onclick="publishProgram()">🚀 Publier</button>
             </div>
         </div>
     </div>
@@ -208,7 +181,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
-        import { getFirestore, collection, query, getDocs, doc, addDoc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+        import { getFirestore, collection, query, getDocs, doc, addDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAVO1P9v-IBsyxF_80vQvZDlR5tIqh878U",
@@ -224,79 +197,59 @@
         const db = getFirestore(app);
 
         window.firebaseDb = db;
-        window.firebaseCollection = collection;
-        window.firebaseQuery = query;
-        window.firebaseGetDocs = getDocs;
-        window.firebaseDoc = doc;
-        window.firebaseAddDoc = addDoc;
-        window.firebaseUpdateDoc = updateDoc;
-        window.firebaseDeleteDoc = deleteDoc;
-        window.firebaseSetDoc = setDoc;
+        window.collection = collection;
+        window.getDocs = getDocs;
+        window.doc = doc;
+        window.addDoc = addDoc;
+        window.updateDoc = updateDoc;
+        window.deleteDoc = deleteDoc;
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 window.currentUser = user;
-                await loadCourses();
-                await loadPrograms();
+                await loadData();
             } else {
                 window.location.href = 'index.html';
             }
         });
 
-        async function loadCourses() {
+        async function loadData() {
             try {
-                const coursesQuery = query(collection(db, "courses"));
-                const snapshot = await getDocs(coursesQuery);
-                
+                const coursesSnapshot = await getDocs(collection(db, "courses"));
                 window.allCourses = [];
-                snapshot.forEach(doc => {
-                    window.allCourses.push({ id: doc.id, ...doc.data() });
+                coursesSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.status === 'published') {
+                        window.allCourses.push({ id: doc.id, ...data });
+                    }
                 });
                 
-                displayCourseOptions();
-            } catch (error) {
-                console.error('Erreur chargement cours:', error);
-            }
-        }
-
-        async function loadPrograms() {
-            try {
-                const programsQuery = query(collection(db, "programs"));
-                const snapshot = await getDocs(programsQuery);
-                
+                const programsSnapshot = await getDocs(collection(db, "programs"));
                 window.allPrograms = [];
-                snapshot.forEach(doc => {
+                programsSnapshot.forEach(doc => {
                     window.allPrograms.push({ id: doc.id, ...doc.data() });
                 });
                 
+                displayCoursesList();
                 displayPrograms();
             } catch (error) {
-                console.error('Erreur chargement programmes:', error);
-                document.getElementById('programs-container').innerHTML = '<div class="empty-state"><p>Aucun programme pour le moment</p><button class="btn btn-primary" onclick="showTab(\'create\')">➕ Créer mon premier programme</button></div>';
+                console.error('Erreur:', error);
             }
         }
 
-        window.loadCourses = loadCourses;
-        window.loadPrograms = loadPrograms;
+        window.loadData = loadData;
     </script>
 
     <script>
         window.selectedCourses = [];
+        window.editingProgramId = null;
 
         function showTab(tab) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            
-            if (event && event.currentTarget) {
-                event.currentTarget.classList.add('active');
-            } else {
-                document.querySelectorAll('.tab')[tab === 'list' ? 0 : 1].classList.add('active');
-            }
+            event.currentTarget.classList.add('active');
             document.getElementById(tab + '-section').classList.add('active');
-            
-            if (tab === 'create' && !window.editingProgramId) {
-                resetForm();
-            }
+            if (tab === 'create' && !window.editingProgramId) resetForm();
         }
 
         function showMessage(text, type) {
@@ -304,263 +257,107 @@
             msg.textContent = text;
             msg.className = 'message ' + type;
             window.scrollTo(0, 0);
-            setTimeout(() => { msg.className = 'message'; }, 5000);
+            setTimeout(() => { msg.className = 'message'; }, 4000);
         }
 
-        function displayCourseOptions() {
-            const container = document.getElementById('course-selection');
+        function displayCoursesList() {
+            const container = document.getElementById('courses-list');
             const courses = window.allCourses || [];
             
             if (courses.length === 0) {
-                container.innerHTML = '<div class="empty-state"><p>Aucun cours disponible. Créez d\'abord des cours.</p></div>';
+                container.innerHTML = '<p style="text-align: center; color: #888; padding: 20px;">Aucun cours publié</p>';
                 return;
             }
             
-            container.innerHTML = courses.map(course => {
-                const safeTitle = (course.title || 'Sans titre').replace(/'/g, "\\'").replace(/"/g, '\\"');
-                return `
-                    <div class="course-option" data-id="${course.id}" data-title="${safeTitle}" onclick="toggleCourse(this)">
-                        <div class="course-checkbox" id="checkbox-${course.id}"></div>
-                        <div class="course-info">
-                            <h4>${course.title || 'Sans titre'}</h4>
-                            <p>${course.category || 'Non catégorisé'} • ${course.duration || 'Durée non définie'}</p>
-                        </div>
+            container.innerHTML = courses.map(course => `
+                <div class="course-item ${window.selectedCourses.includes(course.id) ? 'selected' : ''}" onclick="toggleCourse('${course.id}')">
+                    <input type="checkbox" ${window.selectedCourses.includes(course.id) ? 'checked' : ''}>
+                    <div class="info">
+                        <div class="title">${course.title}</div>
+                        <div class="meta">${course.duration || '-'} • ${course.modules?.length || 0} modules</div>
                     </div>
-                `;
+                </div>
+            `).join('');
+        }
+
+        function toggleCourse(courseId) {
+            const index = window.selectedCourses.indexOf(courseId);
+            if (index > -1) window.selectedCourses.splice(index, 1);
+            else window.selectedCourses.push(courseId);
+            displayCoursesList();
+            updateSelectedCourses();
+        }
+
+        function updateSelectedCourses() {
+            const container = document.getElementById('selected-courses-container');
+            const list = document.getElementById('selected-list');
+            
+            if (window.selectedCourses.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            container.style.display = 'block';
+            list.innerHTML = window.selectedCourses.map((id, i) => {
+                const course = (window.allCourses || []).find(c => c.id === id);
+                return course ? `<span class="selected-tag">${i + 1}. ${course.title} <button onclick="removeCourse('${id}')">&times;</button></span>` : '';
             }).join('');
         }
 
-        function toggleCourse(element) {
-            const courseId = element.getAttribute('data-id');
-            const courseTitle = element.getAttribute('data-title');
-            const checkbox = document.getElementById('checkbox-' + courseId);
-            
-            const index = window.selectedCourses.findIndex(c => c.id === courseId);
-            
-            if (index > -1) {
-                window.selectedCourses.splice(index, 1);
-                element.classList.remove('selected');
-                checkbox.textContent = '';
-            } else {
-                window.selectedCourses.push({ id: courseId, title: courseTitle });
-                element.classList.add('selected');
-                checkbox.textContent = '✓';
-            }
-            
-            updateSelectedCoursesList();
-        }
-
-        function updateSelectedCoursesList() {
-            const section = document.getElementById('selected-courses-section');
-            const list = document.getElementById('sortable-list');
-            
-            if (window.selectedCourses.length === 0) {
-                section.style.display = 'none';
-                return;
-            }
-            
-            section.style.display = 'block';
-            list.innerHTML = window.selectedCourses.map((course, index) => `
-                <div class="sortable-item" draggable="true" data-id="${course.id}">
-                    <span class="drag-handle">☰</span>
-                    <span class="order-number">${index + 1}</span>
-                    <span class="course-name">${course.title}</span>
-                    <button class="remove-btn" onclick="removeCourse('${course.id}')">&times;</button>
-                </div>
-            `).join('');
-            
-            initDragAndDrop();
-        }
-
         function removeCourse(courseId) {
-            const index = window.selectedCourses.findIndex(c => c.id === courseId);
-            if (index > -1) {
-                window.selectedCourses.splice(index, 1);
-                
-                const option = document.querySelector(`.course-option[data-id="${courseId}"]`);
-                const checkbox = document.getElementById('checkbox-' + courseId);
-                if (option) option.classList.remove('selected');
-                if (checkbox) checkbox.textContent = '';
-                
-                updateSelectedCoursesList();
-            }
-        }
-
-        function initDragAndDrop() {
-            const list = document.getElementById('sortable-list');
-            const items = list.querySelectorAll('.sortable-item');
-            
-            items.forEach(item => {
-                item.addEventListener('dragstart', handleDragStart);
-                item.addEventListener('dragover', handleDragOver);
-                item.addEventListener('drop', handleDrop);
-                item.addEventListener('dragend', handleDragEnd);
-            });
-        }
-
-        let draggedItem = null;
-
-        function handleDragStart(e) {
-            draggedItem = this;
-            this.style.opacity = '0.5';
-        }
-
-        function handleDragOver(e) {
-            e.preventDefault();
-        }
-
-        function handleDrop(e) {
-            e.preventDefault();
-            if (this !== draggedItem) {
-                const list = document.getElementById('sortable-list');
-                const items = [...list.querySelectorAll('.sortable-item')];
-                const draggedIndex = items.indexOf(draggedItem);
-                const targetIndex = items.indexOf(this);
-                
-                const [removed] = window.selectedCourses.splice(draggedIndex, 1);
-                window.selectedCourses.splice(targetIndex, 0, removed);
-                
-                updateSelectedCoursesList();
-            }
-        }
-
-        function handleDragEnd() {
-            this.style.opacity = '1';
+            window.selectedCourses = window.selectedCourses.filter(id => id !== courseId);
+            displayCoursesList();
+            updateSelectedCourses();
         }
 
         function displayPrograms() {
             const container = document.getElementById('programs-container');
             const programs = window.allPrograms || [];
+            const courses = window.allCourses || [];
             
             if (programs.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
-                        <p>Aucun programme créé</p>
-                        <button class="btn btn-primary" onclick="showTab('create')">➕ Créer mon premier programme</button>
+                        <div class="icon">🎓</div>
+                        <h3>Aucun programme</h3>
+                        <p>Créez votre premier programme</p>
+                        <button class="btn btn-primary" onclick="showTab('create')">➕ Créer</button>
                     </div>
                 `;
                 return;
             }
             
-            container.innerHTML = `
-                <div class="programs-grid">
-                    ${programs.map(program => {
-                        const courseCount = program.courses?.length || 0;
-                        const courseNames = (program.courses || []).map(c => c.title).slice(0, 3);
-                        
-                        return `
-                            <div class="program-card">
-                                <div class="program-header">
-                                    <span class="status ${program.status === 'published' ? 'status-published' : 'status-draft'}">${program.status === 'published' ? 'Publié' : 'Brouillon'}</span>
-                                    <h3>${program.title || 'Sans titre'}</h3>
-                                    <p>${program.category || 'Non catégorisé'}</p>
-                                </div>
-                                <div class="program-body">
-                                    <div class="program-stats">
-                                        <div class="program-stat">
-                                            <div class="number">${courseCount}</div>
-                                            <div class="label">Cours</div>
-                                        </div>
-                                        <div class="program-stat">
-                                            <div class="number">${program.duration || '-'}</div>
-                                            <div class="label">Durée</div>
-                                        </div>
-                                        <div class="program-stat">
-                                            <div class="number">${program.price ? program.price + '€' : 'Gratuit'}</div>
-                                            <div class="label">Prix</div>
-                                        </div>
-                                    </div>
-                                    <div class="program-courses">
-                                        <h4>Cours inclus :</h4>
-                                        ${courseNames.length > 0 ? courseNames.map(name => `<span class="course-tag">${name}</span>`).join('') : '<span class="course-tag">Aucun cours</span>'}
-                                        ${courseCount > 3 ? `<span class="course-tag">+${courseCount - 3} autres</span>` : ''}
-                                    </div>
-                                    <div class="program-actions">
-                                        <button class="btn-edit" onclick="editProgram('${program.id}')">✏️ Modifier</button>
-                                        <button class="btn-delete" onclick="deleteProgram('${program.id}')">🗑️</button>
-                                    </div>
-                                </div>
+            container.innerHTML = `<div class="programs-grid">${programs.map(program => {
+                const deadlineStr = program.deadline ? new Date(program.deadline).toLocaleDateString('fr-FR') : null;
+                const isPassed = program.deadline && new Date(program.deadline) < new Date();
+                
+                return `
+                    <div class="program-card">
+                        <div class="program-header">
+                            <span class="program-status">${program.status === 'published' ? '✓ Publié' : '⏳ Brouillon'}</span>
+                            <h3>${program.title || 'Sans titre'}</h3>
+                            <p>${program.description?.substring(0, 60) || ''}${program.description?.length > 60 ? '...' : ''}</p>
+                        </div>
+                        <div class="program-body">
+                            <div class="program-courses">
+                                <h4>📚 ${program.courses?.length || 0} cours</h4>
+                                ${(program.courses || []).slice(0, 3).map(cId => {
+                                    const c = courses.find(x => x.id === cId);
+                                    return c ? `<span class="course-tag">${c.title}</span>` : '';
+                                }).join('')}
+                                ${(program.courses?.length || 0) > 3 ? `<span class="course-tag">+${program.courses.length - 3}</span>` : ''}
                             </div>
-                        `;
-                    }).join('')}
-                </div>
-            `;
-        }
-
-        function getProgramData(status) {
-            const coursesData = window.selectedCourses.map(c => ({
-                id: c.id || '',
-                title: c.title || ''
-            }));
-            
-            return {
-                title: document.getElementById('program-title').value.trim() || '',
-                category: document.getElementById('program-category').value || '',
-                price: parseFloat(document.getElementById('program-price').value) || 0,
-                duration: document.getElementById('program-duration').value.trim() || '',
-                level: document.getElementById('program-level').value || 'debutant',
-                description: document.getElementById('program-description').value.trim() || '',
-                courses: coursesData,
-                status: status,
-                instructorId: window.currentUser?.uid || '',
-                instructorName: window.currentUser?.displayName || window.currentUser?.email || '',
-                updatedAt: new Date().toISOString()
-            };
-        }
-
-        async function saveProgramDraft() {
-            const title = document.getElementById('program-title').value.trim();
-            if (!title) { showMessage('❌ Veuillez entrer un titre', 'error'); return; }
-            
-            try {
-                const data = getProgramData('draft');
-                console.log('Saving draft:', data);
-                
-                if (window.editingProgramId) {
-                    const docRef = window.firebaseDoc(window.firebaseDb, "programs", window.editingProgramId);
-                    await window.firebaseUpdateDoc(docRef, data);
-                } else {
-                    data.createdAt = new Date().toISOString();
-                    const colRef = window.firebaseCollection(window.firebaseDb, "programs");
-                    const docRef = await window.firebaseAddDoc(colRef, data);
-                    window.editingProgramId = docRef.id;
-                }
-                
-                showMessage('✅ Brouillon enregistré !', 'success');
-                await window.loadPrograms();
-            } catch (error) {
-                console.error('Erreur détaillée:', error);
-                showMessage('❌ Erreur: ' + error.message, 'error');
-            }
-        }
-
-        async function publishProgram() {
-            const title = document.getElementById('program-title').value.trim();
-            if (!title) { showMessage('❌ Veuillez entrer un titre', 'error'); return; }
-            
-            try {
-                const data = getProgramData('published');
-                console.log('Publishing program:', data);
-                
-                if (window.editingProgramId) {
-                    const docRef = window.firebaseDoc(window.firebaseDb, "programs", window.editingProgramId);
-                    await window.firebaseUpdateDoc(docRef, data);
-                } else {
-                    data.createdAt = new Date().toISOString();
-                    const colRef = window.firebaseCollection(window.firebaseDb, "programs");
-                    await window.firebaseAddDoc(colRef, data);
-                }
-                
-                showMessage('✅ Programme publié !', 'success');
-                resetForm();
-                await window.loadPrograms();
-                showTab('list');
-            } catch (error) {
-                console.error('Erreur détaillée:', error);
-                console.error('Error code:', error.code);
-                console.error('Error message:', error.message);
-                showMessage('❌ Erreur: ' + error.message, 'error');
-            }
+                            <div class="program-meta">
+                                ${deadlineStr ? `<span class="deadline ${isPassed ? 'deadline-passed' : ''}">📅 ${deadlineStr}${isPassed ? ' (passée)' : ''}</span>` : ''}
+                            </div>
+                            <div class="program-actions">
+                                <button class="btn-edit" onclick="editProgram('${program.id}')">✏️ Modifier</button>
+                                <button class="btn-delete" onclick="deleteProgram('${program.id}')">🗑️</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('')}</div>`;
         }
 
         function editProgram(programId) {
@@ -568,46 +365,88 @@
             if (!program) return;
             
             window.editingProgramId = programId;
+            document.getElementById('title').value = program.title || '';
+            document.getElementById('description').value = program.description || '';
             
-            document.getElementById('program-title').value = program.title || '';
-            document.getElementById('program-category').value = program.category || '';
-            document.getElementById('program-price').value = program.price || '';
-            document.getElementById('program-duration').value = program.duration || '';
-            document.getElementById('program-level').value = program.level || 'debutant';
-            document.getElementById('program-description').value = program.description || '';
+            if (program.deadline) {
+                const d = new Date(program.deadline);
+                document.getElementById('deadline').value = d.toISOString().split('T')[0];
+                document.getElementById('deadline-time').value = d.toTimeString().slice(0, 5);
+            } else {
+                document.getElementById('deadline').value = '';
+                document.getElementById('deadline-time').value = '23:59';
+            }
             
-            window.selectedCourses = (program.courses || []).map(c => ({
-                id: c.id || '',
-                title: c.title || ''
-            }));
-            
-            document.querySelectorAll('.course-option').forEach(opt => {
-                const courseId = opt.getAttribute('data-id');
-                const checkbox = document.getElementById('checkbox-' + courseId);
-                
-                if (window.selectedCourses.find(c => c.id === courseId)) {
-                    opt.classList.add('selected');
-                    if (checkbox) checkbox.textContent = '✓';
-                } else {
-                    opt.classList.remove('selected');
-                    if (checkbox) checkbox.textContent = '';
-                }
-            });
-            
-            updateSelectedCoursesList();
-            showTab('create');
+            window.selectedCourses = program.courses || [];
+            displayCoursesList();
+            updateSelectedCourses();
+            document.querySelectorAll('.tab')[1].click();
         }
 
         async function deleteProgram(programId) {
-            if (!confirm('Êtes-vous sûr de vouloir supprimer ce programme ?')) return;
+            if (!confirm('Supprimer ce programme ?')) return;
+            try {
+                await window.deleteDoc(window.doc(window.firebaseDb, "programs", programId));
+                showMessage('✅ Programme supprimé', 'success');
+                await window.loadData();
+            } catch (error) {
+                showMessage('❌ Erreur: ' + error.message, 'error');
+            }
+        }
+
+        function getProgramData(status) {
+            let deadline = null;
+            const deadlineDate = document.getElementById('deadline').value;
+            const deadlineTime = document.getElementById('deadline-time').value || '23:59';
+            if (deadlineDate) deadline = new Date(`${deadlineDate}T${deadlineTime}`).toISOString();
+            
+            return {
+                title: document.getElementById('title').value.trim(),
+                description: document.getElementById('description').value.trim(),
+                deadline: deadline,
+                courses: window.selectedCourses,
+                status: status,
+                updatedAt: new Date().toISOString()
+            };
+        }
+
+        async function saveDraft() {
+            const title = document.getElementById('title').value.trim();
+            if (!title) { showMessage('❌ Titre requis', 'error'); return; }
             
             try {
-                const docRef = window.firebaseDoc(window.firebaseDb, "programs", programId);
-                await window.firebaseDeleteDoc(docRef);
-                showMessage('✅ Programme supprimé', 'success');
-                await window.loadPrograms();
+                const data = getProgramData('draft');
+                if (window.editingProgramId) {
+                    await window.updateDoc(window.doc(window.firebaseDb, "programs", window.editingProgramId), data);
+                } else {
+                    data.createdAt = new Date().toISOString();
+                    await window.addDoc(window.collection(window.firebaseDb, "programs"), data);
+                }
+                showMessage('✅ Brouillon enregistré !', 'success');
+                await window.loadData();
             } catch (error) {
-                console.error('Erreur:', error);
+                showMessage('❌ Erreur: ' + error.message, 'error');
+            }
+        }
+
+        async function publishProgram() {
+            const title = document.getElementById('title').value.trim();
+            if (!title) { showMessage('❌ Titre requis', 'error'); return; }
+            if (window.selectedCourses.length === 0) { showMessage('❌ Sélectionnez au moins un cours', 'error'); return; }
+            
+            try {
+                const data = getProgramData('published');
+                if (window.editingProgramId) {
+                    await window.updateDoc(window.doc(window.firebaseDb, "programs", window.editingProgramId), data);
+                } else {
+                    data.createdAt = new Date().toISOString();
+                    await window.addDoc(window.collection(window.firebaseDb, "programs"), data);
+                }
+                showMessage('✅ Programme publié !', 'success');
+                resetForm();
+                await window.loadData();
+                document.querySelectorAll('.tab')[0].click();
+            } catch (error) {
                 showMessage('❌ Erreur: ' + error.message, 'error');
             }
         }
@@ -615,22 +454,12 @@
         function resetForm() {
             window.editingProgramId = null;
             window.selectedCourses = [];
-            
-            document.getElementById('program-title').value = '';
-            document.getElementById('program-category').value = '';
-            document.getElementById('program-price').value = '';
-            document.getElementById('program-duration').value = '';
-            document.getElementById('program-level').value = 'debutant';
-            document.getElementById('program-description').value = '';
-            
-            document.querySelectorAll('.course-option').forEach(opt => {
-                opt.classList.remove('selected');
-            });
-            document.querySelectorAll('[id^="checkbox-"]').forEach(cb => {
-                cb.textContent = '';
-            });
-            
-            document.getElementById('selected-courses-section').style.display = 'none';
+            document.getElementById('title').value = '';
+            document.getElementById('description').value = '';
+            document.getElementById('deadline').value = '';
+            document.getElementById('deadline-time').value = '23:59';
+            displayCoursesList();
+            updateSelectedCourses();
         }
     </script>
 </body>
