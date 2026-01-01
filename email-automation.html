@@ -151,12 +151,16 @@
                         💬 Corps du message
                         <button class="btn btn-copy" onclick="copyToClipboard('body-content', this)">📋 Copier</button>
                     </h3>
-                    <div class="content" id="body-content">-</div>
+                    <div class="content" id="body-content" style="font-family: 'Aptos', Calibri, Arial, sans-serif;">-</div>
                 </div>
             </div>
             
             <div class="info-box">
                 <p>💡 <strong>Conseil :</strong> Utilisez le champ <strong>BCC (ou CCI)</strong> pour les destinataires afin de protéger leur vie privée. Chaque étudiant ne verra pas les autres adresses.</p>
+            </div>
+            
+            <div class="info-box" style="margin-top: 15px;">
+                <p>🔤 <strong>Police recommandée :</strong> Pour une meilleure présentation, sélectionnez la police <strong>Aptos</strong> (ou Calibri) dans votre client email après avoir collé le texte.</p>
             </div>
         </div>
     </div>
@@ -257,12 +261,12 @@ Cordialement,
 L'équipe LearningHub`
             },
             reminder: {
-                subject: "⏰ Rappel : Terminez votre formation avant le {{deadline}}",
+                subject: "Rappel : Terminez votre formation avant le {{deadline}}",
                 body: `Bonjour,
 
 Ce message est un rappel concernant votre formation : {{cours}}
 
-📅 Date limite : {{deadline}}
+Date limite : {{deadline}}
 
 Nous vous invitons à terminer cette formation avant la date indiquée.
 
@@ -272,20 +276,27 @@ Cordialement,
 L'équipe LearningHub`
             },
             welcome: {
-                subject: "Bienvenue sur LearningHub !",
+                subject: "Bienvenue sur LearningHub - Créez votre compte",
                 body: `Bonjour,
 
-Bienvenue sur LearningHub ! 🎉
+Bienvenue sur LearningHub !
 
-Votre compte a été créé avec succès. Vous pouvez maintenant accéder à vos formations.
+Vous avez été inscrit(e) sur notre plateforme de formation en ligne.
 
-Connectez-vous : https://patrialis.github.io/learninghub/
+Pour accéder à vos formations, veuillez créer votre compte en suivant ces étapes :
+
+1. Rendez-vous sur : https://patrialis.github.io/learninghub/
+2. Cliquez sur "Inscription"
+3. Utilisez cette adresse email pour créer votre compte
+4. Choisissez un mot de passe
+
+Une fois votre compte créé, vous pourrez accéder à toutes vos formations assignées.
 
 À bientôt !
 L'équipe LearningHub`
             },
             new_course: {
-                subject: "📚 Nouveau cours disponible : {{cours}}",
+                subject: "Nouveau cours disponible : {{cours}}",
                 body: `Bonjour,
 
 Un nouveau cours est maintenant disponible : {{cours}}
@@ -298,6 +309,9 @@ Bon apprentissage !
 L'équipe LearningHub`
             }
         };
+
+        // Font style note
+        const fontStyle = "font-family: 'Aptos', Calibri, Arial, sans-serif;";
 
         function updateOptions() {
             const type = document.getElementById('email-type').value;
