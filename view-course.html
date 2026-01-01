@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cours - LearningHub</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --brown: #8B6F47; --dark-brown: #6B5A3B; --beige: #E8DCC4; --light-gray: #F5F5F0; --green: #6B9F7F; --dark-green: #5A8A6E; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--light-gray); min-height: 100vh; }
+        
+        /* Header */
+        .header { background: var(--brown); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .header h1 { font-size: 1.3rem; }
+        .header h1 span { color: var(--green); }
+        .header-actions { display: flex; gap: 15px; align-items: center; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.3s; text-decoration: none; display: inline-block; }
+        .btn-light { background: rgba(255,255,255,0.2); color: white; }
+        .btn-light:hover { background: rgba(255,255,255,0.3); }
+        .btn-primary { background: var(--green); color: white; }
+        .btn-primary:hover { background: var(--dark-green); }
+        
+        /* Main Layout */
+        .main-layout { display: grid; grid-template-columns: 300px 1fr; min-height: calc(100vh - 60px); }
+        
+        /* Sidebar */
+        .sidebar { background: white; border-right: 1px solid var(--beige); overflow-y: auto; }
+        .course-info { padding: 25px; border-bottom: 1px solid var(--beige); }
+        .course-info h2 { color: var(--dark-brown); font-size: 1.2rem; margin-bottom: 10px; }
+        .course-meta { font-size: 0.85rem; color: #888; }
+        .course-meta span { display: block; margin-bottom: 5px; }
+        
+        /* Progress */
+        .progress-section { padding: 20px 25px; border-bottom: 1px solid var(--beige); }
+        .progress-section h3 { font-size: 0.9rem; color: var(--dark-brown); margin-bottom: 10px; }
+        .progress-bar { height: 8px; background: var(--beige); border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--green); transition: width 0.3s; }
+        .progress-text { font-size: 0.85rem; color: #888; margin-top: 5px; }
+        
+        /* Modules List */
+        .modules-section { padding: 20px 0; }
+        .modules-section h3 { padding: 0 25px 15px; font-size: 0.9rem; color: var(--dark-brown); }
+        .module-item { padding: 15px 25px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 12px; border-left: 3px solid transparent; }
+        .module-item:hover { background: var(--light-gray); }
+        .module-item.active { background: var(--light-gray); border-left-color: var(--green); }
+        .module-item.completed .module-check { background: var(--green); color: white; }
+        .module-check { width: 24px; height: 24px; border: 2px solid var(--beige); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; flex-shrink: 0; }
+        .module-title { flex: 1; font-size: 0.9rem; }
+        .module-duration { font-size: 0.8rem; color: #888; }
+        
+        /* Content Area */
+        .content-area { padding: 30px; overflow-y: auto; }
+        .content-card { background: white; border-radius: 15px; padding: 30px; margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .content-card h2 { color: var(--dark-brown); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        
+        /* Video Player */
+        .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 10px; background: #000; margin-bottom: 20px; }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        .no-video { display: flex; align-items: center; justify-content: center; height: 300px; background: var(--light-gray); border-radius: 10px; color: #888; }
+        
+        /* Video List */
+        .video-list { display: grid; gap: 10px; margin-top: 15px; }
+        .video-item { padding: 15px; background: var(--light-gray); border-radius: 10px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 12px; }
+        .video-item:hover { background: var(--beige); }
+        .video-item.active { background: var(--beige); border: 2px solid var(--green); }
+        .video-icon { font-size: 1.5rem; }
+        .video-title { flex: 1; font-weight: 500; }
+        
+        /* Code Preview */
+        .code-preview { background: #2d2d2d; border-radius: 10px; padding: 20px; overflow-x: auto; }
+        .code-preview pre { color: #f8f8f2; font-family: 'Courier New', monospace; font-size: 14px; white-space: pre-wrap; }
+        .code-tabs { display: flex; gap: 5px; margin-bottom: 15px; }
+        .code-tab { padding: 8px 16px; background: var(--beige); border: none; cursor: pointer; border-radius: 6px; font-size: 0.9rem; }
+        .code-tab.active { background: var(--green); color: white; }
+        
+        /* Description */
+        .description { line-height: 1.7; color: #555; }
+        
+        /* Navigation Buttons */
+        .nav-buttons { display: flex; justify-content: space-between; margin-top: 30px; }
+        
+        /* Complete Button */
+        .complete-section { text-align: center; padding: 30px; background: var(--light-gray); border-radius: 10px; margin-top: 20px; }
+        .complete-section p { margin-bottom: 15px; color: #666; }
+        
+        /* Loading */
+        .loading { text-align: center; padding: 60px; }
+        .spinner { width: 50px; height: 50px; border: 4px solid var(--beige); border-top: 4px solid var(--green); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Responsive */
+        @media (max-width: 900px) {
+            .main-layout { grid-template-columns: 1fr; }
+            .sidebar { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <h1>🎓 Learning<span>Hub</span></h1>
+        <div class="header-actions">
+            <a href="instructor-dashboard.html" class="btn btn-light">← Dashboard</a>
+            <button class="btn btn-light" onclick="handleLogout()">Déconnexion</button>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <p>Chargement du cours...</p>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="main-layout" id="main-content" style="display: none;">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="course-info">
+                <h2 id="course-title">Titre du cours</h2>
+                <div class="course-meta">
+                    <span>👨‍🏫 <span id="instructor-name">Formateur</span></span>
+                    <span>📚 <span id="course-level">Niveau</span></span>
+                    <span>⏱️ <span id="course-duration">Durée</span></span>
+                </div>
+            </div>
+            
+            <div class="progress-section">
+                <h3>📊 Votre progression</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                </div>
+                <div class="progress-text"><span id="progress-percent">0</span>% complété</div>
+            </div>
+            
+            <div class="modules-section">
+                <h3>📖 Modules</h3>
+                <div id="modules-list"></div>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Video Section -->
+            <div class="content-card" id="video-section">
+                <h2>🎥 Vidéos du cours</h2>
+                <div id="video-player">
+                    <div class="no-video">Sélectionnez une vidéo pour commencer</div>
+                </div>
+                <div class="video-list" id="video-list"></div>
+            </div>
+
+            <!-- Code Section -->
+            <div class="content-card" id="code-section">
+                <h2>💻 Code / Contenu</h2>
+                <div class="code-tabs">
+                    <button class="code-tab active" onclick="showCode('html')">HTML</button>
+                    <button class="code-tab" onclick="showCode('css')">CSS</button>
+                    <button class="code-tab" onclick="showCode('js')">JavaScript</button>
+                </div>
+                <div class="code-preview">
+                    <pre id="code-content">Aucun code disponible</pre>
+                </div>
+                <button class="btn btn-primary" style="margin-top: 15px;" onclick="runCode()">▶️ Exécuter le code</button>
+                <div id="code-output" style="margin-top: 15px; display: none;"></div>
+            </div>
+
+            <!-- Description Section -->
+            <div class="content-card">
+                <h2>📝 Description</h2>
+                <div class="description" id="course-description">
+                    Chargement de la description...
+                </div>
+            </div>
+
+            <!-- Complete Section -->
+            <div class="complete-section" id="complete-section">
+                <p>Vous avez terminé ce module ?</p>
+                <button class="btn btn-primary" onclick="markAsComplete()">✅ Marquer comme terminé</button>
+            </div>
+
+            <!-- Navigation -->
+            <div class="nav-buttons">
+                <button class="btn btn-light" id="prev-btn" onclick="previousModule()" style="display: none;">← Module précédent</button>
+                <button class="btn btn-primary" id="next-btn" onclick="nextModule()">Module suivant →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAVO1P9v-IBsyxF_80vQvZDlR5tIqh878U",
+            authDomain: "learncentric.firebaseapp.com",
+            projectId: "learncentric",
+            storageBucket: "learncentric.firebasestorage.app",
+            messagingSenderId: "1083770541694",
+            appId: "1:1083770541694:web:b8dbcd7852ca7d9c8fea2f",
+            measurementId: "G-H84E7J29M3"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        window.firebaseAuth = auth;
+        window.firebaseDb = db;
+        window.signOut = signOut;
+        window.doc = doc;
+        window.getDoc = getDoc;
+        window.updateDoc = updateDoc;
+
+        // Check authentication
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                window.currentUser = user;
+                
+                // Get course ID from URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const courseId = urlParams.get('id');
+                
+                if (courseId) {
+                    await loadCourse(courseId);
+                } else {
+                    alert('Aucun cours spécifié');
+                    window.location.href = 'instructor-dashboard.html';
+                }
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        // Load course
+        async function loadCourse(courseId) {
+            try {
+                const courseDoc = await getDoc(doc(db, "courses", courseId));
+                
+                if (courseDoc.exists()) {
+                    const course = courseDoc.data();
+                    window.currentCourse = { id: courseId, ...course };
+                    window.currentModuleIndex = 0;
+                    
+                    // Display course info
+                    document.getElementById('course-title').textContent = course.title || 'Sans titre';
+                    document.getElementById('instructor-name').textContent = course.instructorName || 'Formateur';
+                    document.getElementById('course-level').textContent = course.level || 'Tous niveaux';
+                    document.getElementById('course-duration').textContent = course.duration || 'Non spécifié';
+                    document.getElementById('course-description').textContent = course.description || 'Aucune description disponible.';
+                    
+                    // Store code
+                    window.courseCode = {
+                        html: course.codeHtml || '',
+                        css: course.codeCss || '',
+                        js: course.codeJs || ''
+                    };
+                    
+                    // Display code
+                    showCode('html');
+                    
+                    // Display modules
+                    displayModules(course.modules || []);
+                    
+                    // Display videos
+                    displayVideos(course.videos || []);
+                    
+                    // Load user progress
+                    await loadUserProgress(courseId);
+                    
+                    // Show content
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('main-content').style.display = 'grid';
+                } else {
+                    alert('Cours non trouvé');
+                    window.location.href = 'instructor-dashboard.html';
+                }
+            } catch (error) {
+                console.error('Erreur chargement cours:', error);
+                alert('Erreur lors du chargement du cours');
+            }
+        }
+
+        // Load user progress
+        async function loadUserProgress(courseId) {
+            try {
+                const userDoc = await getDoc(doc(db, "users", window.currentUser.uid));
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    const progress = userData.progress || {};
+                    const courseProgress = progress[courseId] || { completedModules: [], percent: 0 };
+                    
+                    window.completedModules = courseProgress.completedModules || [];
+                    updateProgressDisplay();
+                }
+            } catch (error) {
+                console.error('Erreur chargement progression:', error);
+                window.completedModules = [];
+            }
+        }
+
+        window.loadCourse = loadCourse;
+        window.loadUserProgress = loadUserProgress;
+    </script>
+
+    <script>
+        // Current state
+        window.currentModuleIndex = 0;
+        window.completedModules = [];
+
+        // Display modules
+        function displayModules(modules) {
+            const list = document.getElementById('modules-list');
+            
+            if (!modules || modules.length === 0) {
+                list.innerHTML = '<div style="padding: 15px 25px; color: #888;">Aucun module défini</div>';
+                return;
+            }
+            
+            list.innerHTML = modules.map((m, i) => `
+                <div class="module-item ${i === 0 ? 'active' : ''}" onclick="selectModule(${i})" id="module-${i}">
+                    <div class="module-check" id="check-${i}">
+                        ${window.completedModules.includes(i) ? '✓' : (i + 1)}
+                    </div>
+                    <div class="module-title">${m.title}</div>
+                    <div class="module-duration">${m.duration || ''}</div>
+                </div>
+            `).join('');
+        }
+
+        // Select module
+        function selectModule(index) {
+            window.currentModuleIndex = index;
+            
+            // Update active state
+            document.querySelectorAll('.module-item').forEach((item, i) => {
+                item.classList.toggle('active', i === index);
+            });
+            
+            // Update navigation buttons
+            const modules = window.currentCourse?.modules || [];
+            document.getElementById('prev-btn').style.display = index > 0 ? 'block' : 'none';
+            document.getElementById('next-btn').textContent = index < modules.length - 1 ? 'Module suivant →' : 'Terminer le cours →';
+        }
+
+        // Display videos
+        function displayVideos(videos) {
+            const list = document.getElementById('video-list');
+            const section = document.getElementById('video-section');
+            
+            if (!videos || videos.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+            
+            list.innerHTML = videos.map((v, i) => `
+                <div class="video-item ${i === 0 ? 'active' : ''}" onclick="playVideo('${v.url}', ${i})">
+                    <div class="video-icon">▶️</div>
+                    <div class="video-title">${v.title}</div>
+                </div>
+            `).join('');
+            
+            // Auto-play first video
+            if (videos.length > 0) {
+                playVideo(videos[0].url, 0);
+            }
+        }
+
+        // Play video
+        function playVideo(url, index) {
+            const player = document.getElementById('video-player');
+            
+            // Update active state
+            document.querySelectorAll('.video-item').forEach((item, i) => {
+                item.classList.toggle('active', i === index);
+            });
+            
+            // Convert YouTube URL to embed
+            let embedUrl = url;
+            if (url.includes('youtube.com/watch')) {
+                const videoId = url.split('v=')[1]?.split('&')[0];
+                embedUrl = `https://www.youtube.com/embed/${videoId}`;
+            } else if (url.includes('youtu.be/')) {
+                const videoId = url.split('youtu.be/')[1]?.split('?')[0];
+                embedUrl = `https://www.youtube.com/embed/${videoId}`;
+            } else if (url.includes('vimeo.com/')) {
+                const videoId = url.split('vimeo.com/')[1]?.split('?')[0];
+                embedUrl = `https://player.vimeo.com/video/${videoId}`;
+            }
+            
+            player.innerHTML = `
+                <div class="video-container">
+                    <iframe src="${embedUrl}" frameborder="0" allowfullscreen></iframe>
+                </div>
+            `;
+        }
+
+        // Show code
+        function showCode(type) {
+            document.querySelectorAll('.code-tab').forEach(tab => tab.classList.remove('active'));
+            event?.currentTarget?.classList.add('active');
+            
+            const code = window.courseCode?.[type] || 'Aucun code disponible';
+            document.getElementById('code-content').textContent = code;
+            window.currentCodeType = type;
+        }
+
+        // Run code
+        function runCode() {
+            const output = document.getElementById('code-output');
+            output.style.display = 'block';
+            
+            const html = window.courseCode?.html || '';
+            const css = window.courseCode?.css || '';
+            const js = window.courseCode?.js || '';
+            
+            const iframe = document.createElement('iframe');
+            iframe.style.width = '100%';
+            iframe.style.height = '300px';
+            iframe.style.border = '2px solid ' + getComputedStyle(document.documentElement).getPropertyValue('--beige');
+            iframe.style.borderRadius = '10px';
+            
+            output.innerHTML = '<h4 style="margin-bottom: 10px;">📺 Résultat :</h4>';
+            output.appendChild(iframe);
+            
+            const content = `
+                <!DOCTYPE html>
+                <html>
+                <head><style>${css}</style></head>
+                <body>${html}<script>${js}<\/script></body>
+                </html>
+            `;
+            
+            iframe.contentDocument.open();
+            iframe.contentDocument.write(content);
+            iframe.contentDocument.close();
+        }
+
+        // Mark as complete
+        async function markAsComplete() {
+            const moduleIndex = window.currentModuleIndex;
+            
+            if (!window.completedModules.includes(moduleIndex)) {
+                window.completedModules.push(moduleIndex);
+            }
+            
+            // Update UI
+            const checkEl = document.getElementById(`check-${moduleIndex}`);
+            if (checkEl) {
+                checkEl.textContent = '✓';
+                checkEl.style.background = 'var(--green)';
+                checkEl.style.color = 'white';
+                checkEl.style.border = 'none';
+            }
+            
+            document.getElementById(`module-${moduleIndex}`)?.classList.add('completed');
+            
+            // Update progress display
+            updateProgressDisplay();
+            
+            // Save to Firebase
+            try {
+                const courseId = window.currentCourse?.id;
+                const userRef = window.doc(window.firebaseDb, "users", window.currentUser.uid);
+                const userDoc = await window.getDoc(userRef);
+                
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    const progress = userData.progress || {};
+                    
+                    const modules = window.currentCourse?.modules || [];
+                    const percent = Math.round((window.completedModules.length / Math.max(modules.length, 1)) * 100);
+                    
+                    progress[courseId] = {
+                        completedModules: window.completedModules,
+                        percent: percent
+                    };
+                    
+                    await window.updateDoc(userRef, { progress: progress });
+                }
+            } catch (error) {
+                console.error('Erreur sauvegarde progression:', error);
+            }
+            
+            alert('✅ Module marqué comme terminé !');
+        }
+
+        // Update progress display
+        function updateProgressDisplay() {
+            const modules = window.currentCourse?.modules || [];
+            const totalModules = Math.max(modules.length, 1);
+            const completedCount = window.completedModules.length;
+            const percent = Math.round((completedCount / totalModules) * 100);
+            
+            document.getElementById('progress-fill').style.width = percent + '%';
+            document.getElementById('progress-percent').textContent = percent;
+        }
+
+        // Navigation
+        function previousModule() {
+            if (window.currentModuleIndex > 0) {
+                selectModule(window.currentModuleIndex - 1);
+            }
+        }
+
+        function nextModule() {
+            const modules = window.currentCourse?.modules || [];
+            if (window.currentModuleIndex < modules.length - 1) {
+                selectModule(window.currentModuleIndex + 1);
+            } else {
+                alert('🎉 Félicitations ! Vous avez terminé le cours !');
+            }
+        }
+
+        // Logout
+        async function handleLogout() {
+            try {
+                await window.signOut(window.firebaseAuth);
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('Erreur déconnexion:', error);
+            }
+        }
+    </script>
+</body>
+</html>

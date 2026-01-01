@@ -303,6 +303,7 @@
                                 <td>${course.price ? course.price + '€' : 'Gratuit'}</td>
                                 <td><span class="status ${course.status === 'published' ? 'status-published' : 'status-draft'}">${course.status === 'published' ? 'Publié' : 'Brouillon'}</span></td>
                                 <td>
+                                    <button class="action-btn" onclick="viewCourse('${course.id}')" title="Voir">👁️</button>
                                     <button class="action-btn" onclick="editCourse('${course.id}')" title="Modifier">✏️</button>
                                     <button class="action-btn" onclick="deleteCourse('${course.id}')" title="Supprimer">🗑️</button>
                                 </td>
@@ -340,6 +341,11 @@
                 console.error('Erreur déconnexion:', error);
                 alert('Erreur lors de la déconnexion');
             }
+        }
+
+        // View course
+        function viewCourse(courseId) {
+            window.location.href = 'view-course.html?id=' + courseId;
         }
 
         // Edit course
