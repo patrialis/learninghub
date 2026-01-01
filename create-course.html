@@ -37,7 +37,6 @@
         
         .actions { display: flex; gap: 15px; justify-content: flex-end; margin-top: 30px; }
         
-        /* Minimum score highlight */
         .score-input-wrapper { position: relative; }
         .score-input-wrapper input { padding-right: 50px; }
         .score-suffix { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #888; font-weight: 500; }
@@ -45,7 +44,6 @@
         .score-preview p { color: #666; font-size: 0.9rem; }
         .score-preview strong { color: var(--dark-brown); }
         
-        /* Code Editor */
         .code-tabs { display: flex; gap: 5px; margin-bottom: 10px; }
         .code-tab { padding: 10px 20px; background: var(--beige); border: none; cursor: pointer; border-radius: 8px 8px 0 0; }
         .code-tab.active { background: #2d2d2d; color: white; }
@@ -53,11 +51,9 @@
         .code-editor textarea { width: 100%; min-height: 200px; background: transparent; border: none; color: #f8f8f2; font-family: 'Courier New', monospace; font-size: 14px; resize: vertical; }
         .code-editor textarea:focus { outline: none; }
         
-        /* Preview */
         .preview-container { border: 2px solid var(--beige); border-radius: 10px; padding: 20px; min-height: 200px; background: white; }
         .preview-btn { margin-bottom: 15px; }
         
-        /* Modules */
         .module-list { margin-top: 15px; }
         .module-item { display: flex; align-items: center; gap: 10px; padding: 12px; background: var(--light-gray); border-radius: 8px; margin-bottom: 10px; }
         .module-item span { flex: 1; }
@@ -65,7 +61,6 @@
         .add-module { display: flex; gap: 10px; }
         .add-module input { flex: 1; }
         
-        /* Messages */
         .message { padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; display: none; }
         .message.success { background: #d4edda; color: #155724; display: block; }
         .message.error { background: #f8d7da; color: #721c24; display: block; }
@@ -100,15 +95,7 @@
                 <div class="form-group">
                     <label for="category">Catégorie</label>
                     <select id="category">
-                        <option value="">Sélectionner...</option>
-                        <option value="developpement">💻 Développement</option>
-                        <option value="design">🎨 Design</option>
-                        <option value="business">📊 Business</option>
-                        <option value="marketing">📈 Marketing</option>
-                        <option value="photo">📸 Photo & Vidéo</option>
-                        <option value="musique">🎵 Musique</option>
-                        <option value="compliance">⚖️ Compliance</option>
-                        <option value="finance">💰 Finance</option>
+                        <option value="">Chargement des catégories...</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -143,7 +130,6 @@
                 <textarea id="description" placeholder="Décrivez votre cours..."></textarea>
             </div>
             
-            <!-- Score preview -->
             <div class="score-preview">
                 <p>🎓 <strong>Condition de réussite :</strong> L'étudiant devra compléter au moins <strong><span id="score-preview-value">70</span>%</strong> du cours pour obtenir son certificat.</p>
             </div>
@@ -199,7 +185,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, addDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, addDoc, updateDoc, query, getDocs } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAVO1P9v-IBsyxF_80vQvZDlR5tIqh878U",
@@ -222,10 +208,15 @@
         window.collection = collection;
         window.addDoc = addDoc;
         window.updateDoc = updateDoc;
+        window.query = query;
+        window.getDocs = getDocs;
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 window.currentUser = user;
+                
+                // Load categories from Firebase
+                await loadCategories();
                 
                 const urlParams = new URLSearchParams(window.location.search);
                 const courseId = urlParams.get('id');
@@ -239,6 +230,49 @@
                 window.location.href = 'index.html';
             }
         });
+
+        async function loadCategories() {
+            try {
+                const categoriesQuery = query(collection(db, "categories"));
+                const snapshot = await getDocs(categoriesQuery);
+                
+                const select = document.getElementById('category');
+                select.innerHTML = '<option value="">Sélectionner une catégorie...</option>';
+                
+                snapshot.forEach(doc => {
+                    const cat = doc.data();
+                    const option = document.createElement('option');
+                    option.value = doc.id;
+                    option.textContent = (cat.icon || '📚') + ' ' + cat.name;
+                    select.appendChild(option);
+                });
+                
+                // If no categories, show default ones
+                if (snapshot.empty) {
+                    select.innerHTML = `
+                        <option value="">Sélectionner...</option>
+                        <option value="developpement">💻 Développement</option>
+                        <option value="design">🎨 Design</option>
+                        <option value="business">📊 Business</option>
+                        <option value="marketing">📈 Marketing</option>
+                        <option value="compliance">⚖️ Compliance</option>
+                        <option value="finance">💰 Finance</option>
+                    `;
+                }
+            } catch (error) {
+                console.error('Erreur chargement catégories:', error);
+                // Fallback to default categories
+                document.getElementById('category').innerHTML = `
+                    <option value="">Sélectionner...</option>
+                    <option value="developpement">💻 Développement</option>
+                    <option value="design">🎨 Design</option>
+                    <option value="business">📊 Business</option>
+                    <option value="marketing">📈 Marketing</option>
+                    <option value="compliance">⚖️ Compliance</option>
+                    <option value="finance">💰 Finance</option>
+                `;
+            }
+        }
 
         async function loadCourse(courseId) {
             try {
@@ -273,13 +307,13 @@
         }
 
         window.loadCourse = loadCourse;
+        window.loadCategories = loadCategories;
     </script>
 
     <script>
         window.modules = [];
         window.videos = [];
 
-        // Update score preview
         document.getElementById('min-score').addEventListener('input', function() {
             document.getElementById('score-preview-value').textContent = this.value || '0';
         });

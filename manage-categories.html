@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catégories - LearningHub</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --brown: #8B6F47; --dark-brown: #6B5A3B; --beige: #E8DCC4; --light-gray: #F5F5F0; --green: #6B9F7F; --dark-green: #5A8A6E; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--light-gray); min-height: 100vh; padding: 20px; }
+        
+        .container { max-width: 1000px; margin: 0 auto; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header h1 { color: var(--dark-brown); display: flex; align-items: center; gap: 10px; }
+        .back-btn { background: var(--beige); border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; color: var(--dark-brown); font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+        .back-btn:hover { background: #d9cab3; }
+        
+        .section { background: white; border-radius: 15px; padding: 25px; margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .section-header h2 { color: var(--dark-brown); font-size: 1.2rem; }
+        
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.3s; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary { background: var(--green); color: white; }
+        .btn-primary:hover { background: var(--dark-green); }
+        .btn-secondary { background: var(--beige); color: var(--dark-brown); }
+        .btn-secondary:hover { background: #d9cab3; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-danger:hover { background: #c82333; }
+        .btn-small { padding: 8px 15px; font-size: 0.85rem; }
+        
+        /* Add Category Form */
+        .add-form { display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; }
+        .form-group { flex: 1; min-width: 200px; }
+        .form-group label { display: block; margin-bottom: 8px; color: var(--dark-brown); font-weight: 500; font-size: 0.9rem; }
+        .form-group input, .form-group select { width: 100%; padding: 12px 15px; border: 2px solid var(--beige); border-radius: 10px; font-size: 1rem; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--green); }
+        
+        /* Icon Picker */
+        .icon-picker { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+        .icon-option { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; border: 2px solid var(--beige); border-radius: 8px; cursor: pointer; transition: all 0.2s; background: white; }
+        .icon-option:hover { background: var(--light-gray); }
+        .icon-option.selected { border-color: var(--green); background: var(--green); }
+        
+        /* Color Picker */
+        .color-picker { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+        .color-option { width: 35px; height: 35px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.2s; }
+        .color-option:hover { transform: scale(1.1); }
+        .color-option.selected { border-color: var(--dark-brown); }
+        
+        /* Categories Grid */
+        .categories-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        
+        .category-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); transition: all 0.3s; border: 2px solid var(--beige); }
+        .category-card:hover { transform: translateY(-3px); box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .category-header { padding: 20px; display: flex; align-items: center; gap: 15px; }
+        .category-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: white; }
+        .category-info { flex: 1; }
+        .category-info h3 { font-size: 1.1rem; color: var(--dark-brown); margin-bottom: 3px; }
+        .category-info p { font-size: 0.85rem; color: #888; }
+        .category-body { padding: 15px 20px; background: var(--light-gray); display: flex; justify-content: space-between; align-items: center; }
+        .category-stats { font-size: 0.9rem; color: #666; }
+        .category-actions { display: flex; gap: 8px; }
+        .category-actions button { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
+        .btn-edit { background: var(--beige); color: var(--dark-brown); }
+        .btn-edit:hover { background: #d9cab3; }
+        .btn-delete { background: #f8d7da; color: #721c24; }
+        .btn-delete:hover { background: #f1b0b7; }
+        
+        /* Empty State */
+        .empty-state { text-align: center; padding: 50px; color: #888; }
+        .empty-state .icon { font-size: 4rem; margin-bottom: 15px; }
+        .empty-state p { margin-bottom: 20px; }
+        
+        /* Message */
+        .message { padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; display: none; }
+        .message.success { background: #d4edda; color: #155724; display: block; }
+        .message.error { background: #f8d7da; color: #721c24; display: block; }
+        
+        /* Loading */
+        .loading { text-align: center; padding: 40px; }
+        .spinner { width: 40px; height: 40px; border: 4px solid var(--beige); border-top: 4px solid var(--green); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+        .modal.show { display: flex; }
+        .modal-content { background: white; border-radius: 20px; padding: 30px; max-width: 500px; width: 100%; }
+        .modal-content h2 { color: var(--dark-brown); margin-bottom: 20px; }
+        .modal-actions { display: flex; gap: 15px; justify-content: flex-end; margin-top: 25px; }
+        
+        @media (max-width: 600px) {
+            .add-form { flex-direction: column; }
+            .form-group { min-width: 100%; }
+            .categories-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 Gestion des Catégories</h1>
+            <a href="instructor-dashboard.html" class="back-btn">← Retour au Dashboard</a>
+        </div>
+
+        <div id="message" class="message"></div>
+
+        <!-- Add Category -->
+        <div class="section">
+            <div class="section-header">
+                <h2>➕ Ajouter une catégorie</h2>
+            </div>
+            
+            <div class="add-form">
+                <div class="form-group" style="flex: 2;">
+                    <label>Nom de la catégorie</label>
+                    <input type="text" id="category-name" placeholder="Ex: Intelligence Artificielle">
+                </div>
+                <div class="form-group">
+                    <label>Description (optionnelle)</label>
+                    <input type="text" id="category-description" placeholder="Brève description">
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <label style="display: block; margin-bottom: 10px; color: var(--dark-brown); font-weight: 500;">Icône</label>
+                <div class="icon-picker" id="icon-picker">
+                    <div class="icon-option selected" data-icon="💻" onclick="selectIcon(this)">💻</div>
+                    <div class="icon-option" data-icon="🎨" onclick="selectIcon(this)">🎨</div>
+                    <div class="icon-option" data-icon="📊" onclick="selectIcon(this)">📊</div>
+                    <div class="icon-option" data-icon="📈" onclick="selectIcon(this)">📈</div>
+                    <div class="icon-option" data-icon="⚖️" onclick="selectIcon(this)">⚖️</div>
+                    <div class="icon-option" data-icon="💰" onclick="selectIcon(this)">💰</div>
+                    <div class="icon-option" data-icon="🔬" onclick="selectIcon(this)">🔬</div>
+                    <div class="icon-option" data-icon="🏥" onclick="selectIcon(this)">🏥</div>
+                    <div class="icon-option" data-icon="📸" onclick="selectIcon(this)">📸</div>
+                    <div class="icon-option" data-icon="🎵" onclick="selectIcon(this)">🎵</div>
+                    <div class="icon-option" data-icon="✍️" onclick="selectIcon(this)">✍️</div>
+                    <div class="icon-option" data-icon="🌐" onclick="selectIcon(this)">🌐</div>
+                    <div class="icon-option" data-icon="🤖" onclick="selectIcon(this)">🤖</div>
+                    <div class="icon-option" data-icon="📱" onclick="selectIcon(this)">📱</div>
+                    <div class="icon-option" data-icon="🔒" onclick="selectIcon(this)">🔒</div>
+                    <div class="icon-option" data-icon="☁️" onclick="selectIcon(this)">☁️</div>
+                    <div class="icon-option" data-icon="📚" onclick="selectIcon(this)">📚</div>
+                    <div class="icon-option" data-icon="🎯" onclick="selectIcon(this)">🎯</div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <label style="display: block; margin-bottom: 10px; color: var(--dark-brown); font-weight: 500;">Couleur</label>
+                <div class="color-picker" id="color-picker">
+                    <div class="color-option selected" data-color="#6B9F7F" style="background: #6B9F7F;" onclick="selectColor(this)"></div>
+                    <div class="color-option" data-color="#8B6F47" style="background: #8B6F47;" onclick="selectColor(this)"></div>
+                    <div class="color-option" data-color="#5C6BC0" style="background: #5C6BC0;" onclick="selectColor(this)"></div>
+                    <div class="color-option" data-color="#26A69A" style="background: #26A69A;" onclick="selectColor(this)"></div>
+                    <div class="color-option" data-color="#EF5350" style="background: #EF5350;" onclick="selectColor(this)"></div>
+                    <div class="color-option" data-color="#FF7043" style="background: #FF7043;" onclick="selectColor(this)"></div>
+                    <div class="color-option" data-color="#AB47BC" style="background: #AB47BC;" onclick="selectColor(this)"></div>
+                    <div class="color-option" data-color="#42A5F5" style="background: #42A5F5;" onclick="selectColor(this)"></div>
+                    <div class="color-option" data-color="#66BB6A" style="background: #66BB6A;" onclick="selectColor(this)"></div>
+                    <div class="color-option" data-color="#FFA726" style="background: #FFA726;" onclick="selectColor(this)"></div>
+                    <div class="color-option" data-color="#EC407A" style="background: #EC407A;" onclick="selectColor(this)"></div>
+                    <div class="color-option" data-color="#78909C" style="background: #78909C;" onclick="selectColor(this)"></div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 25px;">
+                <button class="btn btn-primary" onclick="addCategory()">➕ Ajouter la catégorie</button>
+            </div>
+        </div>
+
+        <!-- Categories List -->
+        <div class="section">
+            <div class="section-header">
+                <h2>📋 Mes Catégories</h2>
+                <span id="categories-count" style="color: #888;">0 catégories</span>
+            </div>
+            
+            <div id="categories-container">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Chargement des catégories...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal" id="edit-modal">
+        <div class="modal-content">
+            <h2>✏️ Modifier la catégorie</h2>
+            
+            <div class="form-group">
+                <label>Nom</label>
+                <input type="text" id="edit-name">
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <input type="text" id="edit-description">
+            </div>
+            
+            <div style="margin-top: 15px;">
+                <label style="display: block; margin-bottom: 10px; color: var(--dark-brown); font-weight: 500;">Icône</label>
+                <div class="icon-picker" id="edit-icon-picker">
+                    <div class="icon-option" data-icon="💻" onclick="selectEditIcon(this)">💻</div>
+                    <div class="icon-option" data-icon="🎨" onclick="selectEditIcon(this)">🎨</div>
+                    <div class="icon-option" data-icon="📊" onclick="selectEditIcon(this)">📊</div>
+                    <div class="icon-option" data-icon="📈" onclick="selectEditIcon(this)">📈</div>
+                    <div class="icon-option" data-icon="⚖️" onclick="selectEditIcon(this)">⚖️</div>
+                    <div class="icon-option" data-icon="💰" onclick="selectEditIcon(this)">💰</div>
+                    <div class="icon-option" data-icon="🔬" onclick="selectEditIcon(this)">🔬</div>
+                    <div class="icon-option" data-icon="🏥" onclick="selectEditIcon(this)">🏥</div>
+                    <div class="icon-option" data-icon="📸" onclick="selectEditIcon(this)">📸</div>
+                    <div class="icon-option" data-icon="🎵" onclick="selectEditIcon(this)">🎵</div>
+                    <div class="icon-option" data-icon="✍️" onclick="selectEditIcon(this)">✍️</div>
+                    <div class="icon-option" data-icon="🌐" onclick="selectEditIcon(this)">🌐</div>
+                    <div class="icon-option" data-icon="🤖" onclick="selectEditIcon(this)">🤖</div>
+                    <div class="icon-option" data-icon="📱" onclick="selectEditIcon(this)">📱</div>
+                    <div class="icon-option" data-icon="🔒" onclick="selectEditIcon(this)">🔒</div>
+                    <div class="icon-option" data-icon="☁️" onclick="selectEditIcon(this)">☁️</div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 15px;">
+                <label style="display: block; margin-bottom: 10px; color: var(--dark-brown); font-weight: 500;">Couleur</label>
+                <div class="color-picker" id="edit-color-picker">
+                    <div class="color-option" data-color="#6B9F7F" style="background: #6B9F7F;" onclick="selectEditColor(this)"></div>
+                    <div class="color-option" data-color="#8B6F47" style="background: #8B6F47;" onclick="selectEditColor(this)"></div>
+                    <div class="color-option" data-color="#5C6BC0" style="background: #5C6BC0;" onclick="selectEditColor(this)"></div>
+                    <div class="color-option" data-color="#26A69A" style="background: #26A69A;" onclick="selectEditColor(this)"></div>
+                    <div class="color-option" data-color="#EF5350" style="background: #EF5350;" onclick="selectEditColor(this)"></div>
+                    <div class="color-option" data-color="#FF7043" style="background: #FF7043;" onclick="selectEditColor(this)"></div>
+                    <div class="color-option" data-color="#AB47BC" style="background: #AB47BC;" onclick="selectEditColor(this)"></div>
+                    <div class="color-option" data-color="#42A5F5" style="background: #42A5F5;" onclick="selectEditColor(this)"></div>
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeEditModal()">Annuler</button>
+                <button class="btn btn-primary" onclick="saveCategory()">💾 Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+        import { getFirestore, collection, query, getDocs, doc, addDoc, updateDoc, deleteDoc, where } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAVO1P9v-IBsyxF_80vQvZDlR5tIqh878U",
+            authDomain: "learncentric.firebaseapp.com",
+            projectId: "learncentric",
+            storageBucket: "learncentric.firebasestorage.app",
+            messagingSenderId: "1083770541694",
+            appId: "1:1083770541694:web:b8dbcd7852ca7d9c8fea2f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        window.firebaseDb = db;
+        window.firebaseCollection = collection;
+        window.firebaseQuery = query;
+        window.firebaseGetDocs = getDocs;
+        window.firebaseDoc = doc;
+        window.firebaseAddDoc = addDoc;
+        window.firebaseUpdateDoc = updateDoc;
+        window.firebaseDeleteDoc = deleteDoc;
+        window.firebaseWhere = where;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                window.currentUser = user;
+                await loadCategories();
+                await loadCoursesCount();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        async function loadCategories() {
+            try {
+                const categoriesQuery = query(collection(db, "categories"));
+                const snapshot = await getDocs(categoriesQuery);
+                
+                window.allCategories = [];
+                snapshot.forEach(doc => {
+                    window.allCategories.push({ id: doc.id, ...doc.data() });
+                });
+                
+                displayCategories();
+            } catch (error) {
+                console.error('Erreur:', error);
+                document.getElementById('categories-container').innerHTML = '<div class="empty-state"><p>Erreur lors du chargement</p></div>';
+            }
+        }
+
+        async function loadCoursesCount() {
+            try {
+                const coursesQuery = query(collection(db, "courses"));
+                const snapshot = await getDocs(coursesQuery);
+                
+                window.coursesByCategory = {};
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const cat = data.category || 'uncategorized';
+                    window.coursesByCategory[cat] = (window.coursesByCategory[cat] || 0) + 1;
+                });
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        window.loadCategories = loadCategories;
+    </script>
+
+    <script>
+        let selectedIcon = '💻';
+        let selectedColor = '#6B9F7F';
+        let editingCategoryId = null;
+        let editIcon = '💻';
+        let editColor = '#6B9F7F';
+
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = 'message ' + type;
+            window.scrollTo(0, 0);
+            setTimeout(() => { msg.className = 'message'; }, 4000);
+        }
+
+        function selectIcon(element) {
+            document.querySelectorAll('#icon-picker .icon-option').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            selectedIcon = element.getAttribute('data-icon');
+        }
+
+        function selectColor(element) {
+            document.querySelectorAll('#color-picker .color-option').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            selectedColor = element.getAttribute('data-color');
+        }
+
+        function selectEditIcon(element) {
+            document.querySelectorAll('#edit-icon-picker .icon-option').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            editIcon = element.getAttribute('data-icon');
+        }
+
+        function selectEditColor(element) {
+            document.querySelectorAll('#edit-color-picker .color-option').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            editColor = element.getAttribute('data-color');
+        }
+
+        function displayCategories() {
+            const container = document.getElementById('categories-container');
+            const categories = window.allCategories || [];
+            
+            document.getElementById('categories-count').textContent = categories.length + ' catégorie' + (categories.length > 1 ? 's' : '');
+            
+            if (categories.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">🎨</div>
+                        <h3>Aucune catégorie</h3>
+                        <p>Créez votre première catégorie ci-dessus</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="categories-grid">
+                    ${categories.map(cat => {
+                        const coursesCount = window.coursesByCategory?.[cat.id] || window.coursesByCategory?.[cat.name] || 0;
+                        return `
+                            <div class="category-card">
+                                <div class="category-header">
+                                    <div class="category-icon" style="background: ${cat.color || '#6B9F7F'}">
+                                        ${cat.icon || '📚'}
+                                    </div>
+                                    <div class="category-info">
+                                        <h3>${cat.name || 'Sans nom'}</h3>
+                                        <p>${cat.description || 'Aucune description'}</p>
+                                    </div>
+                                </div>
+                                <div class="category-body">
+                                    <span class="category-stats">📚 ${coursesCount} cours</span>
+                                    <div class="category-actions">
+                                        <button class="btn-edit" onclick="editCategory('${cat.id}')">✏️ Modifier</button>
+                                        <button class="btn-delete" onclick="deleteCategory('${cat.id}')">🗑️</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        async function addCategory() {
+            const name = document.getElementById('category-name').value.trim();
+            const description = document.getElementById('category-description').value.trim();
+            
+            if (!name) {
+                showMessage('❌ Veuillez entrer un nom de catégorie', 'error');
+                return;
+            }
+            
+            try {
+                const colRef = window.firebaseCollection(window.firebaseDb, "categories");
+                await window.firebaseAddDoc(colRef, {
+                    name: name,
+                    description: description,
+                    icon: selectedIcon,
+                    color: selectedColor,
+                    createdAt: new Date().toISOString()
+                });
+                
+                // Reset form
+                document.getElementById('category-name').value = '';
+                document.getElementById('category-description').value = '';
+                
+                showMessage('✅ Catégorie ajoutée !', 'success');
+                await window.loadCategories();
+            } catch (error) {
+                console.error('Erreur:', error);
+                showMessage('❌ Erreur: ' + error.message, 'error');
+            }
+        }
+
+        function editCategory(categoryId) {
+            const category = window.allCategories.find(c => c.id === categoryId);
+            if (!category) return;
+            
+            editingCategoryId = categoryId;
+            editIcon = category.icon || '💻';
+            editColor = category.color || '#6B9F7F';
+            
+            document.getElementById('edit-name').value = category.name || '';
+            document.getElementById('edit-description').value = category.description || '';
+            
+            // Select icon
+            document.querySelectorAll('#edit-icon-picker .icon-option').forEach(el => {
+                el.classList.toggle('selected', el.getAttribute('data-icon') === editIcon);
+            });
+            
+            // Select color
+            document.querySelectorAll('#edit-color-picker .color-option').forEach(el => {
+                el.classList.toggle('selected', el.getAttribute('data-color') === editColor);
+            });
+            
+            document.getElementById('edit-modal').classList.add('show');
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-modal').classList.remove('show');
+            editingCategoryId = null;
+        }
+
+        async function saveCategory() {
+            if (!editingCategoryId) return;
+            
+            const name = document.getElementById('edit-name').value.trim();
+            const description = document.getElementById('edit-description').value.trim();
+            
+            if (!name) {
+                showMessage('❌ Le nom est requis', 'error');
+                return;
+            }
+            
+            try {
+                const docRef = window.firebaseDoc(window.firebaseDb, "categories", editingCategoryId);
+                await window.firebaseUpdateDoc(docRef, {
+                    name: name,
+                    description: description,
+                    icon: editIcon,
+                    color: editColor,
+                    updatedAt: new Date().toISOString()
+                });
+                
+                closeEditModal();
+                showMessage('✅ Catégorie modifiée !', 'success');
+                await window.loadCategories();
+            } catch (error) {
+                console.error('Erreur:', error);
+                showMessage('❌ Erreur: ' + error.message, 'error');
+            }
+        }
+
+        async function deleteCategory(categoryId) {
+            const category = window.allCategories.find(c => c.id === categoryId);
+            if (!confirm(`Supprimer la catégorie "${category?.name}" ?`)) return;
+            
+            try {
+                const docRef = window.firebaseDoc(window.firebaseDb, "categories", categoryId);
+                await window.firebaseDeleteDoc(docRef);
+                
+                showMessage('✅ Catégorie supprimée', 'success');
+                await window.loadCategories();
+            } catch (error) {
+                console.error('Erreur:', error);
+                showMessage('❌ Erreur: ' + error.message, 'error');
+            }
+        }
+
+        // Close modal on outside click
+        document.getElementById('edit-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeEditModal();
+        });
+    </script>
+</body>
+</html>
