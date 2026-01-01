@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emails - LearningHub</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --brown: #8B6F47; --dark-brown: #6B5A3B; --beige: #E8DCC4; --light-gray: #F5F5F0; --green: #6B9F7F; --dark-green: #5A8A6E; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--light-gray); min-height: 100vh; padding: 20px; }
+        
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header h1 { color: var(--dark-brown); display: flex; align-items: center; gap: 10px; }
+        .back-btn { background: var(--beige); border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; color: var(--dark-brown); font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+        .back-btn:hover { background: #d9cab3; }
+        
+        .tabs { display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
+        .tab { padding: 12px 25px; background: white; border: 2px solid var(--beige); border-radius: 10px; cursor: pointer; font-weight: 500; transition: all 0.3s; }
+        .tab.active { background: var(--green); color: white; border-color: var(--green); }
+        .tab:hover:not(.active) { background: var(--beige); }
+        
+        .section { display: none; }
+        .section.active { display: block; }
+        
+        .card { background: white; border-radius: 15px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .card h2 { color: var(--dark-brown); margin-bottom: 20px; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+        .card p.description { color: #888; margin-bottom: 20px; font-size: 0.95rem; }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: var(--dark-brown); font-weight: 500; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 15px; border: 2px solid var(--beige); border-radius: 10px; font-size: 1rem; transition: all 0.3s; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--green); }
+        .form-group textarea { min-height: 150px; resize: vertical; font-family: inherit; }
+        .form-group small { color: #888; font-size: 0.85rem; margin-top: 5px; display: block; }
+        
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        
+        .btn { padding: 12px 25px; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s; font-size: 1rem; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary { background: var(--green); color: white; }
+        .btn-primary:hover { background: var(--dark-green); }
+        .btn-secondary { background: var(--beige); color: var(--dark-brown); }
+        .btn-secondary:hover { background: #d9cab3; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-small { padding: 8px 15px; font-size: 0.9rem; }
+        
+        /* Toggle Switch */
+        .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: var(--light-gray); border-radius: 10px; margin-bottom: 15px; }
+        .toggle-info h4 { color: var(--dark-brown); margin-bottom: 3px; }
+        .toggle-info p { font-size: 0.85rem; color: #888; }
+        .toggle-switch { position: relative; width: 50px; height: 26px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #ccc; border-radius: 26px; transition: 0.3s; }
+        .toggle-slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
+        .toggle-switch input:checked + .toggle-slider { background: var(--green); }
+        .toggle-switch input:checked + .toggle-slider:before { transform: translateX(24px); }
+        
+        /* Template Cards */
+        .template-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .template-card { background: white; border: 2px solid var(--beige); border-radius: 15px; overflow: hidden; transition: all 0.3s; }
+        .template-card:hover { border-color: var(--green); }
+        .template-card.active { border-color: var(--green); box-shadow: 0 0 0 3px rgba(107, 159, 127, 0.2); }
+        .template-header { background: var(--light-gray); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .template-header h4 { color: var(--dark-brown); display: flex; align-items: center; gap: 8px; }
+        .template-status { padding: 4px 10px; border-radius: 15px; font-size: 0.75rem; font-weight: 500; }
+        .template-status.active { background: #d4edda; color: #155724; }
+        .template-status.inactive { background: #f8d7da; color: #721c24; }
+        .template-body { padding: 20px; }
+        .template-body p { color: #666; font-size: 0.9rem; margin-bottom: 15px; }
+        .template-actions { display: flex; gap: 10px; }
+        
+        /* Variables list */
+        .variables-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .variable-tag { background: var(--beige); padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; color: var(--dark-brown); cursor: pointer; transition: all 0.2s; }
+        .variable-tag:hover { background: var(--green); color: white; }
+        
+        /* Email Log */
+        .log-table { width: 100%; border-collapse: collapse; }
+        .log-table th, .log-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--beige); }
+        .log-table th { background: var(--light-gray); color: var(--dark-brown); font-weight: 600; }
+        .log-table tr:hover { background: var(--light-gray); }
+        .status-badge { padding: 4px 10px; border-radius: 15px; font-size: 0.75rem; font-weight: 500; }
+        .status-sent { background: #d4edda; color: #155724; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-failed { background: #f8d7da; color: #721c24; }
+        
+        /* Config Section */
+        .config-box { background: linear-gradient(135deg, #fff9e6, #fff); border: 2px solid #D4AF37; border-radius: 15px; padding: 20px; margin-bottom: 20px; }
+        .config-box h3 { color: #856404; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+        .config-box p { color: #666; font-size: 0.9rem; }
+        .config-box code { background: #f8f9fa; padding: 2px 8px; border-radius: 4px; font-family: monospace; }
+        
+        .message { padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; display: none; }
+        .message.success { background: #d4edda; color: #155724; display: block; }
+        .message.error { background: #f8d7da; color: #721c24; display: block; }
+        
+        .empty-state { text-align: center; padding: 40px; color: #888; }
+        
+        @media (max-width: 768px) {
+            .form-row { grid-template-columns: 1fr; }
+            .template-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📧 Automatisation Emails</h1>
+            <a href="instructor-dashboard.html" class="back-btn">← Retour au Dashboard</a>
+        </div>
+
+        <div id="message" class="message"></div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('templates')">📝 Modèles</button>
+            <button class="tab" onclick="showTab('automation')">⚡ Automatisations</button>
+            <button class="tab" onclick="showTab('send')">✉️ Envoyer</button>
+            <button class="tab" onclick="showTab('history')">📋 Historique</button>
+            <button class="tab" onclick="showTab('config')">⚙️ Configuration</button>
+        </div>
+
+        <!-- Templates Section -->
+        <div id="templates-section" class="section active">
+            <div class="card">
+                <h2>📝 Modèles d'emails</h2>
+                <p class="description">Personnalisez vos modèles d'emails. Utilisez les variables pour personnaliser automatiquement chaque email.</p>
+                
+                <div class="template-grid">
+                    <div class="template-card active">
+                        <div class="template-header">
+                            <h4>👋 Bienvenue</h4>
+                            <span class="template-status active">Actif</span>
+                        </div>
+                        <div class="template-body">
+                            <p>Envoyé automatiquement lors de l'inscription d'un nouvel étudiant.</p>
+                            <div class="template-actions">
+                                <button class="btn btn-secondary btn-small" onclick="editTemplate('welcome')">✏️ Modifier</button>
+                                <button class="btn btn-small" style="background:#e3f2fd;color:#1976d2;" onclick="previewTemplate('welcome')">👁️ Aperçu</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="template-card active">
+                        <div class="template-header">
+                            <h4>📚 Cours assigné</h4>
+                            <span class="template-status active">Actif</span>
+                        </div>
+                        <div class="template-body">
+                            <p>Envoyé quand un cours est assigné à un étudiant.</p>
+                            <div class="template-actions">
+                                <button class="btn btn-secondary btn-small" onclick="editTemplate('course_assigned')">✏️ Modifier</button>
+                                <button class="btn btn-small" style="background:#e3f2fd;color:#1976d2;" onclick="previewTemplate('course_assigned')">👁️ Aperçu</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="template-card">
+                        <div class="template-header">
+                            <h4>⏰ Rappel</h4>
+                            <span class="template-status inactive">Inactif</span>
+                        </div>
+                        <div class="template-body">
+                            <p>Rappel pour les étudiants qui n'ont pas terminé leur cours.</p>
+                            <div class="template-actions">
+                                <button class="btn btn-secondary btn-small" onclick="editTemplate('reminder')">✏️ Modifier</button>
+                                <button class="btn btn-small" style="background:#e3f2fd;color:#1976d2;" onclick="previewTemplate('reminder')">👁️ Aperçu</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="template-card active">
+                        <div class="template-header">
+                            <h4>🎓 Certificat</h4>
+                            <span class="template-status active">Actif</span>
+                        </div>
+                        <div class="template-body">
+                            <p>Félicitations envoyées à la fin d'un cours.</p>
+                            <div class="template-actions">
+                                <button class="btn btn-secondary btn-small" onclick="editTemplate('certificate')">✏️ Modifier</button>
+                                <button class="btn btn-small" style="background:#e3f2fd;color:#1976d2;" onclick="previewTemplate('certificate')">👁️ Aperçu</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Template Modal -->
+            <div class="card" id="edit-template-card" style="display: none;">
+                <h2>✏️ Modifier le modèle : <span id="template-name"></span></h2>
+                
+                <div class="form-group">
+                    <label>Objet de l'email</label>
+                    <input type="text" id="template-subject" placeholder="Ex: Bienvenue sur LearningHub !">
+                </div>
+                
+                <div class="form-group">
+                    <label>Contenu de l'email</label>
+                    <textarea id="template-content" placeholder="Écrivez votre email ici..."></textarea>
+                    <small>Variables disponibles (cliquez pour insérer) :</small>
+                    <div class="variables-list">
+                        <span class="variable-tag" onclick="insertVariable('{{nom}}')">{nom}</span>
+                        <span class="variable-tag" onclick="insertVariable('{{email}}')">{email}</span>
+                        <span class="variable-tag" onclick="insertVariable('{{cours}}')">{cours}</span>
+                        <span class="variable-tag" onclick="insertVariable('{{progression}}')">{progression}</span>
+                        <span class="variable-tag" onclick="insertVariable('{{date}}')">{date}</span>
+                        <span class="variable-tag" onclick="insertVariable('{{lien}}')">{lien}</span>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 15px;">
+                    <button class="btn btn-primary" onclick="saveTemplate()">💾 Enregistrer</button>
+                    <button class="btn btn-secondary" onclick="cancelEditTemplate()">Annuler</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Automation Section -->
+        <div id="automation-section" class="section">
+            <div class="card">
+                <h2>⚡ Automatisations</h2>
+                <p class="description">Activez ou désactivez les envois automatiques d'emails.</p>
+                
+                <div class="toggle-row">
+                    <div class="toggle-info">
+                        <h4>👋 Email de bienvenue</h4>
+                        <p>Envoyer automatiquement un email lors de l'inscription</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="auto-welcome" checked onchange="saveAutomation()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="toggle-row">
+                    <div class="toggle-info">
+                        <h4>📚 Notification d'assignation</h4>
+                        <p>Notifier l'étudiant quand un cours lui est assigné</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="auto-assignment" checked onchange="saveAutomation()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="toggle-row">
+                    <div class="toggle-info">
+                        <h4>⏰ Rappels automatiques</h4>
+                        <p>Envoyer un rappel si le cours n'est pas terminé après 7 jours</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="auto-reminder" onchange="saveAutomation()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="toggle-row">
+                    <div class="toggle-info">
+                        <h4>🎓 Félicitations certificat</h4>
+                        <p>Envoyer un email de félicitations à la fin du cours</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="auto-certificate" checked onchange="saveAutomation()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Send Email Section -->
+        <div id="send-section" class="section">
+            <div class="card">
+                <h2>✉️ Envoyer un email</h2>
+                <p class="description">Envoyez un email personnalisé à un ou plusieurs étudiants.</p>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Destinataires</label>
+                        <select id="send-recipients">
+                            <option value="all">📢 Tous les étudiants</option>
+                            <option value="course">📚 Étudiants d'un cours</option>
+                            <option value="single">👤 Un étudiant spécifique</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="course-select-group" style="display: none;">
+                        <label>Sélectionner le cours</label>
+                        <select id="send-course">
+                            <option value="">Chargement...</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group" id="student-select-group" style="display: none;">
+                    <label>Sélectionner l'étudiant</label>
+                    <select id="send-student">
+                        <option value="">Chargement...</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Modèle (optionnel)</label>
+                    <select id="send-template" onchange="loadTemplateContent()">
+                        <option value="">-- Email personnalisé --</option>
+                        <option value="welcome">👋 Bienvenue</option>
+                        <option value="course_assigned">📚 Cours assigné</option>
+                        <option value="reminder">⏰ Rappel</option>
+                        <option value="certificate">🎓 Certificat</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Objet</label>
+                    <input type="text" id="send-subject" placeholder="Objet de l'email">
+                </div>
+                
+                <div class="form-group">
+                    <label>Message</label>
+                    <textarea id="send-content" placeholder="Écrivez votre message..."></textarea>
+                </div>
+                
+                <button class="btn btn-primary" onclick="sendEmail()">📤 Envoyer l'email</button>
+            </div>
+        </div>
+
+        <!-- History Section -->
+        <div id="history-section" class="section">
+            <div class="card">
+                <h2>📋 Historique des envois</h2>
+                
+                <div style="overflow-x: auto;">
+                    <table class="log-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Destinataire</th>
+                                <th>Objet</th>
+                                <th>Type</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody id="email-log">
+                            <!-- Logs will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuration Section -->
+        <div id="config-section" class="section">
+            <div class="config-box">
+                <h3>⚠️ Configuration requise</h3>
+                <p>Pour envoyer des emails, vous devez configurer un service d'envoi. Nous recommandons <strong>EmailJS</strong> (gratuit jusqu'à 200 emails/mois).</p>
+            </div>
+            
+            <div class="card">
+                <h2>⚙️ Configuration EmailJS</h2>
+                <p class="description">Connectez votre compte EmailJS pour activer l'envoi d'emails.</p>
+                
+                <div class="form-group">
+                    <label>Service ID</label>
+                    <input type="text" id="emailjs-service" placeholder="Ex: service_xxxxxxx">
+                    <small>Trouvez-le dans votre dashboard EmailJS → Email Services</small>
+                </div>
+                
+                <div class="form-group">
+                    <label>Template ID</label>
+                    <input type="text" id="emailjs-template" placeholder="Ex: template_xxxxxxx">
+                    <small>Créez un template dans EmailJS → Email Templates</small>
+                </div>
+                
+                <div class="form-group">
+                    <label>Public Key</label>
+                    <input type="text" id="emailjs-key" placeholder="Ex: xxxxxxxxxxx">
+                    <small>Trouvez-la dans Account → API Keys</small>
+                </div>
+                
+                <div style="display: flex; gap: 15px; margin-top: 20px;">
+                    <button class="btn btn-primary" onclick="saveConfig()">💾 Enregistrer</button>
+                    <button class="btn btn-secondary" onclick="testConfig()">🧪 Tester la configuration</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>📖 Comment configurer EmailJS</h2>
+                <ol style="line-height: 2; color: #666; padding-left: 20px;">
+                    <li>Créez un compte gratuit sur <a href="https://www.emailjs.com/" target="_blank" style="color: var(--green);">emailjs.com</a></li>
+                    <li>Ajoutez un service email (Gmail, Outlook, etc.)</li>
+                    <li>Créez un template avec ces variables : <code>{{to_email}}</code>, <code>{{to_name}}</code>, <code>{{subject}}</code>, <code>{{message}}</code></li>
+                    <li>Copiez vos identifiants ci-dessus</li>
+                    <li>Testez l'envoi !</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <!-- EmailJS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+        import { getFirestore, collection, query, getDocs, doc, setDoc, getDoc, addDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAVO1P9v-IBsyxF_80vQvZDlR5tIqh878U",
+            authDomain: "learncentric.firebaseapp.com",
+            projectId: "learncentric",
+            storageBucket: "learncentric.firebasestorage.app",
+            messagingSenderId: "1083770541694",
+            appId: "1:1083770541694:web:b8dbcd7852ca7d9c8fea2f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        window.firebaseDb = db;
+        window.collection = collection;
+        window.query = query;
+        window.getDocs = getDocs;
+        window.doc = doc;
+        window.setDoc = setDoc;
+        window.getDoc = getDoc;
+        window.addDoc = addDoc;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                window.currentUser = user;
+                await loadData();
+                loadConfig();
+                loadAutomationSettings();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        async function loadData() {
+            try {
+                // Load students
+                const usersSnapshot = await getDocs(collection(db, "users"));
+                window.allStudents = [];
+                usersSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.role === 'student' || !data.role) {
+                        window.allStudents.push({ id: doc.id, ...data });
+                    }
+                });
+                
+                // Load courses
+                const coursesSnapshot = await getDocs(collection(db, "courses"));
+                window.allCourses = [];
+                coursesSnapshot.forEach(doc => {
+                    window.allCourses.push({ id: doc.id, ...doc.data() });
+                });
+                
+                // Populate selects
+                populateSelects();
+                
+                // Load email logs
+                await loadEmailLogs();
+                
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        async function loadEmailLogs() {
+            try {
+                const logsSnapshot = await getDocs(collection(db, "emailLogs"));
+                window.emailLogs = [];
+                logsSnapshot.forEach(doc => {
+                    window.emailLogs.push({ id: doc.id, ...doc.data() });
+                });
+                
+                // Sort by date descending
+                window.emailLogs.sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt));
+                
+                displayEmailLogs();
+            } catch (error) {
+                console.error('Erreur logs:', error);
+            }
+        }
+
+        window.loadData = loadData;
+        window.loadEmailLogs = loadEmailLogs;
+    </script>
+
+    <script>
+        // Default templates
+        const defaultTemplates = {
+            welcome: {
+                subject: "Bienvenue sur LearningHub, {{nom}} !",
+                content: `Bonjour {{nom}},
+
+Bienvenue sur LearningHub ! 🎉
+
+Votre compte a été créé avec succès. Vous pouvez maintenant accéder à vos formations et commencer votre apprentissage.
+
+Connectez-vous ici : {{lien}}
+
+À très bientôt !
+L'équipe LearningHub`
+            },
+            course_assigned: {
+                subject: "Nouveau cours assigné : {{cours}}",
+                content: `Bonjour {{nom}},
+
+Un nouveau cours vous a été assigné : {{cours}}
+
+Connectez-vous pour commencer votre formation : {{lien}}
+
+Bon apprentissage !
+L'équipe LearningHub`
+            },
+            reminder: {
+                subject: "N'oubliez pas de terminer votre cours !",
+                content: `Bonjour {{nom}},
+
+Vous avez commencé le cours "{{cours}}" mais ne l'avez pas encore terminé.
+
+Votre progression actuelle : {{progression}}%
+
+Reprenez là où vous en étiez : {{lien}}
+
+À bientôt !
+L'équipe LearningHub`
+            },
+            certificate: {
+                subject: "🎓 Félicitations ! Vous avez terminé {{cours}}",
+                content: `Bonjour {{nom}},
+
+Félicitations ! 🎉
+
+Vous avez terminé avec succès le cours "{{cours}}" !
+
+Vous pouvez télécharger votre certificat ici : {{lien}}
+
+Continuez comme ça !
+L'équipe LearningHub`
+            }
+        };
+
+        let currentEditingTemplate = null;
+
+        function showTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            
+            event.currentTarget.classList.add('active');
+            document.getElementById(tab + '-section').classList.add('active');
+        }
+
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = 'message ' + type;
+            window.scrollTo(0, 0);
+            setTimeout(() => { msg.className = 'message'; }, 4000);
+        }
+
+        // Templates
+        function getTemplates() {
+            const saved = localStorage.getItem('emailTemplates');
+            return saved ? { ...defaultTemplates, ...JSON.parse(saved) } : defaultTemplates;
+        }
+
+        function editTemplate(templateId) {
+            currentEditingTemplate = templateId;
+            const templates = getTemplates();
+            const template = templates[templateId];
+            
+            const names = {
+                welcome: '👋 Bienvenue',
+                course_assigned: '📚 Cours assigné',
+                reminder: '⏰ Rappel',
+                certificate: '🎓 Certificat'
+            };
+            
+            document.getElementById('template-name').textContent = names[templateId];
+            document.getElementById('template-subject').value = template.subject;
+            document.getElementById('template-content').value = template.content;
+            document.getElementById('edit-template-card').style.display = 'block';
+            
+            document.getElementById('edit-template-card').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function cancelEditTemplate() {
+            document.getElementById('edit-template-card').style.display = 'none';
+            currentEditingTemplate = null;
+        }
+
+        function saveTemplate() {
+            if (!currentEditingTemplate) return;
+            
+            const templates = getTemplates();
+            templates[currentEditingTemplate] = {
+                subject: document.getElementById('template-subject').value,
+                content: document.getElementById('template-content').value
+            };
+            
+            localStorage.setItem('emailTemplates', JSON.stringify(templates));
+            showMessage('✅ Modèle enregistré !', 'success');
+            cancelEditTemplate();
+        }
+
+        function insertVariable(variable) {
+            const textarea = document.getElementById('template-content');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+            textarea.value = text.substring(0, start) + variable + text.substring(end);
+            textarea.focus();
+            textarea.selectionStart = textarea.selectionEnd = start + variable.length;
+        }
+
+        function previewTemplate(templateId) {
+            const templates = getTemplates();
+            const template = templates[templateId];
+            
+            let preview = template.content
+                .replace(/\{\{nom\}\}/g, 'Jean Dupont')
+                .replace(/\{\{email\}\}/g, 'jean@example.com')
+                .replace(/\{\{cours\}\}/g, 'Introduction au JavaScript')
+                .replace(/\{\{progression\}\}/g, '45')
+                .replace(/\{\{date\}\}/g, new Date().toLocaleDateString('fr-FR'))
+                .replace(/\{\{lien\}\}/g, 'https://learncentric.net');
+            
+            alert('Aperçu :\n\nObjet: ' + template.subject.replace(/\{\{.*?\}\}/g, 'Jean Dupont') + '\n\n' + preview);
+        }
+
+        // Automation
+        function loadAutomationSettings() {
+            const settings = JSON.parse(localStorage.getItem('emailAutomation') || '{}');
+            document.getElementById('auto-welcome').checked = settings.welcome !== false;
+            document.getElementById('auto-assignment').checked = settings.assignment !== false;
+            document.getElementById('auto-reminder').checked = settings.reminder === true;
+            document.getElementById('auto-certificate').checked = settings.certificate !== false;
+        }
+
+        function saveAutomation() {
+            const settings = {
+                welcome: document.getElementById('auto-welcome').checked,
+                assignment: document.getElementById('auto-assignment').checked,
+                reminder: document.getElementById('auto-reminder').checked,
+                certificate: document.getElementById('auto-certificate').checked
+            };
+            localStorage.setItem('emailAutomation', JSON.stringify(settings));
+            showMessage('✅ Automatisations mises à jour !', 'success');
+        }
+
+        // Send Email
+        function populateSelects() {
+            // Courses
+            const courseSelect = document.getElementById('send-course');
+            courseSelect.innerHTML = '<option value="">-- Sélectionner --</option>';
+            (window.allCourses || []).forEach(course => {
+                courseSelect.innerHTML += `<option value="${course.id}">${course.title}</option>`;
+            });
+            
+            // Students
+            const studentSelect = document.getElementById('send-student');
+            studentSelect.innerHTML = '<option value="">-- Sélectionner --</option>';
+            (window.allStudents || []).forEach(student => {
+                studentSelect.innerHTML += `<option value="${student.id}">${student.name || student.email}</option>`;
+            });
+        }
+
+        document.getElementById('send-recipients').addEventListener('change', function() {
+            document.getElementById('course-select-group').style.display = this.value === 'course' ? 'block' : 'none';
+            document.getElementById('student-select-group').style.display = this.value === 'single' ? 'block' : 'none';
+        });
+
+        function loadTemplateContent() {
+            const templateId = document.getElementById('send-template').value;
+            if (templateId) {
+                const templates = getTemplates();
+                document.getElementById('send-subject').value = templates[templateId].subject;
+                document.getElementById('send-content').value = templates[templateId].content;
+            }
+        }
+
+        async function sendEmail() {
+            const config = JSON.parse(localStorage.getItem('emailjsConfig') || '{}');
+            
+            if (!config.serviceId || !config.templateId || !config.publicKey) {
+                showMessage('❌ Veuillez configurer EmailJS dans l\'onglet Configuration', 'error');
+                return;
+            }
+            
+            const recipientType = document.getElementById('send-recipients').value;
+            const subject = document.getElementById('send-subject').value;
+            const content = document.getElementById('send-content').value;
+            
+            if (!subject || !content) {
+                showMessage('❌ Veuillez remplir l\'objet et le message', 'error');
+                return;
+            }
+            
+            let recipients = [];
+            
+            if (recipientType === 'all') {
+                recipients = window.allStudents || [];
+            } else if (recipientType === 'course') {
+                const courseId = document.getElementById('send-course').value;
+                recipients = (window.allStudents || []).filter(s => 
+                    s.assignedCourses && s.assignedCourses.includes(courseId)
+                );
+            } else if (recipientType === 'single') {
+                const studentId = document.getElementById('send-student').value;
+                const student = (window.allStudents || []).find(s => s.id === studentId);
+                if (student) recipients = [student];
+            }
+            
+            if (recipients.length === 0) {
+                showMessage('❌ Aucun destinataire trouvé', 'error');
+                return;
+            }
+            
+            try {
+                emailjs.init(config.publicKey);
+                
+                let successCount = 0;
+                for (const recipient of recipients) {
+                    const personalizedContent = content
+                        .replace(/\{\{nom\}\}/g, recipient.name || 'Cher étudiant')
+                        .replace(/\{\{email\}\}/g, recipient.email || '')
+                        .replace(/\{\{date\}\}/g, new Date().toLocaleDateString('fr-FR'))
+                        .replace(/\{\{lien\}\}/g, 'https://patrialis.github.io/learninghub/');
+                    
+                    await emailjs.send(config.serviceId, config.templateId, {
+                        to_email: recipient.email,
+                        to_name: recipient.name || 'Étudiant',
+                        subject: subject.replace(/\{\{nom\}\}/g, recipient.name || 'Étudiant'),
+                        message: personalizedContent
+                    });
+                    
+                    // Log email
+                    await window.addDoc(window.collection(window.firebaseDb, "emailLogs"), {
+                        recipient: recipient.email,
+                        recipientName: recipient.name || '',
+                        subject: subject,
+                        type: document.getElementById('send-template').value || 'custom',
+                        status: 'sent',
+                        sentAt: new Date().toISOString(),
+                        sentBy: window.currentUser.uid
+                    });
+                    
+                    successCount++;
+                }
+                
+                showMessage(`✅ ${successCount} email(s) envoyé(s) !`, 'success');
+                await window.loadEmailLogs();
+                
+            } catch (error) {
+                console.error('Erreur envoi:', error);
+                showMessage('❌ Erreur: ' + error.message, 'error');
+            }
+        }
+
+        // Email Logs
+        function displayEmailLogs() {
+            const tbody = document.getElementById('email-log');
+            const logs = window.emailLogs || [];
+            
+            if (logs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Aucun email envoyé</td></tr>';
+                return;
+            }
+            
+            const typeLabels = {
+                welcome: '👋 Bienvenue',
+                course_assigned: '📚 Assignation',
+                reminder: '⏰ Rappel',
+                certificate: '🎓 Certificat',
+                custom: '✉️ Personnalisé'
+            };
+            
+            tbody.innerHTML = logs.map(log => `
+                <tr>
+                    <td>${new Date(log.sentAt).toLocaleString('fr-FR')}</td>
+                    <td>${log.recipientName || log.recipient}</td>
+                    <td>${log.subject}</td>
+                    <td>${typeLabels[log.type] || log.type}</td>
+                    <td><span class="status-badge status-${log.status}">${log.status === 'sent' ? '✓ Envoyé' : log.status}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        // Configuration
+        function loadConfig() {
+            const config = JSON.parse(localStorage.getItem('emailjsConfig') || '{}');
+            document.getElementById('emailjs-service').value = config.serviceId || '';
+            document.getElementById('emailjs-template').value = config.templateId || '';
+            document.getElementById('emailjs-key').value = config.publicKey || '';
+        }
+
+        function saveConfig() {
+            const config = {
+                serviceId: document.getElementById('emailjs-service').value.trim(),
+                templateId: document.getElementById('emailjs-template').value.trim(),
+                publicKey: document.getElementById('emailjs-key').value.trim()
+            };
+            
+            localStorage.setItem('emailjsConfig', JSON.stringify(config));
+            showMessage('✅ Configuration enregistrée !', 'success');
+        }
+
+        async function testConfig() {
+            const config = JSON.parse(localStorage.getItem('emailjsConfig') || '{}');
+            
+            if (!config.serviceId || !config.templateId || !config.publicKey) {
+                showMessage('❌ Veuillez d\'abord remplir tous les champs', 'error');
+                return;
+            }
+            
+            try {
+                emailjs.init(config.publicKey);
+                
+                await emailjs.send(config.serviceId, config.templateId, {
+                    to_email: window.currentUser.email,
+                    to_name: window.currentUser.displayName || 'Admin',
+                    subject: '🧪 Test LearningHub',
+                    message: 'Ceci est un email de test. Votre configuration fonctionne !'
+                });
+                
+                showMessage('✅ Email de test envoyé à ' + window.currentUser.email, 'success');
+                
+            } catch (error) {
+                console.error('Erreur test:', error);
+                showMessage('❌ Erreur: ' + error.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
