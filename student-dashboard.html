@@ -279,9 +279,11 @@
                 // Get user document by UID
                 const userDoc = await getDoc(doc(db, "users", userId));
                 let userData = {};
+                let uidProgress = {};
                 
                 if (userDoc.exists()) {
                     userData = userDoc.data();
+                    uidProgress = userData.progress || {};
                     console.log('Document UID trouvé:', userData);
                     
                     // Check if user is instructor/admin - redirect
@@ -293,8 +295,8 @@
                     console.log('Pas de document UID');
                 }
                 
-                // If no assigned courses, check if there's a document by email
-                if ((!userData.assignedCourses || userData.assignedCourses.length === 0) && userEmail) {
+                // Check email document for assignments
+                if (userEmail) {
                     const emailId = userEmail.replace(/[^a-zA-Z0-9]/g, '_');
                     console.log('Recherche par email ID:', emailId);
                     
@@ -305,34 +307,33 @@
                             const emailData = emailDoc.data();
                             console.log('Document email trouvé:', emailData);
                             
-                            // Merge assignments from email-based document
-                            userData.assignedCourses = emailData.assignedCourses || [];
-                            userData.assignedPrograms = emailData.assignedPrograms || [];
+                            // Get assignments from email document if not in UID
+                            if (!userData.assignedCourses || userData.assignedCourses.length === 0) {
+                                userData.assignedCourses = emailData.assignedCourses || [];
+                            }
+                            if (!userData.assignedPrograms || userData.assignedPrograms.length === 0) {
+                                userData.assignedPrograms = emailData.assignedPrograms || [];
+                            }
                             userData.nom = userData.nom || emailData.nom;
                             userData.prenom = userData.prenom || emailData.prenom;
-                            // Keep UID progress (where updates are saved), fallback to email progress
-                            userData.progress = userData.progress || emailData.progress || {};
+                            
+                            // Merge progress: UID progress takes priority, then email progress
+                            const emailProgress = emailData.progress || {};
+                            userData.progress = { ...emailProgress, ...uidProgress };
                         } else {
                             console.log('Pas de document email');
+                            userData.progress = uidProgress;
                         }
                     } catch (emailErr) {
                         console.log('Erreur recherche email:', emailErr);
+                        userData.progress = uidProgress;
                     }
-                }
-                
-                // Also check email document for progress even if we have assigned courses
-                if (userEmail && (!userData.progress || Object.keys(userData.progress).length === 0)) {
-                    const emailId = userEmail.replace(/[^a-zA-Z0-9]/g, '_');
-                    try {
-                        const emailDoc = await getDoc(doc(db, "users", emailId));
-                        if (emailDoc.exists() && emailDoc.data().progress) {
-                            userData.progress = emailDoc.data().progress;
-                            console.log('Progression récupérée du document email:', userData.progress);
-                        }
-                    } catch (e) { console.log('Erreur récupération progression email:', e); }
+                } else {
+                    userData.progress = uidProgress;
                 }
                 
                 console.log('Données finales:', userData);
+                console.log('Progression finale:', userData.progress);
                 
                 window.userData = userData;
                 window.userProgress = userData.progress || {};
