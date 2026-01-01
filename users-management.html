@@ -146,7 +146,7 @@
             </div>
 
             <div class="filters">
-                <input type="text" id="search-input" placeholder="🔍 Rechercher par nom ou email..." onkeyup="filterUsers()">
+                <input type="text" id="search-input" placeholder="🔍 Rechercher par nom, prénom ou email..." onkeyup="filterUsers()">
                 <select id="role-filter" onchange="filterUsers()">
                     <option value="">Tous les rôles</option>
                     <option value="student">Étudiants</option>
@@ -159,9 +159,11 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            <th>Utilisateur</th>
+                            <th>Nom</th>
+                            <th>Prénom</th>
+                            <th>Email</th>
                             <th>Rôle</th>
-                            <th>Cours assignés</th>
+                            <th>Cours</th>
                             <th>Programmes</th>
                             <th>Progression</th>
                             <th>Actions</th>
@@ -216,21 +218,27 @@
             <div class="modal-body">
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Nom complet</label>
-                        <input type="text" id="new-user-name" placeholder="Jean Dupont">
+                        <label>Nom</label>
+                        <input type="text" id="new-user-nom" placeholder="Dupont">
                     </div>
+                    <div class="form-group">
+                        <label>Prénom</label>
+                        <input type="text" id="new-user-prenom" placeholder="Jean">
+                    </div>
+                </div>
+                <div class="form-row">
                     <div class="form-group">
                         <label>Email</label>
                         <input type="email" id="new-user-email" placeholder="jean@example.com">
                     </div>
-                </div>
-                <div class="form-group">
-                    <label>Rôle</label>
-                    <select id="new-user-role">
-                        <option value="student">Étudiant</option>
-                        <option value="instructor">Formateur</option>
-                        <option value="admin">Admin</option>
-                    </select>
+                    <div class="form-group">
+                        <label>Rôle</label>
+                        <select id="new-user-role">
+                            <option value="student">Étudiant</option>
+                            <option value="instructor">Formateur</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
                 </div>
                 <p style="color: #888; font-size: 0.85rem; margin-top: 15px;">
                     ℹ️ L'utilisateur devra créer son mot de passe via la page de connexion (inscription ou "mot de passe oublié").
@@ -254,21 +262,27 @@
                 <input type="hidden" id="edit-user-id">
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Nom complet</label>
-                        <input type="text" id="edit-user-name" placeholder="Jean Dupont">
+                        <label>Nom</label>
+                        <input type="text" id="edit-user-nom" placeholder="Dupont">
                     </div>
+                    <div class="form-group">
+                        <label>Prénom</label>
+                        <input type="text" id="edit-user-prenom" placeholder="Jean">
+                    </div>
+                </div>
+                <div class="form-row">
                     <div class="form-group">
                         <label>Email</label>
                         <input type="email" id="edit-user-email" placeholder="jean@example.com">
                     </div>
-                </div>
-                <div class="form-group">
-                    <label>Rôle</label>
-                    <select id="edit-user-role">
-                        <option value="student">Étudiant</option>
-                        <option value="instructor">Formateur</option>
-                        <option value="admin">Admin</option>
-                    </select>
+                    <div class="form-group">
+                        <label>Rôle</label>
+                        <select id="edit-user-role">
+                            <option value="student">Étudiant</option>
+                            <option value="instructor">Formateur</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -370,7 +384,7 @@
             const tbody = document.getElementById('users-table');
             
             if (users.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state">Aucun utilisateur trouvé</div></td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state">Aucun utilisateur trouvé</div></td></tr>';
                 return;
             }
 
@@ -391,20 +405,17 @@
                 }
                 const avgProgress = coursesWithProgress > 0 ? Math.round(totalProgress / coursesWithProgress) : 0;
 
+                const nom = user.nom || user.name || '';
+                const prenom = user.prenom || '';
+
                 return `
-                    <tr data-role="${role}" data-name="${(user.name || '').toLowerCase()}" data-email="${(user.email || '').toLowerCase()}">
-                        <td>
-                            <div class="user-info">
-                                <div class="user-avatar">${(user.name || user.email || '?').charAt(0).toUpperCase()}</div>
-                                <div class="user-details">
-                                    <h4>${user.name || 'Sans nom'}</h4>
-                                    <p>${user.email || '-'}</p>
-                                </div>
-                            </div>
-                        </td>
+                    <tr data-role="${role}" data-name="${nom.toLowerCase()} ${prenom.toLowerCase()}" data-email="${(user.email || '').toLowerCase()}">
+                        <td><strong>${nom || '-'}</strong></td>
+                        <td>${prenom || '-'}</td>
+                        <td>${user.email || '-'}</td>
                         <td><span class="role-badge role-${role}">${roleLabels[role]}</span></td>
-                        <td><span class="assigned-count">📚 ${assignedCourses}</span></td>
-                        <td><span class="assigned-count">🎓 ${assignedPrograms}</span></td>
+                        <td><span class="assigned-count">${assignedCourses}</span></td>
+                        <td><span class="assigned-count">${assignedPrograms}</span></td>
                         <td>${avgProgress}%</td>
                         <td>
                             <div class="action-buttons">
@@ -449,7 +460,8 @@
             selectedCourses = [...(user.assignedCourses || [])];
             selectedPrograms = [...(user.assignedPrograms || [])];
             
-            document.getElementById('assign-user-name').textContent = user.name || user.email;
+            const displayName = user.prenom ? `${user.prenom} ${user.nom || ''}`.trim() : (user.nom || user.name || user.email);
+            document.getElementById('assign-user-name').textContent = displayName;
             
             // Display courses
             const coursesList = document.getElementById('courses-list');
@@ -536,7 +548,8 @@
 
         // Add User Modal
         function openAddUserModal() {
-            document.getElementById('new-user-name').value = '';
+            document.getElementById('new-user-nom').value = '';
+            document.getElementById('new-user-prenom').value = '';
             document.getElementById('new-user-email').value = '';
             document.getElementById('new-user-role').value = 'student';
             document.getElementById('add-user-modal').classList.add('show');
@@ -547,12 +560,13 @@
         }
 
         async function addUser() {
-            const name = document.getElementById('new-user-name').value.trim();
+            const nom = document.getElementById('new-user-nom').value.trim();
+            const prenom = document.getElementById('new-user-prenom').value.trim();
             const email = document.getElementById('new-user-email').value.trim();
             const role = document.getElementById('new-user-role').value;
             
-            if (!name || !email) {
-                showMessage('❌ Veuillez remplir tous les champs', 'error');
+            if (!nom || !email) {
+                showMessage('❌ Veuillez remplir au moins le nom et l\'email', 'error');
                 return;
             }
             
@@ -562,7 +576,9 @@
                 
                 const userRef = window.doc(window.firebaseDb, "users", oderId);
                 await window.setDoc(userRef, {
-                    name: name,
+                    nom: nom,
+                    prenom: prenom,
+                    name: `${prenom} ${nom}`.trim(),
                     email: email,
                     role: role,
                     assignedCourses: [],
@@ -591,7 +607,8 @@
             if (!user) return;
             
             document.getElementById('edit-user-id').value = userId;
-            document.getElementById('edit-user-name').value = user.name || '';
+            document.getElementById('edit-user-nom').value = user.nom || user.name || '';
+            document.getElementById('edit-user-prenom').value = user.prenom || '';
             document.getElementById('edit-user-email').value = user.email || '';
             document.getElementById('edit-user-role').value = user.role || 'student';
             
@@ -604,19 +621,22 @@
 
         async function saveUserEdit() {
             const userId = document.getElementById('edit-user-id').value;
-            const name = document.getElementById('edit-user-name').value.trim();
+            const nom = document.getElementById('edit-user-nom').value.trim();
+            const prenom = document.getElementById('edit-user-prenom').value.trim();
             const email = document.getElementById('edit-user-email').value.trim();
             const role = document.getElementById('edit-user-role').value;
             
-            if (!name || !email) {
-                showMessage('❌ Veuillez remplir tous les champs', 'error');
+            if (!nom || !email) {
+                showMessage('❌ Veuillez remplir au moins le nom et l\'email', 'error');
                 return;
             }
             
             try {
                 const userRef = window.doc(window.firebaseDb, "users", userId);
                 await window.updateDoc(userRef, {
-                    name: name,
+                    nom: nom,
+                    prenom: prenom,
+                    name: `${prenom} ${nom}`.trim(),
                     email: email,
                     role: role,
                     updatedAt: new Date().toISOString()
@@ -635,7 +655,9 @@
             const user = window.allUsers.find(u => u.id === userId);
             if (!user) return;
             
-            if (!confirm(`⚠️ Supprimer l'utilisateur "${user.name || user.email}" ?\n\nCette action est irréversible.`)) {
+            const displayName = user.prenom ? `${user.prenom} ${user.nom || ''}`.trim() : (user.nom || user.name || user.email);
+            
+            if (!confirm(`⚠️ Supprimer l'utilisateur "${displayName}" ?\n\nCette action est irréversible.`)) {
                 return;
             }
             
