@@ -7,171 +7,107 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root { --brown: #8B6F47; --dark-brown: #6B5A3B; --beige: #E8DCC4; --light-gray: #F5F5F0; --green: #6B9F7F; --dark-green: #5A8A6E; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--light-gray); min-height: 100vh; }
+        html, body { height: 100%; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         
-        .header { background: var(--brown); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
-        .header h1 { font-size: 1.3rem; }
-        .header h1 span { color: var(--green); }
-        .header-actions { display: flex; gap: 15px; align-items: center; }
-        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.3s; text-decoration: none; display: inline-block; }
+        /* Top bar - minimal */
+        .top-bar { height: 50px; background: var(--brown); color: white; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; }
+        .top-bar h1 { font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
+        .top-bar h1 span { color: var(--green); }
+        .top-bar-actions { display: flex; gap: 10px; align-items: center; }
+        .btn { padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 0.85rem; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
         .btn-light { background: rgba(255,255,255,0.2); color: white; }
         .btn-light:hover { background: rgba(255,255,255,0.3); }
-        .btn-primary { background: var(--green); color: white; }
-        .btn-primary:hover { background: var(--dark-green); }
-        .btn-secondary { background: var(--beige); color: var(--dark-brown); }
-        .btn-secondary:hover { background: #d9cab3; }
+        .btn-green { background: var(--green); color: white; }
+        .btn-green:hover { background: var(--dark-green); }
         
-        .main-layout { display: grid; grid-template-columns: 280px 1fr; min-height: calc(100vh - 60px); }
+        /* Course content - FULLSCREEN */
+        .course-frame { width: 100%; height: calc(100vh - 50px); border: none; background: white; }
         
-        .sidebar { background: white; border-right: 1px solid var(--beige); overflow-y: auto; }
-        .course-info { padding: 25px; border-bottom: 1px solid var(--beige); }
-        .course-info h2 { color: var(--dark-brown); font-size: 1.2rem; margin-bottom: 10px; }
-        .course-meta { font-size: 0.85rem; color: #888; }
-        .course-meta span { display: block; margin-bottom: 5px; }
+        /* Side panel (hidden by default) */
+        .side-panel { position: fixed; right: -350px; top: 50px; width: 350px; height: calc(100vh - 50px); background: white; box-shadow: -5px 0 20px rgba(0,0,0,0.1); transition: right 0.3s; z-index: 100; overflow-y: auto; }
+        .side-panel.open { right: 0; }
+        .panel-header { padding: 20px; background: var(--light-gray); display: flex; justify-content: space-between; align-items: center; }
+        .panel-header h3 { color: var(--dark-brown); }
+        .close-panel { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #888; }
+        .panel-content { padding: 20px; }
         
-        .progress-section { padding: 20px 25px; border-bottom: 1px solid var(--beige); }
-        .progress-section h3 { font-size: 0.9rem; color: var(--dark-brown); margin-bottom: 10px; }
-        .progress-bar { height: 10px; background: var(--beige); border-radius: 5px; overflow: hidden; }
-        .progress-fill { height: 100%; background: var(--green); transition: width 0.3s; }
-        .progress-text { font-size: 0.85rem; color: #888; margin-top: 8px; }
+        /* Progress */
+        .progress-section { margin-bottom: 25px; }
+        .progress-bar { height: 10px; background: var(--beige); border-radius: 5px; overflow: hidden; margin: 10px 0; }
+        .progress-fill { height: 100%; background: var(--green); }
+        .progress-text { font-size: 0.9rem; color: var(--dark-brown); font-weight: 600; }
         
-        .modules-section { padding: 20px 0; }
-        .modules-section h3 { padding: 0 25px 15px; font-size: 0.9rem; color: var(--dark-brown); }
-        .module-item { padding: 15px 25px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 12px; border-left: 3px solid transparent; }
-        .module-item:hover { background: var(--light-gray); }
-        .module-item.active { background: var(--light-gray); border-left-color: var(--green); }
+        /* Modules */
+        .module-item { padding: 12px 15px; background: var(--light-gray); border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .module-item:hover { background: var(--beige); }
+        .module-item.completed { border-left: 3px solid var(--green); }
+        .module-check { width: 22px; height: 22px; border: 2px solid var(--beige); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; background: white; }
         .module-item.completed .module-check { background: var(--green); color: white; border: none; }
-        .module-check { width: 26px; height: 26px; border: 2px solid var(--beige); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; flex-shrink: 0; }
-        .module-title { flex: 1; font-size: 0.9rem; }
-        .module-duration { font-size: 0.8rem; color: #888; }
+        .module-title { flex: 1; font-size: 0.85rem; }
         
-        .content-area { padding: 30px; overflow-y: auto; }
-        .content-card { background: white; border-radius: 15px; padding: 30px; margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .content-card h2 { color: var(--dark-brown); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        /* Complete button */
+        .complete-btn { width: 100%; padding: 15px; margin-top: 20px; }
         
-        .course-render iframe { width: 100%; min-height: 450px; border: none; border-radius: 10px; background: white; }
+        /* Description */
+        .description-section { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--beige); }
+        .description-section h4 { color: var(--dark-brown); margin-bottom: 10px; }
+        .description-section p { color: #666; font-size: 0.9rem; line-height: 1.6; }
         
-        .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 10px; background: #000; margin-bottom: 20px; }
-        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        
-        .video-list { display: grid; gap: 10px; margin-top: 15px; }
-        .video-item { padding: 15px; background: var(--light-gray); border-radius: 10px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 12px; }
-        .video-item:hover { background: var(--beige); }
-        .video-item.active { background: var(--beige); border: 2px solid var(--green); }
-        .video-icon { font-size: 1.5rem; }
-        .video-title { flex: 1; font-weight: 500; }
-        
-        .code-toggle { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .code-toggle h2 { margin-bottom: 0; }
-        .code-content { display: none; margin-top: 20px; }
-        .code-content.open { display: block; }
-        .code-preview { background: #2d2d2d; border-radius: 10px; padding: 20px; overflow-x: auto; }
-        .code-preview pre { color: #f8f8f2; font-family: 'Courier New', monospace; font-size: 14px; white-space: pre-wrap; }
-        .code-tabs { display: flex; gap: 5px; margin-bottom: 15px; }
-        .code-tab { padding: 8px 16px; background: var(--beige); border: none; cursor: pointer; border-radius: 6px; font-size: 0.9rem; }
-        .code-tab.active { background: var(--green); color: white; }
-        
-        .description { line-height: 1.8; color: #555; font-size: 1.05rem; }
-        
-        .nav-buttons { display: flex; justify-content: space-between; margin-top: 30px; }
-        
-        .complete-section { text-align: center; padding: 30px; background: linear-gradient(135deg, var(--light-gray) 0%, var(--beige) 100%); border-radius: 15px; margin-top: 20px; }
-        .complete-section p { margin-bottom: 15px; color: #666; font-size: 1.1rem; }
-        
-        .loading { text-align: center; padding: 60px; }
-        .spinner { width: 50px; height: 50px; border: 4px solid var(--beige); border-top: 4px solid var(--green); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+        /* Loading */
+        .loading { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: white; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+        .spinner { width: 50px; height: 50px; border: 4px solid var(--beige); border-top: 4px solid var(--green); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        .toggle-arrow { font-size: 1.2rem; transition: transform 0.3s; }
-        .toggle-arrow.open { transform: rotate(180deg); }
-        
-        @media (max-width: 900px) {
-            .main-layout { grid-template-columns: 1fr; }
-            .sidebar { display: none; }
-        }
+        /* Overlay */
+        .overlay { position: fixed; top: 50px; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.3); display: none; z-index: 50; }
+        .overlay.open { display: block; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🎓 Learning<span>Hub</span></h1>
-        <div class="header-actions">
-            <a href="instructor-dashboard.html" class="btn btn-light">← Dashboard</a>
-            <button class="btn btn-light" onclick="handleLogout()">Déconnexion</button>
-        </div>
-    </div>
-
+    <!-- Loading -->
     <div id="loading" class="loading">
         <div class="spinner"></div>
         <p>Chargement du cours...</p>
     </div>
 
-    <div class="main-layout" id="main-content" style="display: none;">
-        <div class="sidebar">
-            <div class="course-info">
-                <h2 id="course-title">Titre du cours</h2>
-                <div class="course-meta">
-                    <span>👨‍🏫 <span id="instructor-name">Formateur</span></span>
-                    <span>📚 <span id="course-level">Niveau</span></span>
-                    <span>⏱️ <span id="course-duration">Durée</span></span>
-                </div>
-            </div>
-            
+    <!-- Top Bar -->
+    <div class="top-bar" id="top-bar" style="display: none;">
+        <h1>🎓 <span id="course-title">Cours</span></h1>
+        <div class="top-bar-actions">
+            <button class="btn btn-green" onclick="togglePanel()">📊 Progression</button>
+            <a href="instructor-dashboard.html" class="btn btn-light">← Retour</a>
+            <button class="btn btn-light" onclick="handleLogout()">Déconnexion</button>
+        </div>
+    </div>
+
+    <!-- Course Content - FULL SCREEN -->
+    <iframe id="course-frame" class="course-frame" style="display: none;"></iframe>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay" onclick="togglePanel()"></div>
+
+    <!-- Side Panel -->
+    <div class="side-panel" id="side-panel">
+        <div class="panel-header">
+            <h3>📊 Progression</h3>
+            <button class="close-panel" onclick="togglePanel()">×</button>
+        </div>
+        <div class="panel-content">
             <div class="progress-section">
-                <h3>📊 Votre progression</h3>
                 <div class="progress-bar">
                     <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
                 </div>
                 <div class="progress-text"><span id="progress-percent">0</span>% complété</div>
             </div>
             
-            <div class="modules-section">
-                <h3>📖 Modules</h3>
-                <div id="modules-list"></div>
-            </div>
-        </div>
-
-        <div class="content-area">
-            <div class="content-card">
-                <h2>📝 À propos de ce cours</h2>
-                <div class="description" id="course-description">Chargement...</div>
-            </div>
-
-            <div class="content-card" id="render-section">
-                <h2>📺 Contenu du cours</h2>
-                <div class="course-render" id="course-render"></div>
-            </div>
-
-            <div class="content-card" id="video-section" style="display: none;">
-                <h2>🎥 Vidéos</h2>
-                <div id="video-player"></div>
-                <div class="video-list" id="video-list"></div>
-            </div>
-
-            <div class="content-card" id="code-section">
-                <div class="code-toggle" onclick="toggleCode()">
-                    <h2>💻 Voir le code source</h2>
-                    <span class="toggle-arrow" id="toggle-arrow">▼</span>
-                </div>
-                <div class="code-content" id="code-content">
-                    <div class="code-tabs">
-                        <button class="code-tab active" onclick="showCode('html'); event.stopPropagation();">HTML</button>
-                        <button class="code-tab" onclick="showCode('css'); event.stopPropagation();">CSS</button>
-                        <button class="code-tab" onclick="showCode('js'); event.stopPropagation();">JavaScript</button>
-                    </div>
-                    <div class="code-preview">
-                        <pre id="code-display">Aucun code</pre>
-                    </div>
-                </div>
-            </div>
-
-            <div class="complete-section">
-                <p>✨ Vous avez terminé ce module ?</p>
-                <button class="btn btn-primary" onclick="markAsComplete()">✅ Marquer comme terminé</button>
-            </div>
-
-            <div class="nav-buttons">
-                <button class="btn btn-secondary" id="prev-btn" onclick="previousModule()" style="display: none;">← Précédent</button>
-                <button class="btn btn-primary" id="next-btn" onclick="nextModule()">Suivant →</button>
+            <h4 style="color: var(--dark-brown); margin-bottom: 15px;">📖 Modules</h4>
+            <div id="modules-list"></div>
+            
+            <button class="btn btn-green complete-btn" onclick="markAsComplete()">✅ Marquer comme terminé</button>
+            
+            <div class="description-section">
+                <h4>📝 Description</h4>
+                <p id="course-description">Chargement...</p>
             </div>
         </div>
     </div>
@@ -223,22 +159,21 @@
                     const course = courseDoc.data();
                     window.currentCourse = { id: courseId, ...course };
                     
-                    document.getElementById('course-title').textContent = course.title || 'Sans titre';
-                    document.getElementById('instructor-name').textContent = course.instructorName || 'Formateur';
-                    document.getElementById('course-level').textContent = course.level || 'Tous niveaux';
-                    document.getElementById('course-duration').textContent = course.duration || '-';
+                    document.getElementById('course-title').textContent = course.title || 'Cours';
                     document.getElementById('course-description').textContent = course.description || 'Aucune description.';
                     
                     window.courseCode = { html: course.codeHtml || '', css: course.codeCss || '', js: course.codeJs || '' };
                     
+                    // Render course content in fullscreen iframe
                     renderCourseContent();
-                    showCode('html');
+                    
                     displayModules(course.modules || []);
-                    displayVideos(course.videos || []);
                     await loadUserProgress(courseId);
                     
+                    // Show content
                     document.getElementById('loading').style.display = 'none';
-                    document.getElementById('main-content').style.display = 'grid';
+                    document.getElementById('top-bar').style.display = 'flex';
+                    document.getElementById('course-frame').style.display = 'block';
                 }
             } catch (error) {
                 console.error('Erreur:', error);
@@ -265,36 +200,61 @@
         window.completedModules = [];
 
         function renderCourseContent() {
-            const div = document.getElementById('course-render');
+            const iframe = document.getElementById('course-frame');
             const html = window.courseCode?.html || '';
             const css = window.courseCode?.css || '';
             const js = window.courseCode?.js || '';
             
             if (!html && !css && !js) {
-                document.getElementById('render-section').style.display = 'none';
-                document.getElementById('code-section').style.display = 'none';
+                iframe.contentDocument.open();
+                iframe.contentDocument.write('<html><body style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;color:#888;"><p>Aucun contenu disponible pour ce cours.</p></body></html>');
+                iframe.contentDocument.close();
                 return;
             }
             
-            const iframe = document.createElement('iframe');
-            iframe.style.cssText = 'width:100%;min-height:450px;border:none;border-radius:10px;';
-            div.innerHTML = '';
-            div.appendChild(iframe);
+            const content = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            padding: 40px; 
+            min-height: 100vh;
+            background: #fff;
+        }
+        ${css}
+    </style>
+</head>
+<body>
+    ${html}
+    <script>${js}<\/script>
+</body>
+</html>`;
             
             iframe.contentDocument.open();
-            iframe.contentDocument.write(`<!DOCTYPE html><html><head><style>body{font-family:sans-serif;padding:20px;margin:0;}${css}</style></head><body>${html}<script>${js}<\/script></body></html>`);
+            iframe.contentDocument.write(content);
             iframe.contentDocument.close();
         }
 
-        function toggleCode() {
-            document.getElementById('code-content').classList.toggle('open');
-            document.getElementById('toggle-arrow').classList.toggle('open');
+        function togglePanel() {
+            document.getElementById('side-panel').classList.toggle('open');
+            document.getElementById('overlay').classList.toggle('open');
         }
 
         function displayModules(modules) {
             const list = document.getElementById('modules-list');
-            if (!modules?.length) { list.innerHTML = '<div style="padding:15px 25px;color:#888;">Aucun module</div>'; return; }
-            list.innerHTML = modules.map((m, i) => `<div class="module-item ${i===0?'active':''}" onclick="selectModule(${i})" id="module-${i}"><div class="module-check" id="check-${i}">${i+1}</div><div class="module-title">${m.title}</div><div class="module-duration">${m.duration||''}</div></div>`).join('');
+            if (!modules?.length) { 
+                list.innerHTML = '<p style="color:#888;font-size:0.85rem;">Aucun module défini</p>'; 
+                return; 
+            }
+            list.innerHTML = modules.map((m, i) => `
+                <div class="module-item" onclick="selectModule(${i})" id="module-${i}">
+                    <div class="module-check" id="check-${i}">${i+1}</div>
+                    <div class="module-title">${m.title}</div>
+                </div>
+            `).join('');
         }
 
         function updateModulesDisplay() {
@@ -302,58 +262,36 @@
                 const el = document.getElementById(`module-${i}`);
                 const ch = document.getElementById(`check-${i}`);
                 if (el) el.classList.add('completed');
-                if (ch) { ch.textContent = '✓'; ch.style.cssText = 'background:var(--green);color:white;border:none;'; }
+                if (ch) ch.textContent = '✓';
             });
         }
 
         function selectModule(i) {
             window.currentModuleIndex = i;
-            document.querySelectorAll('.module-item').forEach((el, idx) => el.classList.toggle('active', idx === i));
-            document.getElementById('prev-btn').style.display = i > 0 ? 'block' : 'none';
-            const mods = window.currentCourse?.modules || [];
-            document.getElementById('next-btn').textContent = i < mods.length - 1 ? 'Suivant →' : 'Terminer →';
-        }
-
-        function displayVideos(videos) {
-            const section = document.getElementById('video-section');
-            if (!videos?.length) { section.style.display = 'none'; return; }
-            section.style.display = 'block';
-            document.getElementById('video-list').innerHTML = videos.map((v, i) => `<div class="video-item ${i===0?'active':''}" onclick="playVideo('${v.url}',${i})"><div class="video-icon">▶️</div><div class="video-title">${v.title}</div></div>`).join('');
-            if (videos.length) playVideo(videos[0].url, 0);
-        }
-
-        function playVideo(url, i) {
-            document.querySelectorAll('.video-item').forEach((el, idx) => el.classList.toggle('active', idx === i));
-            let embed = url;
-            if (url.includes('youtube.com/watch')) embed = 'https://www.youtube.com/embed/' + url.split('v=')[1]?.split('&')[0];
-            else if (url.includes('youtu.be/')) embed = 'https://www.youtube.com/embed/' + url.split('youtu.be/')[1];
-            else if (url.includes('vimeo.com/')) embed = 'https://player.vimeo.com/video/' + url.split('vimeo.com/')[1];
-            document.getElementById('video-player').innerHTML = `<div class="video-container"><iframe src="${embed}" frameborder="0" allowfullscreen></iframe></div>`;
-        }
-
-        function showCode(type) {
-            document.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
-            event?.currentTarget?.classList.add('active');
-            document.getElementById('code-display').textContent = window.courseCode?.[type] || 'Aucun code';
         }
 
         async function markAsComplete() {
             const i = window.currentModuleIndex;
             if (!window.completedModules.includes(i)) window.completedModules.push(i);
             const ch = document.getElementById(`check-${i}`);
-            if (ch) { ch.textContent = '✓'; ch.style.cssText = 'background:var(--green);color:white;border:none;'; }
+            if (ch) ch.textContent = '✓';
             document.getElementById(`module-${i}`)?.classList.add('completed');
             updateProgressDisplay();
+            
             try {
                 const ref = window.doc(window.firebaseDb, "users", window.currentUser.uid);
                 const snap = await window.getDoc(ref);
                 if (snap.exists()) {
                     const progress = snap.data().progress || {};
                     const mods = window.currentCourse?.modules || [];
-                    progress[window.currentCourse.id] = { completedModules: window.completedModules, percent: Math.round((window.completedModules.length / Math.max(mods.length, 1)) * 100) };
+                    progress[window.currentCourse.id] = { 
+                        completedModules: window.completedModules, 
+                        percent: Math.round((window.completedModules.length / Math.max(mods.length, 1)) * 100) 
+                    };
                     await window.updateDoc(ref, { progress });
                 }
             } catch (e) { console.error(e); }
+            
             alert('✅ Module terminé !');
         }
 
@@ -364,14 +302,10 @@
             document.getElementById('progress-percent').textContent = pct;
         }
 
-        function previousModule() { if (window.currentModuleIndex > 0) { selectModule(window.currentModuleIndex - 1); window.scrollTo(0, 0); } }
-        function nextModule() {
-            const mods = window.currentCourse?.modules || [];
-            if (window.currentModuleIndex < mods.length - 1) { selectModule(window.currentModuleIndex + 1); window.scrollTo(0, 0); }
-            else alert('🎉 Félicitations ! Cours terminé !');
+        async function handleLogout() { 
+            await window.signOut(window.firebaseAuth); 
+            window.location.href = 'index.html'; 
         }
-
-        async function handleLogout() { await window.signOut(window.firebaseAuth); window.location.href = 'index.html'; }
     </script>
 </body>
 </html>
