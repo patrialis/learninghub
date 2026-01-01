@@ -56,7 +56,7 @@
         
         .description { line-height: 1.7; color: #555; }
         
-        .progress-grid { display: grid; grid-template-columns: 1fr 300px; gap: 20px; }
+        .progress-grid { display: block; }
         .progress-bar { height: 12px; background: var(--beige); border-radius: 6px; overflow: hidden; margin: 10px 0; }
         .progress-fill { height: 100%; background: var(--green); transition: width 0.3s; }
         .progress-text { font-weight: 600; color: var(--dark-brown); }
@@ -79,15 +79,15 @@
         .complete-btn:disabled { background: #ccc; cursor: not-allowed; opacity: 0.7; }
         
         /* Certificate Section */
-        .certificate-section { display: none; background: linear-gradient(135deg, #fff9e6, #fff); border: 2px solid #D4AF37; margin-top: 20px; text-align: center; padding: 30px; border-radius: 15px; }
+        .certificate-section { display: none; background: linear-gradient(135deg, #fff9e6, #fff); border: 2px solid #D4AF37; text-align: center; padding: 20px; border-radius: 15px; }
         .certificate-section.show { display: block; }
-        .certificate-section h3 { color: #B8860B; margin-bottom: 10px; font-size: 1.4rem; }
-        .certificate-section p { color: #666; margin-bottom: 20px; }
+        .certificate-section h3 { color: #B8860B; margin-bottom: 8px; font-size: 1.3rem; }
+        .certificate-section p { color: #666; margin-bottom: 15px; font-size: 0.9rem; }
         
         /* Not eligible */
-        .not-eligible { background: var(--light-gray); border: 2px solid var(--beige); margin-top: 20px; text-align: center; padding: 20px; border-radius: 15px; display: none; }
+        .not-eligible { background: var(--light-gray); border: 2px solid var(--beige); text-align: center; padding: 15px; border-radius: 15px; display: none; }
         .not-eligible.show { display: block; }
-        .not-eligible p { color: #666; margin: 0; }
+        .not-eligible p { color: #666; margin: 0; font-size: 0.9rem; }
         .not-eligible strong { color: var(--dark-brown); }
         
         .video-container { position: relative; padding-bottom: 56.25%; height: 0; border-radius: 10px; overflow: hidden; background: #000; }
@@ -113,7 +113,6 @@
         .modal-buttons { display: flex; gap: 15px; justify-content: center; }
         
         @media (max-width: 900px) {
-            .progress-grid { grid-template-columns: 1fr; }
             .course-frame { height: 50vh; }
         }
         
@@ -146,6 +145,9 @@
             .certificate-section { padding: 20px; }
             .certificate-section h3 { font-size: 1.2rem; }
             .btn-gold { padding: 12px 20px; font-size: 1rem; }
+            
+            #progression-panel > div { grid-template-columns: 1fr !important; }
+            #progression-panel > div > div:last-child { min-width: auto !important; margin-top: 15px; }
             
             .video-list { flex-direction: column; }
             .video-item { text-align: center; }
@@ -204,6 +206,49 @@
             </div>
         </div>
 
+        <!-- Progression Panel - Now at top -->
+        <div class="content-card" id="progression-panel" style="margin-bottom: 20px;">
+            <div style="display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: start;">
+                <div>
+                    <h2 style="margin-bottom: 15px;">📊 Progression</h2>
+                    <div class="progress-bar" style="height: 20px;">
+                        <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-text" style="font-size: 1.1rem; margin-top: 10px;"><span id="progress-percent">0</span>% complété</div>
+                    
+                    <div class="min-score-info" style="margin-top: 15px;">
+                        🎯 Score minimum requis : <strong><span id="min-score-display">70</span>%</strong> pour obtenir le certificat
+                    </div>
+                    
+                    <div class="time-info" style="background: var(--light-gray); padding: 12px 15px; border-radius: 8px; margin-top: 10px; font-size: 0.9rem;">
+                        <div style="display: flex; gap: 30px;">
+                            <span>⏱️ Temps passé : <strong id="time-spent">0 min</strong></span>
+                            <span>📋 Durée requise : <strong id="duration-display">-</strong></span>
+                        </div>
+                        <div id="time-warning" style="color: #dc3545; margin-top: 8px; display: none;">
+                            ⚠️ Temps minimum non atteint
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; min-width: 250px;">
+                    <!-- Certificate Section - Visible when completed -->
+                    <div class="certificate-section" id="certificate-section">
+                        <h3>🏆 Félicitations !</h3>
+                        <p>Vous avez terminé ce cours !</p>
+                        <button class="btn btn-gold" onclick="openCertificateModal()">📜 Télécharger mon certificat</button>
+                    </div>
+                    
+                    <!-- Not eligible message -->
+                    <div class="not-eligible" id="not-eligible-section">
+                        <p>📈 Il vous faut <strong><span id="remaining-percent">0</span>%</strong> de plus pour le certificat</p>
+                    </div>
+                    
+                    <button class="btn btn-primary complete-btn" id="complete-btn" onclick="markAsComplete()" disabled style="margin-top: 10px;">📖 Parcourez tous les modules</button>
+                </div>
+            </div>
+        </div>
+
         <div class="progress-grid">
             <div>
                 <div class="content-card" id="video-section" style="display: none;">
@@ -212,51 +257,10 @@
                     <div class="video-list" id="video-list"></div>
                 </div>
                 
-            </div>
-            
-            <div>
                 <div class="content-card">
-                    <h2>📊 Progression</h2>
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
-                    </div>
-                    <div class="progress-text"><span id="progress-percent">0</span>% complété</div>
-                    
-                    <!-- Certificate Section - Visible when completed -->
-                    <div class="certificate-section" id="certificate-section">
-                        <h3>🏆 Félicitations !</h3>
-                        <p>Vous avez atteint le score minimum requis !</p>
-                        <button class="btn btn-gold" onclick="openCertificateModal()">📜 Télécharger mon certificat</button>
-                    </div>
-                    
-                    <!-- Not eligible message -->
-                    <div class="not-eligible" id="not-eligible-section">
-                        <p>📈 Continuez ! Il vous faut <strong><span id="remaining-percent">0</span>%</strong> de plus pour obtenir votre certificat.</p>
-                    </div>
-                    
-                    <div class="min-score-info">
-                        🎯 Score minimum requis : <strong><span id="min-score-display">70</span>%</strong> pour obtenir le certificat
-                    </div>
-                    
-                    <div class="time-info" style="background: var(--light-gray); padding: 12px 15px; border-radius: 8px; margin-top: 10px; font-size: 0.9rem;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                            <span>⏱️ Temps passé :</span>
-                            <strong id="time-spent">0 min</strong>
-                        </div>
-                        <div style="display: flex; justify-content: space-between;">
-                            <span>📋 Durée requise :</span>
-                            <strong id="duration-display">-</strong>
-                        </div>
-                        <div id="time-warning" style="color: #dc3545; margin-top: 8px; display: none;">
-                            ⚠️ Temps minimum non atteint
-                        </div>
-                    </div>
-                    
                     <div class="modules-list" id="modules-list">
                         <div class="modules-list-title">📚 Modules du cours</div>
                     </div>
-                    
-                    <button class="btn btn-primary complete-btn" id="complete-btn" onclick="markAsComplete()" disabled>📖 Parcourez tous les modules</button>
                 </div>
             </div>
         </div>
@@ -484,12 +488,14 @@
         function displayModules(modules) {
             const list = document.getElementById('modules-list');
             if (!modules?.length) { 
-                list.innerHTML = '<p style="color:#888;font-size:0.85rem;margin-top:15px;">Aucun module défini</p>'; 
+                list.innerHTML = '<div class="modules-list-title">📚 Modules du cours</div><p style="color:#888;font-size:0.9rem;padding:15px;">Aucun module défini - Vous pouvez valider directement le cours.</p>'; 
                 // If no modules, enable button
                 document.getElementById('complete-btn').disabled = false;
+                document.getElementById('complete-btn').textContent = '✅ Marquer comme terminé';
                 return; 
             }
-            list.innerHTML = modules.map((m, i) => `<div class="module-item" onclick="selectModule(${i})" id="module-${i}"><div class="module-check" id="check-${i}">${i+1}</div><div class="module-title">${m.title}</div></div>`).join('');
+            list.innerHTML = '<div class="modules-list-title">📚 Modules du cours <span style="font-weight:normal;color:#888;">(' + modules.length + ')</span></div>' + 
+                modules.map((m, i) => `<div class="module-item" onclick="selectModule(${i})" id="module-${i}"><div class="module-check" id="check-${i}">${i+1}</div><div class="module-title">${m.title}</div></div>`).join('');
             updateCompleteButton();
         }
 
