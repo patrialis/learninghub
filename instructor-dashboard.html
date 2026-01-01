@@ -14,10 +14,26 @@
         .sidebar-header h1 { font-size: 1.5rem; }
         .sidebar-header h1 span { color: var(--green); }
         .sidebar-header p { font-size: 0.85rem; opacity: 0.8; margin-top: 5px; }
+        
         .nav-menu { list-style: none; }
-        .nav-item { padding: 15px 25px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 12px; border-left: 3px solid transparent; text-decoration: none; color: white; }
+        .nav-item { padding: 15px 25px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 12px; border-left: 3px solid transparent; text-decoration: none; color: white; user-select: none; }
         .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); border-left-color: var(--green); }
-        .nav-item span { font-size: 1.2rem; }
+        .nav-item span.icon { font-size: 1.2rem; }
+        .nav-item span.label { flex: 1; }
+        
+        /* Drag handle */
+        .nav-item .drag-handle { opacity: 0; cursor: grab; font-size: 1rem; transition: opacity 0.2s; }
+        .nav-item:hover .drag-handle { opacity: 0.5; }
+        .nav-item .drag-handle:hover { opacity: 1; }
+        
+        /* Dragging styles */
+        .nav-item.dragging { opacity: 0.5; background: rgba(255,255,255,0.2); }
+        .nav-item.drag-over { border-top: 2px solid var(--green); }
+        
+        /* Edit mode */
+        .edit-mode-btn { margin: 15px 20px; padding: 10px; background: rgba(255,255,255,0.1); border: 1px dashed rgba(255,255,255,0.3); border-radius: 8px; color: white; cursor: pointer; text-align: center; font-size: 0.85rem; transition: all 0.3s; }
+        .edit-mode-btn:hover { background: rgba(255,255,255,0.2); }
+        .edit-mode-btn.active { background: var(--green); border-style: solid; }
         
         .main-content { margin-left: 250px; padding: 30px; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; background: white; padding: 20px 30px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
@@ -41,10 +57,7 @@
         .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.3s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem; }
         .btn-primary { background: var(--green); color: white; }
         .btn-primary:hover { background: var(--dark-green); }
-        .btn-secondary { background: var(--beige); color: var(--dark-brown); }
-        .btn-secondary:hover { background: #d9cab3; }
         
-        /* Quick Actions */
         .quick-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
         .quick-action { background: var(--light-gray); padding: 20px; border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.3s; text-decoration: none; color: var(--dark-brown); }
         .quick-action:hover { background: var(--beige); transform: translateY(-3px); }
@@ -52,18 +65,15 @@
         .quick-action h4 { font-size: 1rem; margin-bottom: 5px; }
         .quick-action p { font-size: 0.8rem; color: #888; }
         
-        /* Recent Activity */
         .activity-list { }
         .activity-item { display: flex; align-items: center; gap: 15px; padding: 15px; border-bottom: 1px solid var(--beige); }
         .activity-item:last-child { border-bottom: none; }
         .activity-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
         .activity-icon.green { background: #d4edda; }
         .activity-icon.blue { background: #cce5ff; }
-        .activity-icon.orange { background: #fff3cd; }
         .activity-info { flex: 1; }
         .activity-info h4 { font-size: 0.95rem; color: var(--dark-brown); margin-bottom: 3px; }
         .activity-info p { font-size: 0.8rem; color: #888; }
-        .activity-time { font-size: 0.75rem; color: #aaa; }
         
         .loading { text-align: center; padding: 40px; color: #888; }
         .spinner { width: 40px; height: 40px; border: 4px solid var(--beige); border-top: 4px solid var(--green); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px; }
@@ -71,9 +81,13 @@
         
         .empty-state { text-align: center; padding: 40px; color: #888; }
         
+        /* Toast notification */
+        .toast { position: fixed; bottom: 20px; right: 20px; background: var(--dark-brown); color: white; padding: 15px 25px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); opacity: 0; transform: translateY(20px); transition: all 0.3s; z-index: 1000; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        
         @media (max-width: 768px) {
             .sidebar { width: 70px; }
-            .sidebar-header h1, .sidebar-header p, .nav-item span:last-child { display: none; }
+            .sidebar-header h1, .sidebar-header p, .nav-item span.label, .nav-item .drag-handle, .edit-mode-btn { display: none; }
             .nav-item { justify-content: center; padding: 15px; }
             .main-content { margin-left: 70px; }
         }
@@ -85,25 +99,13 @@
             <h1>🎓 Learning<span>Hub</span></h1>
             <p>Espace Formateur</p>
         </div>
-        <ul class="nav-menu">
-            <li class="nav-item active">
-                <span>📊</span> <span>Dashboard</span>
-            </li>
-            <a href="manage-courses.html" class="nav-item">
-                <span>📚</span> <span>Cours</span>
-            </a>
-            <a href="create-program.html" class="nav-item">
-                <span>🎓</span> <span>Programmes</span>
-            </a>
-            <a href="manage-categories.html" class="nav-item">
-                <span>🎨</span> <span>Catégories</span>
-            </a>
-            <a href="users-management.html" class="nav-item">
-                <span>👥</span> <span>Utilisateurs</span>
-            </a>
-            <a href="email-automation.html" class="nav-item">
-                <span>📧</span> <span>Emails</span>
-            </a>
+        
+        <div class="edit-mode-btn" onclick="toggleEditMode()">
+            ☰ Réorganiser le menu
+        </div>
+        
+        <ul class="nav-menu" id="nav-menu">
+            <!-- Menu items will be loaded dynamically -->
         </ul>
     </div>
 
@@ -120,7 +122,6 @@
             </div>
         </div>
 
-        <!-- Stats -->
         <div class="stats-grid">
             <div class="stat-card" onclick="window.location.href='manage-courses.html'">
                 <div class="stat-icon">📚</div>
@@ -144,7 +145,6 @@
             </div>
         </div>
 
-        <!-- Quick Actions -->
         <div class="section">
             <div class="section-header">
                 <h3>⚡ Actions rapides</h3>
@@ -173,7 +173,6 @@
             </div>
         </div>
 
-        <!-- Recent Activity -->
         <div class="section">
             <div class="section-header">
                 <h3>📈 Activité récente</h3>
@@ -186,6 +185,8 @@
             </div>
         </div>
     </div>
+
+    <div class="toast" id="toast"></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
@@ -222,11 +223,9 @@
 
         async function loadDashboardData() {
             try {
-                // Load courses count
                 const coursesSnapshot = await getDocs(collection(db, "courses"));
                 document.getElementById('stat-courses').textContent = coursesSnapshot.size;
 
-                // Load users
                 const usersSnapshot = await getDocs(collection(db, "users"));
                 let students = 0;
                 let completedCount = 0;
@@ -243,8 +242,7 @@
                                 recentActivity.push({
                                     type: p.percent >= 100 ? 'completed' : 'progress',
                                     userName: userData.name || userData.email?.split('@')[0] || 'Utilisateur',
-                                    percent: p.percent,
-                                    courseId: courseId
+                                    percent: p.percent
                                 });
                             }
                         });
@@ -254,11 +252,9 @@
                 document.getElementById('stat-students').textContent = students;
                 document.getElementById('stat-completed').textContent = completedCount;
 
-                // Load programs count
                 const programsSnapshot = await getDocs(collection(db, "programs"));
                 document.getElementById('stat-programs').textContent = programsSnapshot.size;
 
-                // Display activity
                 displayActivity(recentActivity.slice(0, 5));
 
             } catch (error) {
@@ -270,11 +266,7 @@
             const container = document.getElementById('activity-list');
             
             if (activities.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <p>Aucune activité récente</p>
-                    </div>
-                `;
+                container.innerHTML = '<div class="empty-state"><p>Aucune activité récente</p></div>';
                 return;
             }
             
@@ -293,6 +285,143 @@
     </script>
 
     <script>
+        // Default menu items
+        const defaultMenuItems = [
+            { id: 'dashboard', icon: '📊', label: 'Dashboard', href: 'instructor-dashboard.html', active: true },
+            { id: 'courses', icon: '📚', label: 'Cours', href: 'manage-courses.html' },
+            { id: 'programs', icon: '🎓', label: 'Programmes', href: 'create-program.html' },
+            { id: 'categories', icon: '🎨', label: 'Catégories', href: 'manage-categories.html' },
+            { id: 'users', icon: '👥', label: 'Utilisateurs', href: 'users-management.html' },
+            { id: 'emails', icon: '📧', label: 'Emails', href: 'email-automation.html' }
+        ];
+
+        let menuItems = [];
+        let editMode = false;
+        let draggedItem = null;
+
+        // Load menu order from localStorage
+        function loadMenuOrder() {
+            const savedOrder = localStorage.getItem('menuOrder');
+            if (savedOrder) {
+                const orderIds = JSON.parse(savedOrder);
+                // Rebuild menu items based on saved order
+                menuItems = orderIds.map(id => defaultMenuItems.find(item => item.id === id)).filter(Boolean);
+                // Add any new items that weren't in saved order
+                defaultMenuItems.forEach(item => {
+                    if (!menuItems.find(m => m.id === item.id)) {
+                        menuItems.push(item);
+                    }
+                });
+            } else {
+                menuItems = [...defaultMenuItems];
+            }
+        }
+
+        // Save menu order to localStorage
+        function saveMenuOrder() {
+            const orderIds = menuItems.map(item => item.id);
+            localStorage.setItem('menuOrder', JSON.stringify(orderIds));
+        }
+
+        // Render menu
+        function renderMenu() {
+            const menu = document.getElementById('nav-menu');
+            menu.innerHTML = menuItems.map((item, index) => `
+                <li class="nav-item ${item.active ? 'active' : ''}" 
+                    draggable="${editMode}"
+                    data-index="${index}"
+                    onclick="if(!${editMode}) ${item.active ? '' : `window.location.href='${item.href}'`}">
+                    ${editMode ? '<span class="drag-handle">☰</span>' : ''}
+                    <span class="icon">${item.icon}</span>
+                    <span class="label">${item.label}</span>
+                </li>
+            `).join('');
+
+            if (editMode) {
+                initDragAndDrop();
+            }
+        }
+
+        // Toggle edit mode
+        function toggleEditMode() {
+            editMode = !editMode;
+            document.querySelector('.edit-mode-btn').classList.toggle('active', editMode);
+            document.querySelector('.edit-mode-btn').textContent = editMode ? '✓ Terminer' : '☰ Réorganiser le menu';
+            renderMenu();
+            
+            if (!editMode) {
+                showToast('✅ Menu enregistré !');
+            }
+        }
+
+        // Initialize drag and drop
+        function initDragAndDrop() {
+            const items = document.querySelectorAll('.nav-item');
+            
+            items.forEach(item => {
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragend', handleDragEnd);
+                item.addEventListener('dragover', handleDragOver);
+                item.addEventListener('dragleave', handleDragLeave);
+                item.addEventListener('drop', handleDrop);
+            });
+        }
+
+        function handleDragStart(e) {
+            draggedItem = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('drag-over');
+            });
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            
+            if (this !== draggedItem) {
+                this.classList.add('drag-over');
+            }
+        }
+
+        function handleDragLeave(e) {
+            this.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            
+            if (this !== draggedItem) {
+                const fromIndex = parseInt(draggedItem.dataset.index);
+                const toIndex = parseInt(this.dataset.index);
+                
+                // Reorder array
+                const [movedItem] = menuItems.splice(fromIndex, 1);
+                menuItems.splice(toIndex, 0, movedItem);
+                
+                // Save and re-render
+                saveMenuOrder();
+                renderMenu();
+            }
+        }
+
+        // Show toast notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        // Logout
         async function handleLogout() {
             try {
                 await window.signOut(window.firebaseAuth);
@@ -301,6 +430,10 @@
                 console.error('Erreur:', error);
             }
         }
+
+        // Initialize
+        loadMenuOrder();
+        renderMenu();
     </script>
 </body>
 </html>
