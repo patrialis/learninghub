@@ -6,8 +6,15 @@
     <title>Mon Espace - LearningHub</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root { --brown: #8B6F47; --dark-brown: #6B5A3B; --beige: #E8DCC4; --light-gray: #F5F5F0; --green: #6B9F7F; --dark-green: #5A8A6E; }
+        :root { --brown: #8B6F47; --dark-brown: #6B5A3B; --beige: #E8DCC4; --light-gray: #F5F5F0; --green: #6B9F7F; --dark-green: #5A8A6E; --banner-width: 0px; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--light-gray); min-height: 100vh; }
+        
+        /* Banner */
+        .banner-sidebar { position: fixed; left: 0; top: 0; width: var(--banner-width); height: 100vh; z-index: 50; display: none; }
+        .banner-sidebar.active { display: block; }
+        .banner-sidebar img { width: 100%; height: 100%; object-fit: cover; }
+        
+        .page-wrapper { margin-left: var(--banner-width); transition: margin-left 0.3s; }
         
         .header { background: var(--brown); color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; }
         .header h1 { font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
@@ -94,14 +101,65 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
         @media (max-width: 768px) {
-            .header { flex-direction: column; gap: 15px; text-align: center; }
-            .welcome-section { padding: 25px; }
-            .welcome-section h2 { font-size: 1.4rem; }
-            .courses-grid { grid-template-columns: 1fr; }
+            .banner-sidebar { display: none !important; }
+            .page-wrapper { margin-left: 0 !important; }
+            
+            .header { flex-direction: column; gap: 15px; text-align: center; padding: 15px; }
+            .header h1 { font-size: 1.3rem; }
+            .user-info { flex-direction: column; gap: 10px; }
+            .user-avatar { width: 40px; height: 40px; font-size: 1rem; }
+            .logout-btn { padding: 8px 15px; font-size: 0.9rem; }
+            
+            .container { padding: 15px 10px; }
+            
+            .welcome-section { padding: 20px; border-radius: 15px; margin-bottom: 20px; }
+            .welcome-section h2 { font-size: 1.2rem; }
+            .welcome-section p { font-size: 0.95rem; }
+            
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+            .stat-card { padding: 15px 10px; border-radius: 10px; }
+            .stat-card .icon { font-size: 1.5rem; margin-bottom: 5px; }
+            .stat-card h3 { font-size: 1.4rem; }
+            .stat-card p { font-size: 0.75rem; }
+            
+            .tabs { flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+            .tab { padding: 10px 15px; font-size: 0.85rem; flex: 1; min-width: 120px; text-align: center; }
+            
+            .courses-grid { grid-template-columns: 1fr; gap: 15px; }
+            .course-card { border-radius: 12px; }
+            .course-header { padding: 20px; }
+            .course-header h3 { font-size: 1.1rem; }
+            .course-body { padding: 15px; }
+            .course-meta { gap: 10px; }
+            .course-meta span { font-size: 0.8rem; }
+            .course-btn { padding: 12px; font-size: 0.95rem; }
+            
+            .program-card { border-radius: 12px; }
+            .program-header { padding: 20px; }
+            .program-header h3 { font-size: 1.1rem; }
+            .program-header > div { flex-wrap: wrap; gap: 10px; }
+            .program-body { padding: 15px; }
+            .program-course-item { padding: 12px; }
+            .program-course-number { width: 30px; height: 30px; font-size: 0.9rem; }
+            .program-course-info h4 { font-size: 0.9rem; }
+            
+            .empty-state { padding: 40px 15px; }
+            .empty-state .icon { font-size: 3rem; }
+        }
+        
+        @media (max-width: 400px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .tab { min-width: 100%; }
         }
     </style>
 </head>
 <body>
+    <!-- Banner Sidebar -->
+    <div class="banner-sidebar" id="banner-sidebar">
+        <img id="banner-image" src="" alt="Bannière">
+    </div>
+
+    <div class="page-wrapper">
     <div class="header">
         <h1>🎓 Learning<span style="color: var(--green); display: inline; margin: 0; padding: 0;">Hub</span></h1>
         <div class="user-info">
@@ -455,6 +513,27 @@
                 console.error('Erreur déconnexion:', error);
             }
         }
+
+        // Load banner
+        async function loadBanner() {
+            try {
+                const bannerDoc = await window.getDoc(window.doc(window.firebaseDb, "settings", "banner"));
+                if (bannerDoc.exists()) {
+                    const data = bannerDoc.data();
+                    if (data.url) {
+                        document.documentElement.style.setProperty('--banner-width', (data.width || 120) + 'px');
+                        document.getElementById('banner-image').src = data.url;
+                        document.getElementById('banner-sidebar').classList.add('active');
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur bannière:', error);
+            }
+        }
+        
+        // Call after Firebase is ready
+        setTimeout(loadBanner, 1000);
     </script>
+    </div><!-- End page-wrapper -->
 </body>
 </html>

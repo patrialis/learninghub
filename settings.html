@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paramètres - LearningHub</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --brown: #8B6F47; --dark-brown: #6B5A3B; --beige: #E8DCC4; --light-gray: #F5F5F0; --green: #6B9F7F; --dark-green: #5A8A6E; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--light-gray); min-height: 100vh; padding: 20px; }
+        
+        .container { max-width: 800px; margin: 0 auto; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header h1 { color: var(--dark-brown); display: flex; align-items: center; gap: 10px; }
+        .back-btn { background: var(--beige); border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; color: var(--dark-brown); font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+        .back-btn:hover { background: #d9cab3; }
+        
+        .card { background: white; border-radius: 15px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .card h2 { color: var(--dark-brown); margin-bottom: 20px; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+        .card p.description { color: #888; margin-bottom: 20px; font-size: 0.95rem; }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: var(--dark-brown); font-weight: 500; }
+        .form-group input { width: 100%; padding: 12px 15px; border: 2px solid var(--beige); border-radius: 10px; font-size: 1rem; transition: all 0.3s; }
+        .form-group input:focus { outline: none; border-color: var(--green); }
+        .form-group small { color: #888; font-size: 0.85rem; margin-top: 5px; display: block; }
+        
+        .btn { padding: 12px 25px; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s; font-size: 1rem; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary { background: var(--green); color: white; }
+        .btn-primary:hover { background: var(--dark-green); }
+        .btn-danger { background: #f8d7da; color: #721c24; }
+        .btn-danger:hover { background: #f1b0b7; }
+        
+        .message { padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; display: none; }
+        .message.success { background: #d4edda; color: #155724; display: block; }
+        .message.error { background: #f8d7da; color: #721c24; display: block; }
+        
+        .preview-section { margin-top: 20px; padding: 20px; background: var(--light-gray); border-radius: 10px; }
+        .preview-section h4 { color: var(--dark-brown); margin-bottom: 15px; font-size: 0.95rem; }
+        .preview-banner { width: 120px; height: 300px; border: 2px dashed var(--beige); border-radius: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center; color: #888; background: white; }
+        .preview-banner img { width: 100%; height: 100%; object-fit: cover; }
+        .preview-banner.empty { font-size: 0.85rem; text-align: center; padding: 10px; }
+        
+        .info-box { background: #e7f3ff; border: 1px solid #b3d7ff; border-radius: 10px; padding: 15px; margin-bottom: 20px; }
+        .info-box p { color: #004085; font-size: 0.9rem; margin: 0; }
+        .info-box a { color: #004085; }
+        
+        .buttons-row { display: flex; gap: 15px; flex-wrap: wrap; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚙️ Paramètres</h1>
+            <a href="instructor-dashboard.html" class="back-btn">← Retour</a>
+        </div>
+
+        <div id="message" class="message"></div>
+
+        <div class="card">
+            <h2>🖼️ Bannière latérale</h2>
+            <p class="description">Cette image s'affichera sur le côté gauche des pages étudiants.</p>
+            
+            <div class="info-box">
+                <p>💡 <strong>Comment faire :</strong> Uploadez votre image sur <a href="https://imgbb.com" target="_blank">imgbb.com</a>, puis copiez le <strong>lien direct</strong> de l'image (commence par https://i.ibb.co/...)</p>
+            </div>
+            
+            <div class="form-group">
+                <label>URL de l'image</label>
+                <input type="url" id="banner-url" placeholder="https://i.ibb.co/xxxxx/image.jpg">
+                <small>Laissez vide pour désactiver la bannière</small>
+            </div>
+            
+            <div class="form-group">
+                <label>Largeur de la bannière (px)</label>
+                <input type="number" id="banner-width" value="120" min="80" max="200">
+                <small>Recommandé : 100 à 150 pixels</small>
+            </div>
+            
+            <div class="preview-section">
+                <h4>👁️ Aperçu</h4>
+                <div class="preview-banner empty" id="preview-banner">
+                    Aucune image
+                </div>
+            </div>
+            
+            <div class="buttons-row" style="margin-top: 20px;">
+                <button class="btn btn-primary" onclick="saveBanner()">💾 Enregistrer</button>
+                <button class="btn btn-danger" onclick="removeBanner()">🗑️ Supprimer la bannière</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAVO1P9v-IBsyxF_80vQvZDlR5tIqh878U",
+            authDomain: "learncentric.firebaseapp.com",
+            projectId: "learncentric",
+            storageBucket: "learncentric.firebasestorage.app",
+            messagingSenderId: "1083770541694",
+            appId: "1:1083770541694:web:b8dbcd7852ca7d9c8fea2f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        window.firebaseDb = db;
+        window.doc = doc;
+        window.getDoc = getDoc;
+        window.setDoc = setDoc;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // Check if admin
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists()) {
+                    const role = userDoc.data().role;
+                    if (role !== 'admin' && role !== 'instructor') {
+                        window.location.href = 'student-dashboard.html';
+                        return;
+                    }
+                }
+                await loadSettings();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        async function loadSettings() {
+            try {
+                const settingsDoc = await getDoc(doc(db, "settings", "banner"));
+                if (settingsDoc.exists()) {
+                    const data = settingsDoc.data();
+                    document.getElementById('banner-url').value = data.url || '';
+                    document.getElementById('banner-width').value = data.width || 120;
+                    updatePreview();
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        window.loadSettings = loadSettings;
+    </script>
+
+    <script>
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = 'message ' + type;
+            window.scrollTo(0, 0);
+            setTimeout(() => { msg.className = 'message'; }, 4000);
+        }
+
+        function updatePreview() {
+            const url = document.getElementById('banner-url').value.trim();
+            const width = document.getElementById('banner-width').value || 120;
+            const preview = document.getElementById('preview-banner');
+            
+            preview.style.width = width + 'px';
+            
+            if (url) {
+                preview.innerHTML = `<img src="${url}" alt="Bannière" onerror="this.parentElement.innerHTML='❌ Image invalide'; this.parentElement.classList.add('empty');">`;
+                preview.classList.remove('empty');
+            } else {
+                preview.innerHTML = 'Aucune image';
+                preview.classList.add('empty');
+            }
+        }
+
+        document.getElementById('banner-url').addEventListener('input', updatePreview);
+        document.getElementById('banner-width').addEventListener('input', updatePreview);
+
+        async function saveBanner() {
+            const url = document.getElementById('banner-url').value.trim();
+            const width = parseInt(document.getElementById('banner-width').value) || 120;
+            
+            try {
+                await window.setDoc(window.doc(window.firebaseDb, "settings", "banner"), {
+                    url: url,
+                    width: width,
+                    updatedAt: new Date().toISOString()
+                });
+                showMessage('✅ Bannière enregistrée !', 'success');
+            } catch (error) {
+                showMessage('❌ Erreur: ' + error.message, 'error');
+            }
+        }
+
+        async function removeBanner() {
+            if (!confirm('Supprimer la bannière ?')) return;
+            
+            document.getElementById('banner-url').value = '';
+            updatePreview();
+            
+            try {
+                await window.setDoc(window.doc(window.firebaseDb, "settings", "banner"), {
+                    url: '',
+                    width: 120,
+                    updatedAt: new Date().toISOString()
+                });
+                showMessage('✅ Bannière supprimée !', 'success');
+            } catch (error) {
+                showMessage('❌ Erreur: ' + error.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
