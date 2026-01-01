@@ -10,15 +10,15 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--light-gray); min-height: 100vh; }
         
         /* Banner */
-        .banner-sidebar { position: fixed; left: 0; top: 70px; width: var(--banner-width); height: calc(100vh - 70px); z-index: 50; display: none; }
+        .banner-sidebar { position: fixed; left: 0; top: 80px; width: var(--banner-width); height: calc(100vh - 80px); z-index: 50; display: none; }
         .banner-sidebar.active { display: block; }
         .banner-sidebar img { width: 100%; height: 100%; object-fit: cover; }
         
         .page-wrapper { margin-left: var(--banner-width); transition: margin-left 0.3s; }
         
-        .header { background: var(--brown); color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .header { background: var(--brown); color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
         .header h1 { font-size: 1.5rem; display: flex; align-items: center; gap: 10px; }
-        .header h1 span { color: var(--green); }
+        .header h1 .hub { color: var(--green); }
         .user-info { display: flex; align-items: center; gap: 15px; }
         .user-avatar { width: 45px; height: 45px; background: var(--green); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2rem; }
         .user-name { font-weight: 500; }
@@ -154,14 +154,9 @@
     </style>
 </head>
 <body>
-    <!-- Banner Sidebar -->
-    <div class="banner-sidebar" id="banner-sidebar">
-        <img id="banner-image" src="" alt="Bannière">
-    </div>
-
-    <div class="page-wrapper">
+    <!-- Header (full width) -->
     <div class="header">
-        <h1>🎓 Learning<span style="color: var(--green); display: inline; margin: 0; padding: 0;">Hub</span></h1>
+        <h1>Learning<span class="hub">Hub</span></h1>
         <div class="user-info">
             <div class="user-avatar" id="user-avatar">?</div>
             <div>
@@ -171,6 +166,13 @@
             <button class="logout-btn" onclick="handleLogout()">Déconnexion</button>
         </div>
     </div>
+
+    <!-- Banner Sidebar (below header) -->
+    <div class="banner-sidebar" id="banner-sidebar">
+        <img id="banner-image" src="" alt="Bannière">
+    </div>
+
+    <div class="page-wrapper">
 
     <div class="container">
         <!-- Welcome -->
