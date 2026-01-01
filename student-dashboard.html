@@ -274,6 +274,7 @@
             try {
                 const currentUser = window.firebaseAuth.currentUser;
                 const userEmail = currentUser?.email;
+                console.log('Chargement utilisateur:', userId, userEmail);
                 
                 // Get user document by UID
                 const userDoc = await getDoc(doc(db, "users", userId));
@@ -281,44 +282,44 @@
                 
                 if (userDoc.exists()) {
                     userData = userDoc.data();
+                    console.log('Document UID trouvé:', userData);
                     
                     // Check if user is instructor/admin - redirect
                     if (userData.role === 'instructor' || userData.role === 'admin') {
                         window.location.href = 'instructor-dashboard.html';
                         return;
                     }
+                } else {
+                    console.log('Pas de document UID');
                 }
                 
                 // If no assigned courses, check if there's a document by email
                 if ((!userData.assignedCourses || userData.assignedCourses.length === 0) && userEmail) {
                     const emailId = userEmail.replace(/[^a-zA-Z0-9]/g, '_');
-                    const emailDoc = await getDoc(doc(db, "users", emailId));
+                    console.log('Recherche par email ID:', emailId);
                     
-                    if (emailDoc.exists()) {
-                        const emailData = emailDoc.data();
-                        // Merge assignments from email-based document
-                        userData.assignedCourses = emailData.assignedCourses || [];
-                        userData.assignedPrograms = emailData.assignedPrograms || [];
-                        userData.nom = userData.nom || emailData.nom;
-                        userData.prenom = userData.prenom || emailData.prenom;
-                        userData.progress = { ...(emailData.progress || {}), ...(userData.progress || {}) };
+                    try {
+                        const emailDoc = await getDoc(doc(db, "users", emailId));
                         
-                        // Update or create the UID-based document with merged data
-                        try {
-                            await setDoc(doc(db, "users", userId), {
-                                assignedCourses: userData.assignedCourses,
-                                assignedPrograms: userData.assignedPrograms,
-                                nom: userData.nom,
-                                prenom: userData.prenom,
-                                progress: userData.progress,
-                                email: userEmail,
-                                role: 'student'
-                            }, { merge: true });
-                        } catch (e) {
-                            console.log('Erreur fusion données:', e);
+                        if (emailDoc.exists()) {
+                            const emailData = emailDoc.data();
+                            console.log('Document email trouvé:', emailData);
+                            
+                            // Merge assignments from email-based document
+                            userData.assignedCourses = emailData.assignedCourses || [];
+                            userData.assignedPrograms = emailData.assignedPrograms || [];
+                            userData.nom = userData.nom || emailData.nom;
+                            userData.prenom = userData.prenom || emailData.prenom;
+                            userData.progress = emailData.progress || {};
+                        } else {
+                            console.log('Pas de document email');
                         }
+                    } catch (emailErr) {
+                        console.log('Erreur recherche email:', emailErr);
                     }
                 }
+                
+                console.log('Données finales:', userData);
                 
                 window.userData = userData;
                 window.userProgress = userData.progress || {};
@@ -330,19 +331,22 @@
                 // Load all courses to filter
                 const coursesSnapshot = await getDocs(collection(db, "courses"));
                 const allCourses = [];
-                coursesSnapshot.forEach(doc => {
-                    allCourses.push({ id: doc.id, ...doc.data() });
+                coursesSnapshot.forEach(docSnap => {
+                    allCourses.push({ id: docSnap.id, ...docSnap.data() });
                 });
+                
+                console.log('Tous les cours:', allCourses.length);
                 
                 // Filter only assigned courses
                 const myCourses = allCourses.filter(c => assignedCourses.includes(c.id));
+                console.log('Mes cours assignés:', myCourses.length, assignedCourses);
                 window.myCourses = myCourses;
                 
                 // Load programs
                 const programsSnapshot = await getDocs(collection(db, "programs"));
                 const allPrograms = [];
-                programsSnapshot.forEach(doc => {
-                    allPrograms.push({ id: doc.id, ...doc.data() });
+                programsSnapshot.forEach(docSnap => {
+                    allPrograms.push({ id: docSnap.id, ...docSnap.data() });
                 });
                 
                 // Filter only assigned programs
