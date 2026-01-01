@@ -65,14 +65,15 @@
         .min-score-info { background: var(--light-gray); padding: 10px 15px; border-radius: 8px; margin-top: 10px; font-size: 0.85rem; color: #666; }
         .min-score-info strong { color: var(--dark-brown); }
         
-        .modules-list { margin-top: 15px; }
-        .module-item { padding: 12px 15px; background: var(--light-gray); border-radius: 8px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: all 0.3s; }
-        .module-item:hover { background: var(--beige); }
-        .module-item.completed { border-left: 3px solid var(--green); }
-        .module-item.viewed { background: var(--beige); }
-        .module-check { width: 24px; height: 24px; border: 2px solid var(--beige); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; background: white; }
+        .modules-list { margin-top: 20px; padding-top: 15px; border-top: 2px solid var(--beige); }
+        .modules-list-title { font-size: 1rem; font-weight: 600; color: var(--dark-brown); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        .module-item { padding: 15px 18px; background: white; border: 2px solid var(--beige); border-radius: 10px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.3s; }
+        .module-item:hover { background: var(--beige); border-color: var(--brown); }
+        .module-item.completed { border-left: 4px solid var(--green); background: #f0f9f4; }
+        .module-item.viewed { background: #fffbf0; border-color: var(--brown); }
+        .module-check { width: 28px; height: 28px; border: 2px solid var(--beige); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; background: white; font-weight: 600; }
         .module-item.completed .module-check { background: var(--green); color: white; border: none; }
-        .module-title { flex: 1; font-size: 0.9rem; }
+        .module-title { flex: 1; font-size: 1rem; font-weight: 500; color: var(--dark-brown); }
         
         .complete-btn { width: 100%; padding: 15px; margin-top: 15px; font-size: 1rem; }
         .complete-btn:disabled { background: #ccc; cursor: not-allowed; opacity: 0.7; }
@@ -203,11 +204,6 @@
             </div>
         </div>
 
-        <div class="content-card">
-            <h2>📝 À propos de ce cours</h2>
-            <div class="description" id="course-description">Chargement...</div>
-        </div>
-
         <div class="progress-grid">
             <div>
                 <div class="content-card" id="video-section" style="display: none;">
@@ -256,7 +252,9 @@
                         </div>
                     </div>
                     
-                    <div class="modules-list" id="modules-list"></div>
+                    <div class="modules-list" id="modules-list">
+                        <div class="modules-list-title">📚 Modules du cours</div>
+                    </div>
                     
                     <button class="btn btn-primary complete-btn" id="complete-btn" onclick="markAsComplete()" disabled>📖 Parcourez tous les modules</button>
                 </div>
@@ -336,7 +334,6 @@
                     setInterval(updateTimeDisplay, 1000);
                     
                     document.getElementById('course-title').textContent = course.title || 'Contenu du cours';
-                    document.getElementById('course-description').textContent = course.description || 'Aucune description.';
                     document.getElementById('min-score-display').textContent = window.minScore;
                     document.getElementById('duration-display').textContent = window.courseDuration;
                     
@@ -361,13 +358,19 @@
                 if (userDoc.exists()) {
                     const progress = userDoc.data().progress || {};
                     window.completedModules = progress[courseId]?.completedModules || [];
+                    // Also restore viewedModules from completedModules
+                    window.viewedModules = [...window.completedModules];
                     updateProgressDisplay();
                     updateModulesDisplay();
                     checkCertificateEligibility();
+                    updateCompleteButton();
                     
                     document.getElementById('cert-name').value = window.currentUser.displayName || '';
                 }
-            } catch (e) { window.completedModules = []; }
+            } catch (e) { 
+                window.completedModules = []; 
+                window.viewedModules = [];
+            }
         }
 
         window.loadCourse = loadCourse;
@@ -551,6 +554,15 @@
         }
 
         async function markAsComplete() {
+            // Double check time requirement
+            if (!isTimeRequirementMet()) {
+                const elapsed = Math.floor((Date.now() - window.startTime) / 1000);
+                const requiredMinutes = parseDurationToMinutes(window.courseDuration);
+                const remaining = Math.ceil(requiredMinutes - (elapsed / 60));
+                alert(`⏳ Vous devez passer encore ${remaining} minute(s) sur ce cours avant de pouvoir le valider.`);
+                return;
+            }
+            
             const mods = window.currentCourse?.modules || [];
             
             // Mark all modules as completed
@@ -566,16 +578,25 @@
             updateProgressDisplay();
             checkCertificateEligibility();
             
+            // Calculate time spent
+            const elapsed = Math.floor((Date.now() - window.startTime) / 1000);
+            const timeSpentFormatted = formatTime(elapsed);
+            
             try {
                 const ref = window.doc(window.firebaseDb, "users", window.currentUser.uid);
                 const snap = await window.getDoc(ref);
                 if (snap.exists()) {
                     const progress = snap.data().progress || {};
-                    progress[window.currentCourse.id] = { completedModules: window.completedModules, percent: 100 };
+                    progress[window.currentCourse.id] = { 
+                        completedModules: window.completedModules, 
+                        percent: 100,
+                        timeSpent: elapsed,
+                        completedAt: new Date().toISOString()
+                    };
                     await window.updateDoc(ref, { progress });
                 }
             } catch (e) { console.error(e); }
-            alert('✅ Cours terminé ! Félicitations !');
+            alert(`✅ Cours terminé ! Félicitations !\n\n⏱️ Temps passé : ${timeSpentFormatted}`);
         }
 
         function updateProgressDisplay() {
