@@ -55,18 +55,15 @@
         .status-not-started { background: #f8d7da; color: #721c24; }
         .action-btn { background: none; border: none; cursor: pointer; font-size: 1.1rem; padding: 5px; margin: 0 3px; }
         
-        /* Progress bar in table */
         .progress-cell { display: flex; align-items: center; gap: 10px; }
         .progress-mini { width: 100px; height: 8px; background: var(--beige); border-radius: 4px; overflow: hidden; }
         .progress-mini-fill { height: 100%; background: var(--green); }
         .progress-text { font-weight: 600; min-width: 45px; }
         
-        /* Course selector */
         .course-selector { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
         .course-selector select { padding: 12px 15px; border: 2px solid var(--beige); border-radius: 10px; font-size: 1rem; min-width: 250px; cursor: pointer; }
         .course-selector select:focus { outline: none; border-color: var(--green); }
         
-        /* Tabs */
         .tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid var(--beige); }
         .tab { padding: 12px 25px; cursor: pointer; border: none; background: none; font-size: 0.95rem; color: #888; transition: all 0.3s; border-bottom: 3px solid transparent; margin-bottom: -2px; }
         .tab.active { color: var(--dark-brown); border-bottom-color: var(--green); font-weight: 600; }
@@ -79,15 +76,16 @@
         .empty-state { text-align: center; padding: 40px; color: #888; }
         .empty-state p { margin-bottom: 20px; }
         
-        /* Export button */
         .export-btn { background: #217346; color: white; }
         .export-btn:hover { background: #1a5c38; }
         
-        /* Summary stats */
         .summary-stats { display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; }
         .summary-stat { background: var(--light-gray); padding: 15px 25px; border-radius: 10px; text-align: center; }
         .summary-stat .number { font-size: 1.5rem; font-weight: 700; color: var(--dark-brown); }
         .summary-stat .label { font-size: 0.85rem; color: #888; }
+        
+        /* Category badge */
+        .category-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; background: var(--light-gray); border-radius: 15px; font-size: 0.85rem; }
         
         @media (max-width: 768px) {
             .sidebar { width: 70px; }
@@ -299,6 +297,19 @@
 
         async function loadDashboardData(userId) {
             try {
+                // Load categories first
+                const categoriesQuery = query(collection(db, "categories"));
+                const categoriesSnapshot = await getDocs(categoriesQuery);
+                window.categoriesMap = {};
+                categoriesSnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    window.categoriesMap[doc.id] = {
+                        name: data.name || 'Sans nom',
+                        icon: data.icon || '📚',
+                        color: data.color || '#6B9F7F'
+                    };
+                });
+
                 // Load all courses
                 const allCoursesQuery = query(collection(db, "courses"));
                 const allCoursesSnapshot = await getDocs(allCoursesQuery);
@@ -320,7 +331,6 @@
                     const userData = { id: doc.id, ...doc.data() };
                     allUsers.push(userData);
                     
-                    // Count completed courses
                     if (userData.progress) {
                         Object.values(userData.progress).forEach(p => {
                             if (p.percent >= 100) completedCount++;
@@ -351,6 +361,19 @@
         }
 
         window.loadDashboardData = loadDashboardData;
+
+        function getCategoryDisplay(categoryId) {
+            // Check if it's an ID in our categories map
+            if (window.categoriesMap && window.categoriesMap[categoryId]) {
+                const cat = window.categoriesMap[categoryId];
+                return `<span class="category-badge">${cat.icon} ${cat.name}</span>`;
+            }
+            // If not found, maybe it's already a name (old data)
+            if (categoryId && !categoryId.match(/^[a-zA-Z0-9]{20}$/)) {
+                return categoryId;
+            }
+            return '-';
+        }
 
         function displayCourses(courses) {
             const recentCoursesDiv = document.getElementById('recent-courses');
@@ -383,7 +406,7 @@
                         ${courses.map(course => `
                             <tr>
                                 <td><strong>${course.title || 'Sans titre'}</strong></td>
-                                <td>${course.category || '-'}</td>
+                                <td>${getCategoryDisplay(course.category)}</td>
                                 <td>${course.price ? course.price + '€' : 'Gratuit'}</td>
                                 <td><span class="status ${course.status === 'published' ? 'status-published' : 'status-draft'}">${course.status === 'published' ? 'Publié' : 'Brouillon'}</span></td>
                                 <td>
@@ -412,10 +435,10 @@
 
         window.displayCourses = displayCourses;
         window.populateCourseSelector = populateCourseSelector;
+        window.getCategoryDisplay = getCategoryDisplay;
     </script>
 
     <script>
-        // Show section
         function showSection(section) {
             document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
             event.currentTarget.classList.add('active');
@@ -428,15 +451,11 @@
             document.getElementById('page-title').textContent = titles[section] || 'Dashboard';
         }
 
-        // Switch results tab
         function switchResultsTab(tab) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             event.currentTarget.classList.add('active');
-            
-            // TODO: Load programs if tab === 'programs'
         }
 
-        // Load student results for selected course
         function loadStudentResults() {
             const courseId = document.getElementById('course-select').value;
             const resultsTable = document.getElementById('results-table');
@@ -452,7 +471,6 @@
             const course = window.allCourses?.find(c => c.id === courseId);
             const courseModulesCount = course?.modules?.length || 1;
             
-            // Get students with their progress for this course
             let studentsData = [];
             let totalProgress = 0;
             let completedCount = 0;
@@ -479,10 +497,8 @@
                 else notStartedCount++;
             });
             
-            // Sort by progress descending
             studentsData.sort((a, b) => b.percent - a.percent);
             
-            // Update summary
             document.getElementById('summary-total').textContent = studentsData.length;
             document.getElementById('summary-completed').textContent = completedCount;
             document.getElementById('summary-progress').textContent = inProgressCount;
@@ -490,11 +506,9 @@
             document.getElementById('summary-avg').textContent = studentsData.length > 0 ? Math.round(totalProgress / studentsData.length) + '%' : '0%';
             resultsSummary.style.display = 'flex';
             
-            // Store for export
             window.currentResultsData = studentsData;
             window.currentCourseName = course?.title || 'Cours';
             
-            // Generate table
             if (studentsData.length === 0) {
                 resultsTable.innerHTML = '<div class="empty-state"><p>Aucun étudiant inscrit</p></div>';
                 return;
@@ -539,7 +553,6 @@
             `;
         }
 
-        // View results for specific course
         function viewResults(courseId) {
             showSection('results');
             document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
@@ -548,7 +561,6 @@
             loadStudentResults();
         }
 
-        // Export results to CSV
         function exportResults() {
             const data = window.currentResultsData;
             const courseName = window.currentCourseName || 'Cours';
@@ -558,7 +570,6 @@
                 return;
             }
             
-            // Create CSV content
             let csv = 'Nom,Email,Progression (%),Modules Complétés,Total Modules,Statut\n';
             
             data.forEach(student => {
@@ -566,7 +577,6 @@
                 csv += `"${student.name}","${student.email}",${student.percent},${student.completedModules},${student.totalModules},"${status}"\n`;
             });
             
-            // Download CSV
             const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -576,17 +586,14 @@
             URL.revokeObjectURL(url);
         }
 
-        // View course
         function viewCourse(courseId) {
             window.location.href = 'view-course.html?id=' + courseId;
         }
 
-        // Edit course
         function editCourse(courseId) {
             window.location.href = 'create-course.html?id=' + courseId;
         }
 
-        // Delete course
         async function deleteCourse(courseId) {
             if (confirm('Êtes-vous sûr de vouloir supprimer ce cours ?')) {
                 try {
@@ -600,7 +607,6 @@
             }
         }
 
-        // Logout
         async function handleLogout() {
             try {
                 await window.signOut(window.firebaseAuth);
