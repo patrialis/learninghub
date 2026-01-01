@@ -413,10 +413,15 @@
     <script>
         function showTab(tab) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(s => {
+                s.classList.remove('active');
+                s.style.display = 'none';
+            });
             
             event.currentTarget.classList.add('active');
-            document.getElementById(tab + '-section').classList.add('active');
+            const section = document.getElementById(tab + '-section');
+            section.classList.add('active');
+            section.style.display = 'block';
         }
 
         function displayCourses(courses) {
@@ -484,13 +489,14 @@
             }
             
             list.innerHTML = programs.map(program => {
-                const programCourses = (program.courses || []).map(ref => {
-                    const course = allCourses.find(c => c.id === ref.id);
-                    const progress = window.userProgress?.[ref.id];
+                const programCourses = (program.courses || []).map(courseId => {
+                    const course = allCourses.find(c => c.id === courseId);
+                    const progress = window.userProgress?.[courseId];
                     const percent = progress?.percent || 0;
                     return {
-                        ...ref,
+                        id: courseId,
                         course: course,
+                        title: course?.title || 'Cours',
                         percent: percent,
                         isCompleted: percent >= 100
                     };
@@ -522,7 +528,7 @@
                                     <div class="program-course-item ${item.isCompleted ? 'completed' : ''}" onclick="openCourse('${item.id}')">
                                         <div class="program-course-number">${index + 1}</div>
                                         <div class="program-course-info">
-                                            <h4>${item.title || item.course?.title || 'Cours'}</h4>
+                                            <h4>${item.title}</h4>
                                             <p>${item.percent}% complété</p>
                                         </div>
                                         <div class="program-course-status">
