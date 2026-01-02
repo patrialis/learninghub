@@ -100,6 +100,32 @@
         .spinner { width: 50px; height: 50px; border: 4px solid var(--beige); border-top: 4px solid var(--green); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
+        /* Modal Fiche Document */
+        .doc-modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        .doc-modal.show { display: flex; }
+        .doc-modal-content { background: white; border-radius: 20px; width: 100%; max-width: 550px; max-height: 90vh; overflow-y: auto; }
+        .doc-modal-header { background: linear-gradient(135deg, var(--brown), var(--dark-brown)); color: white; padding: 25px; border-radius: 20px 20px 0 0; position: relative; }
+        .doc-modal-header h2 { font-size: 1.3rem; margin-bottom: 5px; padding-right: 40px; }
+        .doc-modal-header .category { font-size: 0.9rem; opacity: 0.9; }
+        .doc-modal-close { position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; }
+        .doc-modal-close:hover { background: rgba(255,255,255,0.3); }
+        .doc-modal-body { padding: 25px; }
+        .doc-section { margin-bottom: 20px; }
+        .doc-section h3 { color: var(--dark-brown); font-size: 0.95rem; margin-bottom: 10px; border-bottom: 2px solid var(--beige); padding-bottom: 8px; }
+        .doc-section p { color: #555; line-height: 1.6; }
+        .doc-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+        .doc-actions .btn { flex: 1; min-width: 140px; padding: 14px 20px; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 0.95rem; text-align: center; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-view { background: var(--green); color: white; }
+        .btn-view:hover { background: var(--dark-green); }
+        .btn-download { background: var(--brown); color: white; }
+        .btn-download:hover { background: var(--dark-brown); }
+        .acceptance-box { background: var(--light-gray); padding: 18px; border-radius: 12px; border: 2px solid var(--beige); }
+        .acceptance-box.accepted { border-color: var(--green); background: #e8f5ec; }
+        .checkbox-row { display: flex; align-items: flex-start; gap: 12px; cursor: pointer; }
+        .checkbox-row input { width: 22px; height: 22px; cursor: pointer; accent-color: var(--green); margin-top: 2px; flex-shrink: 0; }
+        .checkbox-row label { color: var(--dark-brown); font-weight: 500; cursor: pointer; line-height: 1.5; }
+        .accepted-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--green); color: white; padding: 12px 18px; border-radius: 10px; font-weight: 600; }
+        
         @media (max-width: 768px) {
             .banner-sidebar { display: none !important; }
             .page-wrapper { margin-left: 0 !important; }
@@ -145,6 +171,9 @@
             
             .empty-state { padding: 40px 15px; }
             .empty-state .icon { font-size: 3rem; }
+            
+            .doc-actions { flex-direction: column; }
+            .doc-actions .btn { width: 100%; }
         }
         
         @media (max-width: 400px) {
@@ -221,6 +250,38 @@
         <!-- Programs Section -->
         <div id="programs-section" class="section">
             <div id="programs-list"></div>
+        </div>
+    </div>
+    
+    <!-- Modal Fiche Document -->
+    <div class="doc-modal" id="doc-modal">
+        <div class="doc-modal-content">
+            <div class="doc-modal-header">
+                <h2 id="doc-modal-title">📄 Nom du document</h2>
+                <span class="category" id="doc-modal-category">Catégorie</span>
+                <button class="doc-modal-close" onclick="closeDocModal()">×</button>
+            </div>
+            <div class="doc-modal-body">
+                <div class="doc-section">
+                    <h3>📝 Description</h3>
+                    <p id="doc-modal-description">Description du document...</p>
+                </div>
+                
+                <div class="doc-section">
+                    <h3>📎 Actions</h3>
+                    <div class="doc-actions">
+                        <a href="#" class="btn btn-view" id="doc-btn-view" target="_blank">👁️ Visualiser</a>
+                        <a href="#" class="btn btn-download" id="doc-btn-download" download>⬇️ Télécharger</a>
+                    </div>
+                </div>
+                
+                <div class="doc-section">
+                    <h3>✅ Validation</h3>
+                    <div class="acceptance-box" id="doc-acceptance-box">
+                        <!-- Rempli dynamiquement -->
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -390,7 +451,7 @@
                     allDocuments.push({ id: docSnap.id, ...docSnap.data() });
                 });
                 window.allDocuments = allDocuments;
-                window.acceptedDocuments = userData.acceptedDocuments || {};
+                window.acceptedDocuments = userData.documentAcceptances || userData.acceptedDocuments || {};
                 
                 // Calculate stats
                 let completedCount = 0;
@@ -450,6 +511,9 @@
     </script>
 
     <script>
+        const catLabels = { 'policy': 'Politique / Règlement', 'guide': 'Guide / Manuel', 'form': 'Formulaire', 'certificate': 'Attestation', 'other': 'Document' };
+        window.currentDocId = null;
+        
         function showTab(tab) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.section').forEach(s => {
@@ -549,18 +613,19 @@
                     };
                 });
                 
-                // Get program documents
+                // Get program documents - FILTER ONLY EXISTING DOCUMENTS
                 const programDocs = (program.documents || []).map(docId => {
                     const doc = window.allDocuments?.find(d => d.id === docId);
+                    if (!doc) return null; // Document supprimé
                     const isAccepted = window.acceptedDocuments?.[docId];
                     return {
                         id: docId,
                         doc: doc,
                         name: doc?.name || 'Document',
-                        requiresAcceptance: doc?.requiresAcceptance || false,
+                        requiresAcceptance: doc?.requiresAcceptance !== false,
                         isAccepted: !!isAccepted
                     };
-                });
+                }).filter(d => d !== null); // Enlever les documents supprimés
                 
                 const completedCourses = programCourses.filter(c => c.isCompleted).length;
                 const totalCourses = programCourses.length;
@@ -590,24 +655,6 @@
                                 </div>
                             </div>
                             
-                            ${programDocs.length > 0 ? `
-                                <h4 style="margin: 15px 0 10px; color: var(--dark-brown); font-size: 0.95rem;">📄 Documents à consulter</h4>
-                                <div class="program-courses">
-                                    ${programDocs.map((item, index) => `
-                                        <div class="program-course-item ${item.isAccepted ? 'completed' : ''}" onclick="openDocument('${item.id}')">
-                                            <div class="program-course-number">📄</div>
-                                            <div class="program-course-info">
-                                                <h4>${item.name}</h4>
-                                                <p>${item.requiresAcceptance ? (item.isAccepted ? 'Validé' : 'À valider') : 'Consultation libre'}</p>
-                                            </div>
-                                            <div class="program-course-status">
-                                                ${item.isAccepted ? '✅' : (item.requiresAcceptance ? '📝' : '👁️')}
-                                            </div>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            ` : ''}
-                            
                             ${programCourses.length > 0 ? `
                                 <h4 style="margin: 15px 0 10px; color: var(--dark-brown); font-size: 0.95rem;">📚 Cours du programme</h4>
                                 <div class="program-courses">
@@ -625,6 +672,24 @@
                                     `).join('')}
                                 </div>
                             ` : ''}
+                            
+                            ${programDocs.length > 0 ? `
+                                <h4 style="margin: 20px 0 10px; color: var(--dark-brown); font-size: 0.95rem;">📄 Documents à consulter</h4>
+                                <div class="program-courses">
+                                    ${programDocs.map((item, index) => `
+                                        <div class="program-course-item ${item.isAccepted ? 'completed' : ''}" onclick="openDocModal('${item.id}')">
+                                            <div class="program-course-number">📄</div>
+                                            <div class="program-course-info">
+                                                <h4>${item.name}</h4>
+                                                <p>${item.requiresAcceptance ? (item.isAccepted ? 'Validé' : 'À valider') : 'Consultation libre'}</p>
+                                            </div>
+                                            <div class="program-course-status">
+                                                ${item.isAccepted ? '✅' : (item.requiresAcceptance ? '📝' : '👁️')}
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : ''}
                         </div>
                     </div>
                 `;
@@ -635,9 +700,102 @@
             window.location.href = 'view-course.html?id=' + courseId;
         }
         
-        function openDocument(docId) {
-            window.location.href = 'view-document.html?id=' + docId;
+        // Ouvrir le modal fiche document
+        function openDocModal(docId) {
+            const doc = window.allDocuments?.find(d => d.id === docId);
+            if (!doc) return;
+            
+            window.currentDocId = docId;
+            
+            document.getElementById('doc-modal-title').textContent = '📄 ' + (doc.name || 'Document');
+            document.getElementById('doc-modal-category').textContent = catLabels[doc.category] || 'Document';
+            document.getElementById('doc-modal-description').textContent = doc.summary || 'Aucune description disponible.';
+            document.getElementById('doc-btn-view').href = doc.url || '#';
+            document.getElementById('doc-btn-download').href = doc.url || '#';
+            
+            // Section acceptation
+            const acceptanceBox = document.getElementById('doc-acceptance-box');
+            const isAccepted = window.acceptedDocuments?.[docId] === true;
+            const requiresAcceptance = doc.requiresAcceptance !== false;
+            
+            if (!requiresAcceptance) {
+                acceptanceBox.innerHTML = '<p style="color: #888; text-align: center;">Aucune validation requise pour ce document.</p>';
+                acceptanceBox.classList.remove('accepted');
+            } else if (isAccepted) {
+                acceptanceBox.innerHTML = '<div class="accepted-badge">✅ Document accepté</div>';
+                acceptanceBox.classList.add('accepted');
+            } else {
+                acceptanceBox.innerHTML = `
+                    <div class="checkbox-row">
+                        <input type="checkbox" id="doc-accept-checkbox" onchange="handleDocAcceptance(this.checked)">
+                        <label for="doc-accept-checkbox">J'ai lu, compris et j'accepte de me conformer à ce document.</label>
+                    </div>
+                `;
+                acceptanceBox.classList.remove('accepted');
+            }
+            
+            document.getElementById('doc-modal').classList.add('show');
         }
+        window.openDocModal = openDocModal;
+        
+        // Fermer le modal
+        function closeDocModal() {
+            document.getElementById('doc-modal').classList.remove('show');
+            window.currentDocId = null;
+        }
+        window.closeDocModal = closeDocModal;
+        
+        // Gérer l'acceptation
+        async function handleDocAcceptance(accepted) {
+            if (!accepted || !window.currentDocId) return;
+            
+            const docId = window.currentDocId;
+            
+            try {
+                // Mettre à jour localement
+                if (!window.acceptedDocuments) window.acceptedDocuments = {};
+                window.acceptedDocuments[docId] = true;
+                
+                // Sauvegarder dans Firestore
+                const userDocRef = window.doc(window.firebaseDb, "users", window.currentUser.uid);
+                const userDoc = await window.getDoc(userDocRef);
+                
+                if (userDoc.exists()) {
+                    await window.updateDoc(userDocRef, {
+                        documentAcceptances: window.acceptedDocuments
+                    });
+                } else {
+                    await window.setDoc(userDocRef, {
+                        documentAcceptances: window.acceptedDocuments,
+                        email: window.currentUser.email
+                    });
+                }
+                
+                // Mettre à jour l'affichage du modal
+                const acceptanceBox = document.getElementById('doc-acceptance-box');
+                acceptanceBox.classList.add('accepted');
+                acceptanceBox.innerHTML = '<div class="accepted-badge">✅ Document accepté</div>';
+                
+                // Recharger les programmes pour mettre à jour l'affichage
+                displayPrograms(window.myPrograms, window.myCourses);
+                
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur lors de l\'acceptation: ' + error.message);
+                document.getElementById('doc-accept-checkbox').checked = false;
+            }
+        }
+        window.handleDocAcceptance = handleDocAcceptance;
+        
+        // Fermer avec Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeDocModal();
+        });
+        
+        // Clic en dehors du modal
+        document.getElementById('doc-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'doc-modal') closeDocModal();
+        });
 
         async function handleLogout() {
             try {
