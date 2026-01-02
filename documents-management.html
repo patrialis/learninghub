@@ -316,6 +316,12 @@
         }
         
         async function saveDocument() {
+            // Vérification de l'authentification
+            if (!window.currentUser) {
+                showMessage('Veuillez vous connecter pour enregistrer un document', 'error');
+                return;
+            }
+            
             const name = document.getElementById('doc-name').value.trim();
             const summary = document.getElementById('doc-summary').value.trim();
             const category = document.getElementById('doc-category').value;
