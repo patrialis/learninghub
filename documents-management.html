@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Documents - LearningHub</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --brown: #8B6F47; --dark-brown: #6B5A3B; --beige: #E8DCC4; --light-gray: #F5F5F0; --green: #6B9F7F; --dark-green: #5A8A6E; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--light-gray); min-height: 100vh; }
+        
+        .header { background: linear-gradient(135deg, var(--brown), var(--dark-brown)); color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .header h1 { font-size: 1.5rem; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.3s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+        .btn-secondary { background: rgba(255,255,255,0.2); color: white; }
+        .btn-secondary:hover { background: rgba(255,255,255,0.3); }
+        .btn-primary { background: var(--green); color: white; }
+        .btn-primary:hover { background: var(--dark-green); }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-danger:hover { background: #c82333; }
+        
+        .container { max-width: 1200px; margin: 0 auto; padding: 30px 20px; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
+        .tab { padding: 12px 25px; background: white; border: 2px solid var(--beige); border-radius: 10px; cursor: pointer; font-weight: 500; transition: all 0.3s; }
+        .tab.active { background: var(--green); color: white; border-color: var(--green); }
+        .tab:hover:not(.active) { background: var(--beige); }
+        .section { display: none; }
+        .section.active { display: block; }
+        
+        .card { background: white; border-radius: 15px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .card h2 { color: var(--dark-brown); margin-bottom: 20px; font-size: 1.2rem; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: var(--dark-brown); font-weight: 500; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 15px; border: 2px solid var(--beige); border-radius: 10px; font-size: 1rem; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--green); }
+        .form-group textarea { min-height: 100px; resize: vertical; }
+        
+        .message { padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; display: none; }
+        .message.success { background: #d4edda; color: #155724; display: block; }
+        .message.error { background: #f8d7da; color: #721c24; display: block; }
+        
+        .upload-zone { border: 3px dashed var(--beige); border-radius: 15px; padding: 40px; text-align: center; cursor: pointer; transition: all 0.3s; background: var(--light-gray); }
+        .upload-zone:hover { border-color: var(--green); background: #f0f9f4; }
+        .upload-zone.dragover { border-color: var(--green); background: #e8f5ec; }
+        .upload-zone.has-file { border-color: var(--green); border-style: solid; background: #e8f5ec; }
+        .upload-zone input[type="file"] { display: none; }
+        .upload-zone .icon { font-size: 3rem; margin-bottom: 15px; }
+        .upload-zone h3 { color: var(--dark-brown); margin-bottom: 10px; }
+        .upload-zone p { color: #888; font-size: 0.9rem; }
+        .upload-zone .file-name { color: var(--green); font-weight: 600; margin-top: 10px; }
+        
+        .upload-progress { margin-top: 15px; display: none; }
+        .upload-progress.show { display: block; }
+        .progress-bar { height: 10px; background: var(--beige); border-radius: 5px; overflow: hidden; }
+        .progress-bar .fill { height: 100%; background: var(--green); transition: width 0.3s; }
+        .progress-text { text-align: center; margin-top: 10px; color: var(--dark-brown); font-weight: 500; }
+        
+        .documents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
+        .document-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .document-card-header { background: linear-gradient(135deg, var(--brown), var(--dark-brown)); color: white; padding: 20px; position: relative; }
+        .document-card-header h3 { font-size: 1.1rem; margin-bottom: 5px; }
+        .document-card-header p { font-size: 0.85rem; opacity: 0.9; }
+        .document-card-header .doc-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); font-size: 2.5rem; opacity: 0.3; }
+        .document-card-body { padding: 20px; }
+        .document-card-body .summary { color: #666; font-size: 0.9rem; margin-bottom: 15px; line-height: 1.5; }
+        .document-card-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .document-card-actions .btn { flex: 1; justify-content: center; padding: 10px; font-size: 0.85rem; }
+        
+        .empty-state { text-align: center; padding: 60px 20px; color: #888; grid-column: 1 / -1; }
+        .empty-state h3 { color: var(--dark-brown); margin-bottom: 10px; }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        .modal.show { display: flex; }
+        .modal-content { background: white; border-radius: 15px; padding: 30px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; }
+        .modal-content h2 { color: var(--dark-brown); margin-bottom: 20px; }
+        .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+        
+        @media (max-width: 768px) {
+            .header { padding: 15px; }
+            .header h1 { font-size: 1.2rem; }
+            .container { padding: 15px; }
+            .documents-grid { grid-template-columns: 1fr; }
+            .upload-zone { padding: 25px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📄 Gestion des Documents</h1>
+        <a href="instructor-dashboard.html" class="btn btn-secondary">← Retour</a>
+    </div>
+
+    <div class="container">
+        <div id="message" class="message"></div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('create')">Créer un document</button>
+            <button class="tab" onclick="showTab('list')">Mes documents</button>
+        </div>
+        
+        <div id="create-section" class="section active">
+            <div class="card">
+                <h2>📝 Nouveau document</h2>
+                
+                <div class="form-group">
+                    <label for="doc-name">Nom du document *</label>
+                    <input type="text" id="doc-name" placeholder="Ex: Politique de confidentialité">
+                </div>
+                
+                <div class="form-group">
+                    <label for="doc-summary">Résumé</label>
+                    <textarea id="doc-summary" placeholder="Décrivez brièvement le contenu du document..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Fichier PDF *</label>
+                    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+                        <input type="file" id="file-input" accept=".pdf" onchange="handleFileSelect(event)">
+                        <div class="icon">📄</div>
+                        <h3>Glissez votre PDF ici</h3>
+                        <p>ou cliquez pour sélectionner un fichier</p>
+                        <p class="file-name" id="file-name" style="display: none;"></p>
+                    </div>
+                    <div class="upload-progress" id="upload-progress">
+                        <div class="progress-bar">
+                            <div class="fill" id="progress-fill" style="width: 0%"></div>
+                        </div>
+                        <p class="progress-text" id="progress-text">Upload en cours... 0%</p>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="doc-category">Catégorie</label>
+                    <select id="doc-category">
+                        <option value="policy">Politique / Règlement</option>
+                        <option value="guide">Guide / Manuel</option>
+                        <option value="form">Formulaire</option>
+                        <option value="certificate">Attestation</option>
+                        <option value="other">Autre</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="doc-requires-acceptance" checked>
+                        L'étudiant doit accepter ce document (case "J'ai lu et j'accepte")
+                    </label>
+                </div>
+                
+                <button class="btn btn-primary" id="btn-save" onclick="saveDocument()">💾 Enregistrer le document</button>
+            </div>
+        </div>
+        
+        <div id="list-section" class="section">
+            <div class="documents-grid" id="documents-grid">
+                <div class="empty-state"><h3>Chargement...</h3></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="edit-modal">
+        <div class="modal-content">
+            <h2>✏️ Modifier le document</h2>
+            <input type="hidden" id="edit-doc-id">
+            <div class="form-group">
+                <label for="edit-doc-name">Nom du document *</label>
+                <input type="text" id="edit-doc-name">
+            </div>
+            <div class="form-group">
+                <label for="edit-doc-summary">Résumé</label>
+                <textarea id="edit-doc-summary"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="edit-doc-category">Catégorie</label>
+                <select id="edit-doc-category">
+                    <option value="policy">Politique / Règlement</option>
+                    <option value="guide">Guide / Manuel</option>
+                    <option value="form">Formulaire</option>
+                    <option value="certificate">Attestation</option>
+                    <option value="other">Autre</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="edit-doc-requires-acceptance">
+                    L'étudiant doit accepter ce document
+                </label>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeEditModal()">Annuler</button>
+                <button class="btn btn-primary" onclick="updateDocument()">💾 Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+        import { getFirestore, collection, doc, addDoc, getDoc, getDocs, updateDoc, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+        import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCHPpxXMALQOqS7VBGJ3FmFQ1rfm3D_CN4",
+            authDomain: "learninghub-1b012.firebaseapp.com",
+            projectId: "learninghub-1b012",
+            storageBucket: "learninghub-1b012.appspot.com",
+            messagingSenderId: "365508620037",
+            appId: "1:365508620037:web:9e32e20571d62135d84588"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+        
+        window.db = db;
+        window.storage = storage;
+        window.ref = ref;
+        window.uploadBytesResumable = uploadBytesResumable;
+        window.getDownloadURL = getDownloadURL;
+        window.deleteObject = deleteObject;
+        window.currentUser = null;
+        window.selectedFile = null;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            window.currentUser = user;
+            loadDocuments();
+        });
+
+        async function loadDocuments() {
+            try {
+                const q = query(collection(db, "documents"), where("instructorId", "==", window.currentUser.uid));
+                const snapshot = await getDocs(q);
+                const documents = [];
+                snapshot.forEach(docSnap => {
+                    documents.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                displayDocuments(documents);
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        function displayDocuments(documents) {
+            const grid = document.getElementById('documents-grid');
+            if (documents.length === 0) {
+                grid.innerHTML = '<div class="empty-state"><h3>Aucun document</h3><p>Créez votre premier document.</p></div>';
+                return;
+            }
+            const cats = { 'policy': 'Politique', 'guide': 'Guide', 'form': 'Formulaire', 'certificate': 'Attestation', 'other': 'Autre' };
+            grid.innerHTML = documents.map(d => `
+                <div class="document-card">
+                    <div class="document-card-header">
+                        <h3>${d.name || 'Sans titre'}</h3>
+                        <p>${cats[d.category] || 'Document'}</p>
+                        <div class="doc-icon">📄</div>
+                    </div>
+                    <div class="document-card-body">
+                        <p class="summary">${d.summary || 'Aucun résumé'}</p>
+                        <div class="document-card-actions">
+                            <a href="${d.url}" target="_blank" class="btn btn-primary">👁️ Voir</a>
+                            <button class="btn btn-secondary" onclick="openEditModal('${d.id}')">✏️</button>
+                            <button class="btn btn-danger" onclick="deleteDocument('${d.id}', '${d.storagePath || ''}')">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.loadDocuments = loadDocuments;
+    </script>
+
+    <script>
+        const uploadZone = document.getElementById('upload-zone');
+        uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+        uploadZone.addEventListener('dragleave', () => { uploadZone.classList.remove('dragover'); });
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0 && e.dataTransfer.files[0].type === 'application/pdf') {
+                handleFile(e.dataTransfer.files[0]);
+            } else {
+                showMessage('Veuillez sélectionner un fichier PDF', 'error');
+            }
+        });
+        
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file && file.type === 'application/pdf') handleFile(file);
+            else if (file) showMessage('Veuillez sélectionner un fichier PDF', 'error');
+        }
+        
+        function handleFile(file) {
+            window.selectedFile = file;
+            uploadZone.classList.add('has-file');
+            document.getElementById('file-name').textContent = '✅ ' + file.name;
+            document.getElementById('file-name').style.display = 'block';
+        }
+        
+        function showTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            document.getElementById(tab + '-section').classList.add('active');
+            if (tab === 'list') window.loadDocuments();
+        }
+        
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = 'message ' + type;
+            setTimeout(() => { msg.className = 'message'; }, 4000);
+        }
+        
+        async function saveDocument() {
+            const name = document.getElementById('doc-name').value.trim();
+            const summary = document.getElementById('doc-summary').value.trim();
+            const category = document.getElementById('doc-category').value;
+            const requiresAcceptance = document.getElementById('doc-requires-acceptance').checked;
+            
+            if (!name) { showMessage('Veuillez entrer un nom', 'error'); return; }
+            if (!window.selectedFile) { showMessage('Veuillez sélectionner un PDF', 'error'); return; }
+            
+            document.getElementById('upload-progress').classList.add('show');
+            document.getElementById('btn-save').disabled = true;
+            document.getElementById('btn-save').textContent = 'Upload en cours...';
+            
+            try {
+                const timestamp = Date.now();
+                const fileName = `documents/${window.currentUser.uid}/${timestamp}_${window.selectedFile.name}`;
+                const storageRef = window.ref(window.storage, fileName);
+                const uploadTask = window.uploadBytesResumable(storageRef, window.selectedFile);
+                
+                uploadTask.on('state_changed',
+                    (snapshot) => {
+                        const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                        document.getElementById('progress-fill').style.width = progress + '%';
+                        document.getElementById('progress-text').textContent = `Upload... ${progress}%`;
+                    },
+                    (error) => {
+                        console.error('Upload error:', error);
+                        showMessage('Erreur upload: ' + error.message, 'error');
+                        document.getElementById('btn-save').disabled = false;
+                        document.getElementById('btn-save').textContent = '💾 Enregistrer le document';
+                    },
+                    async () => {
+                        const url = await window.getDownloadURL(uploadTask.snapshot.ref);
+                        
+                        const { addDoc, collection } = await import("https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js");
+                        await addDoc(collection(window.db, "documents"), {
+                            name, summary, url, storagePath: fileName, category, requiresAcceptance,
+                            fileName: window.selectedFile.name,
+                            instructorId: window.currentUser.uid,
+                            instructorName: window.currentUser.displayName || window.currentUser.email,
+                            createdAt: new Date().toISOString()
+                        });
+                        
+                        showMessage('Document créé !', 'success');
+                        document.getElementById('doc-name').value = '';
+                        document.getElementById('doc-summary').value = '';
+                        document.getElementById('file-input').value = '';
+                        document.getElementById('file-name').style.display = 'none';
+                        uploadZone.classList.remove('has-file');
+                        document.getElementById('upload-progress').classList.remove('show');
+                        window.selectedFile = null;
+                        document.getElementById('btn-save').disabled = false;
+                        document.getElementById('btn-save').textContent = '💾 Enregistrer le document';
+                    }
+                );
+            } catch (error) {
+                console.error('Erreur:', error);
+                showMessage('Erreur: ' + error.message, 'error');
+                document.getElementById('btn-save').disabled = false;
+                document.getElementById('btn-save').textContent = '💾 Enregistrer le document';
+            }
+        }
+        
+        async function openEditModal(docId) {
+            const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js");
+            const docSnap = await getDoc(doc(window.db, "documents", docId));
+            if (docSnap.exists()) {
+                const d = docSnap.data();
+                document.getElementById('edit-doc-id').value = docId;
+                document.getElementById('edit-doc-name').value = d.name || '';
+                document.getElementById('edit-doc-summary').value = d.summary || '';
+                document.getElementById('edit-doc-category').value = d.category || 'other';
+                document.getElementById('edit-doc-requires-acceptance').checked = d.requiresAcceptance !== false;
+                document.getElementById('edit-modal').classList.add('show');
+            }
+        }
+        
+        function closeEditModal() { document.getElementById('edit-modal').classList.remove('show'); }
+        
+        async function updateDocument() {
+            const docId = document.getElementById('edit-doc-id').value;
+            const name = document.getElementById('edit-doc-name').value.trim();
+            const summary = document.getElementById('edit-doc-summary').value.trim();
+            const category = document.getElementById('edit-doc-category').value;
+            const requiresAcceptance = document.getElementById('edit-doc-requires-acceptance').checked;
+            if (!name) { showMessage('Le nom est obligatoire', 'error'); return; }
+            
+            const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js");
+            await updateDoc(doc(window.db, "documents", docId), { name, summary, category, requiresAcceptance, updatedAt: new Date().toISOString() });
+            showMessage('Document mis à jour !', 'success');
+            closeEditModal();
+            window.loadDocuments();
+        }
+        
+        async function deleteDocument(docId, storagePath) {
+            if (!confirm('Supprimer ce document ?')) return;
+            try {
+                if (storagePath) {
+                    const storageRef = window.ref(window.storage, storagePath);
+                    await window.deleteObject(storageRef);
+                }
+                const { doc, deleteDoc } = await import("https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js");
+                await deleteDoc(doc(window.db, "documents", docId));
+                showMessage('Document supprimé', 'success');
+                window.loadDocuments();
+            } catch (error) {
+                console.error('Erreur:', error);
+                showMessage('Erreur suppression', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

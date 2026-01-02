@@ -383,6 +383,15 @@
                 const myPrograms = allPrograms.filter(p => assignedPrograms.includes(p.id));
                 window.myPrograms = myPrograms;
                 
+                // Load all documents for programs
+                const docsSnapshot = await getDocs(collection(db, "documents"));
+                const allDocuments = [];
+                docsSnapshot.forEach(docSnap => {
+                    allDocuments.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                window.allDocuments = allDocuments;
+                window.acceptedDocuments = userData.acceptedDocuments || {};
+                
                 // Calculate stats
                 let completedCount = 0;
                 let totalProgress = 0;
@@ -540,19 +549,38 @@
                     };
                 });
                 
+                // Get program documents
+                const programDocs = (program.documents || []).map(docId => {
+                    const doc = window.allDocuments?.find(d => d.id === docId);
+                    const isAccepted = window.acceptedDocuments?.[docId];
+                    return {
+                        id: docId,
+                        doc: doc,
+                        name: doc?.name || 'Document',
+                        requiresAcceptance: doc?.requiresAcceptance || false,
+                        isAccepted: !!isAccepted
+                    };
+                });
+                
                 const completedCourses = programCourses.filter(c => c.isCompleted).length;
                 const totalCourses = programCourses.length;
-                const programPercent = totalCourses > 0 ? Math.round((completedCourses / totalCourses) * 100) : 0;
+                const acceptedDocs = programDocs.filter(d => d.isAccepted || !d.requiresAcceptance).length;
+                const totalDocs = programDocs.length;
+                
+                const totalItems = totalCourses + totalDocs;
+                const completedItems = completedCourses + acceptedDocs;
+                const programPercent = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
                 
                 return `
                     <div class="program-card">
                         <div class="program-header">
                             <h3>${program.title || 'Programme'}</h3>
                             <p>${program.description || ''}</p>
-                            <div style="margin-top: 15px; display: flex; gap: 20px;">
+                            <div style="margin-top: 15px; display: flex; gap: 20px; flex-wrap: wrap;">
                                 <span>📚 ${totalCourses} cours</span>
-                                <span>✅ ${completedCourses} terminés</span>
-                                <span>📈 ${programPercent}% complété</span>
+                                ${totalDocs > 0 ? `<span>📄 ${totalDocs} documents</span>` : ''}
+                                <span>✅ ${completedItems}/${totalItems} terminés</span>
+                                <span>📈 ${programPercent}%</span>
                             </div>
                         </div>
                         <div class="program-body">
@@ -561,20 +589,42 @@
                                     <div class="progress-fill" style="width: ${programPercent}%"></div>
                                 </div>
                             </div>
-                            <div class="program-courses">
-                                ${programCourses.map((item, index) => `
-                                    <div class="program-course-item ${item.isCompleted ? 'completed' : ''}" onclick="openCourse('${item.id}')">
-                                        <div class="program-course-number">${index + 1}</div>
-                                        <div class="program-course-info">
-                                            <h4>${item.title}</h4>
-                                            <p>${item.percent}% complété</p>
+                            
+                            ${programDocs.length > 0 ? `
+                                <h4 style="margin: 15px 0 10px; color: var(--dark-brown); font-size: 0.95rem;">📄 Documents à consulter</h4>
+                                <div class="program-courses">
+                                    ${programDocs.map((item, index) => `
+                                        <div class="program-course-item ${item.isAccepted ? 'completed' : ''}" onclick="openDocument('${item.id}')">
+                                            <div class="program-course-number">📄</div>
+                                            <div class="program-course-info">
+                                                <h4>${item.name}</h4>
+                                                <p>${item.requiresAcceptance ? (item.isAccepted ? 'Validé' : 'À valider') : 'Consultation libre'}</p>
+                                            </div>
+                                            <div class="program-course-status">
+                                                ${item.isAccepted ? '✅' : (item.requiresAcceptance ? '📝' : '👁️')}
+                                            </div>
                                         </div>
-                                        <div class="program-course-status">
-                                            ${item.isCompleted ? '✅' : (item.percent > 0 ? '⏳' : '⚪')}
+                                    `).join('')}
+                                </div>
+                            ` : ''}
+                            
+                            ${programCourses.length > 0 ? `
+                                <h4 style="margin: 15px 0 10px; color: var(--dark-brown); font-size: 0.95rem;">📚 Cours du programme</h4>
+                                <div class="program-courses">
+                                    ${programCourses.map((item, index) => `
+                                        <div class="program-course-item ${item.isCompleted ? 'completed' : ''}" onclick="openCourse('${item.id}')">
+                                            <div class="program-course-number">${index + 1}</div>
+                                            <div class="program-course-info">
+                                                <h4>${item.title}</h4>
+                                                <p>${item.percent}% complété</p>
+                                            </div>
+                                            <div class="program-course-status">
+                                                ${item.isCompleted ? '✅' : (item.percent > 0 ? '⏳' : '⚪')}
+                                            </div>
                                         </div>
-                                    </div>
-                                `).join('')}
-                            </div>
+                                    `).join('')}
+                                </div>
+                            ` : ''}
                         </div>
                     </div>
                 `;
@@ -583,6 +633,10 @@
 
         function openCourse(courseId) {
             window.location.href = 'view-course.html?id=' + courseId;
+        }
+        
+        function openDocument(docId) {
+            window.location.href = 'view-document.html?id=' + docId;
         }
 
         async function handleLogout() {
