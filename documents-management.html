@@ -75,6 +75,8 @@
         .modal-content h2 { color: var(--dark-brown); margin-bottom: 20px; }
         .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
         
+        .auth-warning { background: #fff3cd; color: #856404; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; }
+        
         @media (max-width: 768px) {
             .header { padding: 15px; }
             .header h1 { font-size: 1.2rem; }
@@ -91,6 +93,10 @@
     </div>
 
     <div class="container">
+        <div id="auth-warning" class="auth-warning" style="display: none;">
+            ⚠️ Vous devez être connecté pour gérer les documents. <a href="instructor-dashboard.html">Se connecter</a>
+        </div>
+        
         <div id="message" class="message"></div>
         
         <div class="tabs">
@@ -225,12 +231,22 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 window.currentUser = user;
+                document.getElementById('auth-warning').style.display = 'none';
                 loadDocuments();
+            } else {
+                window.currentUser = null;
+                document.getElementById('auth-warning').style.display = 'block';
+                document.getElementById('documents-grid').innerHTML = '<div class="empty-state"><h3>Veuillez vous connecter</h3><p>Vous devez être connecté pour voir vos documents.</p></div>';
             }
-            // Don't redirect - just wait for user to log in
         });
 
         async function loadDocuments() {
+            // Vérification de l'authentification
+            if (!window.currentUser) {
+                document.getElementById('documents-grid').innerHTML = '<div class="empty-state"><h3>Veuillez vous connecter</h3><p>Vous devez être connecté pour voir vos documents.</p></div>';
+                return;
+            }
+            
             try {
                 const q = query(collection(db, "documents"), where("instructorId", "==", window.currentUser.uid));
                 const snapshot = await getDocs(q);
@@ -305,7 +321,9 @@
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             event.currentTarget.classList.add('active');
             document.getElementById(tab + '-section').classList.add('active');
-            if (tab === 'list') window.loadDocuments();
+            if (tab === 'list' && window.currentUser) {
+                window.loadDocuments();
+            }
         }
         
         function showMessage(text, type) {
@@ -316,7 +334,7 @@
         }
         
         async function saveDocument() {
-            // Vérification de l'authentification
+            // Vérification de l'authentification AVANT tout
             if (!window.currentUser) {
                 showMessage('Veuillez vous connecter pour enregistrer un document', 'error');
                 return;
@@ -351,6 +369,7 @@
                         showMessage('Erreur upload: ' + error.message, 'error');
                         document.getElementById('btn-save').disabled = false;
                         document.getElementById('btn-save').textContent = '💾 Enregistrer le document';
+                        document.getElementById('upload-progress').classList.remove('show');
                     },
                     async () => {
                         const url = await window.getDownloadURL(uploadTask.snapshot.ref);
@@ -364,7 +383,7 @@
                             createdAt: new Date().toISOString()
                         });
                         
-                        showMessage('Document créé !', 'success');
+                        showMessage('Document créé avec succès !', 'success');
                         document.getElementById('doc-name').value = '';
                         document.getElementById('doc-summary').value = '';
                         document.getElementById('file-input').value = '';
@@ -381,10 +400,15 @@
                 showMessage('Erreur: ' + error.message, 'error');
                 document.getElementById('btn-save').disabled = false;
                 document.getElementById('btn-save').textContent = '💾 Enregistrer le document';
+                document.getElementById('upload-progress').classList.remove('show');
             }
         }
         
         async function openEditModal(docId) {
+            if (!window.currentUser) {
+                showMessage('Veuillez vous connecter', 'error');
+                return;
+            }
             const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js");
             const docSnap = await getDoc(doc(window.db, "documents", docId));
             if (docSnap.exists()) {
@@ -401,6 +425,10 @@
         function closeEditModal() { document.getElementById('edit-modal').classList.remove('show'); }
         
         async function updateDocument() {
+            if (!window.currentUser) {
+                showMessage('Veuillez vous connecter', 'error');
+                return;
+            }
             const docId = document.getElementById('edit-doc-id').value;
             const name = document.getElementById('edit-doc-name').value.trim();
             const summary = document.getElementById('edit-doc-summary').value.trim();
@@ -416,6 +444,10 @@
         }
         
         async function deleteDocument(docId, storagePath) {
+            if (!window.currentUser) {
+                showMessage('Veuillez vous connecter', 'error');
+                return;
+            }
             if (!confirm('Supprimer ce document ?')) return;
             try {
                 if (storagePath) {
