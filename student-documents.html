@@ -18,63 +18,69 @@
         .btn-primary:hover { background: var(--dark-green); }
         .btn-download { background: var(--brown); color: white; }
         .btn-download:hover { background: var(--dark-brown); }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         
-        .container { max-width: 1000px; margin: 0 auto; padding: 30px 20px; }
+        .container { max-width: 800px; margin: 0 auto; padding: 30px 20px; }
         
         .message { padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; display: none; }
         .message.success { background: #d4edda; color: #155724; display: block; }
         .message.error { background: #f8d7da; color: #721c24; display: block; }
-        .message.info { background: #e7f1ff; color: #004085; display: block; }
         
-        .documents-list { display: flex; flex-direction: column; gap: 20px; }
+        /* Liste des documents */
+        .documents-list { display: flex; flex-direction: column; gap: 12px; }
         
-        .document-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .document-card-header { background: linear-gradient(135deg, var(--brown), var(--dark-brown)); color: white; padding: 20px 25px; }
-        .document-card-header h2 { font-size: 1.3rem; margin-bottom: 5px; }
-        .document-card-header .category { font-size: 0.85rem; opacity: 0.9; }
-        
-        .document-card-body { padding: 25px; }
-        
-        .document-section { margin-bottom: 25px; }
-        .document-section:last-child { margin-bottom: 0; }
-        .document-section h3 { color: var(--dark-brown); font-size: 1rem; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-        .document-section p { color: #555; line-height: 1.6; }
-        
-        .document-actions { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 25px; }
-        
-        .acceptance-section { background: var(--light-gray); padding: 20px; border-radius: 12px; border: 2px solid var(--beige); }
-        .acceptance-section.accepted { border-color: var(--green); background: #e8f5ec; }
-        
-        .checkbox-container { display: flex; align-items: flex-start; gap: 12px; cursor: pointer; }
-        .checkbox-container input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; accent-color: var(--green); margin-top: 2px; }
-        .checkbox-container label { color: var(--dark-brown); font-weight: 500; cursor: pointer; line-height: 1.5; }
-        
-        .accepted-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--green); color: white; padding: 10px 20px; border-radius: 8px; font-weight: 500; margin-top: 15px; }
+        .document-item { background: white; border-radius: 12px; padding: 20px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.3s; border: 2px solid transparent; }
+        .document-item:hover { border-color: var(--green); transform: translateX(5px); }
+        .document-item .doc-info { display: flex; align-items: center; gap: 15px; }
+        .document-item .doc-icon { font-size: 2rem; }
+        .document-item .doc-name { font-weight: 600; color: var(--dark-brown); font-size: 1.1rem; }
+        .document-item .doc-category { font-size: 0.85rem; color: #888; margin-top: 3px; }
+        .document-item .doc-status { display: flex; align-items: center; gap: 8px; }
+        .document-item .status-badge { padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 500; }
+        .document-item .status-badge.accepted { background: #d4edda; color: #155724; }
+        .document-item .status-badge.pending { background: #fff3cd; color: #856404; }
+        .document-item .arrow { font-size: 1.5rem; color: var(--green); }
         
         .empty-state { text-align: center; padding: 60px 20px; color: #888; background: white; border-radius: 15px; }
         .empty-state h3 { color: var(--dark-brown); margin-bottom: 10px; }
         
         .loading { text-align: center; padding: 60px 20px; color: #888; }
         
-        /* Modal pour visualisation PDF */
-        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        /* Modal fiche descriptive */
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
         .modal.show { display: flex; }
-        .modal-content { background: white; border-radius: 15px; width: 100%; max-width: 900px; height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
-        .modal-header { background: var(--brown); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
-        .modal-header h3 { font-size: 1.1rem; }
-        .modal-close { background: rgba(255,255,255,0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 8px; cursor: pointer; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
+        .modal-content { background: white; border-radius: 20px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { background: linear-gradient(135deg, var(--brown), var(--dark-brown)); color: white; padding: 25px; border-radius: 20px 20px 0 0; position: relative; }
+        .modal-header h2 { font-size: 1.4rem; margin-bottom: 5px; padding-right: 40px; }
+        .modal-header .category { font-size: 0.9rem; opacity: 0.9; }
+        .modal-close { position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
         .modal-close:hover { background: rgba(255,255,255,0.3); }
-        .modal-body { flex: 1; overflow: hidden; background: #f0f0f0; }
-        .modal-body iframe { width: 100%; height: 100%; border: none; }
-        .modal-loading { display: flex; align-items: center; justify-content: center; height: 100%; color: #888; }
+        
+        .modal-body { padding: 30px; }
+        
+        .fiche-section { margin-bottom: 25px; }
+        .fiche-section h3 { color: var(--dark-brown); font-size: 1rem; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--beige); padding-bottom: 8px; }
+        .fiche-section p { color: #555; line-height: 1.7; }
+        
+        .fiche-actions { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 25px; }
+        .fiche-actions .btn { flex: 1; justify-content: center; min-width: 150px; padding: 14px 20px; }
+        
+        .acceptance-section { background: var(--light-gray); padding: 20px; border-radius: 12px; border: 2px solid var(--beige); }
+        .acceptance-section.accepted { border-color: var(--green); background: #e8f5ec; }
+        
+        .checkbox-container { display: flex; align-items: flex-start; gap: 12px; cursor: pointer; }
+        .checkbox-container input[type="checkbox"] { width: 24px; height: 24px; cursor: pointer; accent-color: var(--green); margin-top: 2px; flex-shrink: 0; }
+        .checkbox-container label { color: var(--dark-brown); font-weight: 500; cursor: pointer; line-height: 1.5; }
+        
+        .accepted-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--green); color: white; padding: 12px 20px; border-radius: 10px; font-weight: 600; }
         
         @media (max-width: 768px) {
             .header { padding: 15px; }
             .header h1 { font-size: 1.2rem; }
             .container { padding: 15px; }
-            .document-actions { flex-direction: column; }
-            .document-actions .btn { width: 100%; justify-content: center; }
+            .document-item { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .document-item .doc-status { width: 100%; justify-content: space-between; }
+            .fiche-actions { flex-direction: column; }
+            .fiche-actions .btn { width: 100%; }
         }
     </style>
 </head>
@@ -94,18 +100,38 @@
         </div>
     </div>
     
-    <!-- Modal pour visualisation PDF -->
-    <div class="modal" id="pdf-modal">
+    <!-- Modal Fiche Descriptive -->
+    <div class="modal" id="fiche-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 id="modal-title">Document</h3>
-                <button class="modal-close" onclick="closeModal()">×</button>
+                <h2 id="fiche-title">📄 Nom du document</h2>
+                <span class="category" id="fiche-category">Catégorie</span>
+                <button class="modal-close" onclick="closeFicheModal()">×</button>
             </div>
-            <div class="modal-body" id="modal-body">
-                <div class="modal-loading" id="modal-loading">
-                    <p>⏳ Chargement du document...</p>
+            <div class="modal-body">
+                <div class="fiche-section">
+                    <h3>📝 Description</h3>
+                    <p id="fiche-description">Description du document...</p>
                 </div>
-                <iframe id="pdf-viewer" src="" style="display: none;"></iframe>
+                
+                <div class="fiche-section">
+                    <h3>📎 Actions</h3>
+                    <div class="fiche-actions">
+                        <a href="#" class="btn btn-primary" id="btn-visualiser" target="_blank">
+                            👁️ Visualiser le document
+                        </a>
+                        <a href="#" class="btn btn-download" id="btn-telecharger" download>
+                            ⬇️ Télécharger
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="fiche-section">
+                    <h3>✅ Validation</h3>
+                    <div class="acceptance-section" id="fiche-acceptance">
+                        <!-- Rempli dynamiquement -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -129,8 +155,14 @@
         const db = getFirestore(app);
         
         window.db = db;
+        window.doc = doc;
+        window.getDoc = getDoc;
+        window.updateDoc = updateDoc;
+        window.setDoc = setDoc;
         window.currentUser = null;
         window.userAcceptances = {};
+        window.allDocuments = [];
+        window.currentDocument = null;
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -159,20 +191,21 @@
         async function loadDocuments() {
             try {
                 const snapshot = await getDocs(collection(db, "documents"));
-                const documents = [];
+                window.allDocuments = [];
                 snapshot.forEach(docSnap => {
-                    documents.push({ id: docSnap.id, ...docSnap.data() });
+                    window.allDocuments.push({ id: docSnap.id, ...docSnap.data() });
                 });
-                displayDocuments(documents);
+                displayDocumentsList();
             } catch (error) {
                 console.error('Erreur chargement documents:', error);
                 document.getElementById('documents-list').innerHTML = '<div class="empty-state"><h3>Erreur de chargement</h3><p>' + error.message + '</p></div>';
             }
         }
 
-        // Afficher les documents
-        function displayDocuments(documents) {
+        // Afficher la liste des documents
+        function displayDocumentsList() {
             const container = document.getElementById('documents-list');
+            const documents = window.allDocuments;
             
             if (documents.length === 0) {
                 container.innerHTML = '<div class="empty-state"><h3>Aucun document</h3><p>Aucun document n\'est disponible pour le moment.</p></div>';
@@ -185,119 +218,34 @@
                 const isAccepted = window.userAcceptances[d.id] === true;
                 const requiresAcceptance = d.requiresAcceptance !== false;
                 
+                let statusHtml = '';
+                if (requiresAcceptance) {
+                    if (isAccepted) {
+                        statusHtml = '<span class="status-badge accepted">✅ Accepté</span>';
+                    } else {
+                        statusHtml = '<span class="status-badge pending">⏳ À valider</span>';
+                    }
+                }
+                
                 return `
-                <div class="document-card" id="doc-${d.id}">
-                    <div class="document-card-header">
-                        <h2>📄 ${d.name || 'Sans titre'}</h2>
-                        <span class="category">${cats[d.category] || 'Document'}</span>
+                <div class="document-item" onclick="openFicheModal('${d.id}')">
+                    <div class="doc-info">
+                        <span class="doc-icon">📄</span>
+                        <div>
+                            <div class="doc-name">${d.name || 'Sans titre'}</div>
+                            <div class="doc-category">${cats[d.category] || 'Document'}</div>
+                        </div>
                     </div>
-                    <div class="document-card-body">
-                        <div class="document-section">
-                            <h3>📝 Description</h3>
-                            <p>${d.summary || 'Aucune description disponible.'}</p>
-                        </div>
-                        
-                        <div class="document-actions">
-                            <button class="btn btn-primary" onclick="openDocument('${encodeURIComponent(d.url)}', '${(d.name || 'Document').replace(/'/g, "\\'")}')">
-                                👁️ Visualiser le document
-                            </button>
-                            <a href="${d.url}" target="_blank" class="btn btn-download">
-                                ⬇️ Télécharger
-                            </a>
-                        </div>
-                        
-                        ${requiresAcceptance ? `
-                        <div class="acceptance-section ${isAccepted ? 'accepted' : ''}" id="acceptance-${d.id}">
-                            ${isAccepted ? `
-                                <div class="accepted-badge">✅ Document accepté</div>
-                            ` : `
-                                <div class="checkbox-container">
-                                    <input type="checkbox" id="accept-${d.id}" onchange="handleAcceptance('${d.id}', this.checked)">
-                                    <label for="accept-${d.id}">J'ai lu, compris et j'accepte de me conformer à ce document.</label>
-                                </div>
-                            `}
-                        </div>
-                        ` : ''}
+                    <div class="doc-status">
+                        ${statusHtml}
+                        <span class="arrow">→</span>
                     </div>
                 </div>
                 `;
             }).join('');
         }
 
-        // Ouvrir le document dans le modal avec Google Docs Viewer
-        window.openDocument = function(encodedUrl, title) {
-            const url = decodeURIComponent(encodedUrl);
-            document.getElementById('modal-title').textContent = title;
-            document.getElementById('modal-loading').style.display = 'flex';
-            document.getElementById('pdf-viewer').style.display = 'none';
-            document.getElementById('pdf-modal').classList.add('show');
-            
-            // Utiliser Google Docs Viewer pour afficher le PDF
-            const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
-            
-            const iframe = document.getElementById('pdf-viewer');
-            iframe.onload = function() {
-                document.getElementById('modal-loading').style.display = 'none';
-                iframe.style.display = 'block';
-            };
-            iframe.src = viewerUrl;
-        };
-
-        // Fermer le modal
-        window.closeModal = function() {
-            document.getElementById('pdf-modal').classList.remove('show');
-            document.getElementById('pdf-viewer').src = '';
-            document.getElementById('pdf-viewer').style.display = 'none';
-            document.getElementById('modal-loading').style.display = 'flex';
-        };
-
-        // Fermer avec Escape
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeModal();
-        });
-
-        // Clic en dehors du modal
-        document.getElementById('pdf-modal').addEventListener('click', (e) => {
-            if (e.target.id === 'pdf-modal') closeModal();
-        });
-
-        // Gérer l'acceptation du document
-        window.handleAcceptance = async function(docId, accepted) {
-            if (!accepted) return;
-            
-            try {
-                // Mettre à jour les acceptations locales
-                window.userAcceptances[docId] = true;
-                
-                // Sauvegarder dans Firestore
-                const userDocRef = doc(db, "users", window.currentUser.uid);
-                const userDoc = await getDoc(userDocRef);
-                
-                if (userDoc.exists()) {
-                    await updateDoc(userDocRef, {
-                        documentAcceptances: window.userAcceptances
-                    });
-                } else {
-                    await setDoc(userDocRef, {
-                        documentAcceptances: window.userAcceptances,
-                        email: window.currentUser.email
-                    });
-                }
-                
-                // Mettre à jour l'affichage
-                const acceptanceSection = document.getElementById(`acceptance-${docId}`);
-                acceptanceSection.classList.add('accepted');
-                acceptanceSection.innerHTML = '<div class="accepted-badge">✅ Document accepté</div>';
-                
-                showMessage('Document accepté avec succès !', 'success');
-                
-            } catch (error) {
-                console.error('Erreur:', error);
-                showMessage('Erreur lors de l\'acceptation: ' + error.message, 'error');
-                // Remettre la checkbox
-                document.getElementById(`accept-${docId}`).checked = false;
-            }
-        };
+        window.displayDocumentsList = displayDocumentsList;
 
         function showMessage(text, type) {
             const msg = document.getElementById('message');
@@ -306,6 +254,108 @@
             setTimeout(() => { msg.className = 'message'; }, 4000);
         }
         window.showMessage = showMessage;
+    </script>
+    
+    <script>
+        const cats = { 'policy': 'Politique / Règlement', 'guide': 'Guide / Manuel', 'form': 'Formulaire', 'certificate': 'Attestation', 'other': 'Document' };
+        
+        // Ouvrir la fiche descriptive
+        function openFicheModal(docId) {
+            const doc = window.allDocuments.find(d => d.id === docId);
+            if (!doc) return;
+            
+            window.currentDocument = doc;
+            
+            document.getElementById('fiche-title').textContent = '📄 ' + (doc.name || 'Sans titre');
+            document.getElementById('fiche-category').textContent = cats[doc.category] || 'Document';
+            document.getElementById('fiche-description').textContent = doc.summary || 'Aucune description disponible.';
+            document.getElementById('btn-visualiser').href = doc.url;
+            document.getElementById('btn-telecharger').href = doc.url;
+            
+            // Section acceptation
+            const acceptanceSection = document.getElementById('fiche-acceptance');
+            const isAccepted = window.userAcceptances[doc.id] === true;
+            const requiresAcceptance = doc.requiresAcceptance !== false;
+            
+            if (!requiresAcceptance) {
+                acceptanceSection.innerHTML = '<p style="color: #888; text-align: center;">Aucune validation requise pour ce document.</p>';
+                acceptanceSection.classList.remove('accepted');
+            } else if (isAccepted) {
+                acceptanceSection.innerHTML = '<div class="accepted-badge">✅ Document accepté</div>';
+                acceptanceSection.classList.add('accepted');
+            } else {
+                acceptanceSection.innerHTML = `
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="accept-checkbox" onchange="handleAcceptance(this.checked)">
+                        <label for="accept-checkbox">J'ai lu, compris et j'accepte de me conformer à ce document.</label>
+                    </div>
+                `;
+                acceptanceSection.classList.remove('accepted');
+            }
+            
+            document.getElementById('fiche-modal').classList.add('show');
+        }
+        window.openFicheModal = openFicheModal;
+        
+        // Fermer la fiche
+        function closeFicheModal() {
+            document.getElementById('fiche-modal').classList.remove('show');
+            window.currentDocument = null;
+        }
+        window.closeFicheModal = closeFicheModal;
+        
+        // Gérer l'acceptation
+        async function handleAcceptance(accepted) {
+            if (!accepted || !window.currentDocument) return;
+            
+            const docId = window.currentDocument.id;
+            
+            try {
+                window.userAcceptances[docId] = true;
+                
+                const userDocRef = window.doc(window.db, "users", window.currentUser.uid);
+                const userDoc = await window.getDoc(userDocRef);
+                
+                if (userDoc.exists()) {
+                    await window.updateDoc(userDocRef, {
+                        documentAcceptances: window.userAcceptances
+                    });
+                } else {
+                    await window.setDoc(userDocRef, {
+                        documentAcceptances: window.userAcceptances,
+                        email: window.currentUser.email
+                    });
+                }
+                
+                // Mettre à jour l'affichage
+                const acceptanceSection = document.getElementById('fiche-acceptance');
+                acceptanceSection.classList.add('accepted');
+                acceptanceSection.innerHTML = '<div class="accepted-badge">✅ Document accepté</div>';
+                
+                // Mettre à jour la liste
+                window.displayDocumentsList();
+                
+                window.showMessage('Document accepté avec succès !', 'success');
+                
+            } catch (error) {
+                console.error('Erreur:', error);
+                window.showMessage('Erreur: ' + error.message, 'error');
+                document.getElementById('accept-checkbox').checked = false;
+            }
+        }
+        window.handleAcceptance = handleAcceptance;
+        
+        // Fermer avec Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeFicheModal();
+            }
+        });
+        
+        // Clic en dehors du modal
+        document.getElementById('fiche-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'fiche-modal') closeFicheModal();
+        });
     </script>
 </body>
 </html>
