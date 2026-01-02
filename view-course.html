@@ -51,7 +51,25 @@
         .course-frame-wrapper:-webkit-full-screen { background: white; }
         .course-frame-wrapper:-webkit-full-screen .course-frame { height: 100vh; }
         
-        .exit-fullscreen-btn { position: fixed; top: 20px; right: 20px; z-index: 99999; background: rgba(0,0,0,0.7); color: white; padding: 15px 25px; border-radius: 10px; display: none; font-size: 1rem; }
+        /* Mobile fullscreen fallback */
+        .course-frame-wrapper.mobile-fullscreen { 
+            position: fixed !important; 
+            top: 0; 
+            left: 0; 
+            right: 0; 
+            bottom: 0; 
+            z-index: 99999; 
+            background: white; 
+            margin: 0 !important;
+            border-radius: 0 !important;
+        }
+        .course-frame-wrapper.mobile-fullscreen .course-frame { 
+            height: 100vh !important; 
+            width: 100vw !important;
+        }
+        .course-frame-wrapper.mobile-fullscreen .exit-fullscreen-btn { display: block; }
+        
+        .exit-fullscreen-btn { position: fixed; top: 10px; right: 10px; z-index: 999999; background: rgba(139, 111, 71, 0.95); color: white; padding: 12px 20px; border-radius: 10px; display: none; font-size: 1rem; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
         .course-frame-wrapper:fullscreen .exit-fullscreen-btn { display: block; }
         
         .description { line-height: 1.7; color: #555; }
@@ -249,7 +267,7 @@
             </div>
             <div class="course-frame-wrapper" id="course-wrapper">
                 <iframe class="course-frame" id="course-frame"></iframe>
-                <button class="btn exit-fullscreen-btn" onclick="closeFullscreen()">✕ Quitter plein écran</button>
+                <button class="btn exit-fullscreen-btn" onclick="closeFullscreen()">✕ Fermer</button>
             </div>
         </div>
 
@@ -473,18 +491,67 @@
 
         function openFullscreen() {
             const wrapper = document.getElementById('course-wrapper');
-            if (wrapper.requestFullscreen) wrapper.requestFullscreen();
-            else if (wrapper.webkitRequestFullscreen) wrapper.webkitRequestFullscreen();
-            else if (wrapper.msRequestFullscreen) wrapper.msRequestFullscreen();
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+            
+            if (isMobile) {
+                // Mobile: use CSS-based fullscreen
+                toggleMobileFullscreen();
+            } else {
+                // Desktop: try native fullscreen
+                if (wrapper.requestFullscreen) {
+                    wrapper.requestFullscreen();
+                } else if (wrapper.webkitRequestFullscreen) {
+                    wrapper.webkitRequestFullscreen();
+                } else if (wrapper.msRequestFullscreen) {
+                    wrapper.msRequestFullscreen();
+                } else {
+                    toggleMobileFullscreen();
+                }
+            }
+        }
+        
+        function toggleMobileFullscreen() {
+            const wrapper = document.getElementById('course-wrapper');
+            
+            if (wrapper.classList.contains('mobile-fullscreen')) {
+                // Exit mobile fullscreen
+                wrapper.classList.remove('mobile-fullscreen');
+                document.body.style.overflow = '';
+            } else {
+                // Enter mobile fullscreen
+                wrapper.classList.add('mobile-fullscreen');
+                document.body.style.overflow = 'hidden';
+                window.scrollTo(0, 0);
+                // Push state so back button can close fullscreen
+                history.pushState({ fullscreen: true }, '');
+            }
         }
 
         function closeFullscreen() {
+            const wrapper = document.getElementById('course-wrapper');
+            
+            // Exit CSS fullscreen if active
+            if (wrapper.classList.contains('mobile-fullscreen')) {
+                wrapper.classList.remove('mobile-fullscreen');
+                document.body.style.overflow = '';
+                return;
+            }
+            
+            // Exit native fullscreen
             if (document.exitFullscreen) document.exitFullscreen();
             else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
             else if (document.msExitFullscreen) document.msExitFullscreen();
         }
 
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeFullscreen(); });
+        
+        // Handle back button on mobile
+        window.addEventListener('popstate', () => {
+            const wrapper = document.getElementById('course-wrapper');
+            if (wrapper && wrapper.classList.contains('mobile-fullscreen')) {
+                closeFullscreen();
+            }
+        });
 
         function displayModules(modules) {
             const list = document.getElementById('modules-list');
