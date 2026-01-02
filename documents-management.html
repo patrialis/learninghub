@@ -222,22 +222,12 @@
         window.currentUser = null;
         window.selectedFile = null;
 
-        // Wait for auth state with timeout
-        let authChecked = false;
-        setTimeout(() => {
-            if (!authChecked && !window.currentUser) {
-                window.location.href = 'index.html';
-            }
-        }, 3000);
-
         onAuthStateChanged(auth, async (user) => {
-            authChecked = true;
-            if (!user) {
-                window.location.href = 'index.html';
-                return;
+            if (user) {
+                window.currentUser = user;
+                loadDocuments();
             }
-            window.currentUser = user;
-            loadDocuments();
+            // Don't redirect - just wait for user to log in
         });
 
         async function loadDocuments() {
