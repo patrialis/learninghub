@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - LearningHub</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --brown: #8B6F47; --dark-brown: #6B5A3B; --beige: #E8DCC4; --light-gray: #F5F5F0; --green: #6B9F7F; --dark-green: #5A8A6E; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, var(--beige) 0%, var(--light-gray) 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        
+        .login-container { background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); overflow: hidden; max-width: 450px; width: 100%; }
+        
+        .login-header { background: linear-gradient(135deg, var(--brown), var(--dark-brown)); color: white; padding: 40px 30px; text-align: center; }
+        .login-header h1 { font-size: 2rem; margin-bottom: 10px; }
+        .login-header p { opacity: 0.9; }
+        
+        .login-body { padding: 40px 30px; }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: var(--dark-brown); font-weight: 500; }
+        .form-group input { width: 100%; padding: 15px; border: 2px solid var(--beige); border-radius: 10px; font-size: 1rem; transition: all 0.3s; }
+        .form-group input:focus { outline: none; border-color: var(--green); }
+        
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-primary { background: var(--green); color: white; margin-bottom: 15px; }
+        .btn-primary:hover { background: var(--dark-green); transform: translateY(-2px); }
+        .btn-secondary { background: var(--beige); color: var(--dark-brown); }
+        .btn-secondary:hover { background: #d9cab3; }
+        
+        .divider { text-align: center; margin: 20px 0; color: #888; position: relative; }
+        .divider::before, .divider::after { content: ''; position: absolute; top: 50%; width: 40%; height: 1px; background: var(--beige); }
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
+        
+        .message { padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; display: none; }
+        .message.error { background: #f8d7da; color: #721c24; display: block; }
+        .message.success { background: #d4edda; color: #155724; display: block; }
+        
+        .links { text-align: center; margin-top: 20px; }
+        .links a { color: var(--brown); text-decoration: none; font-size: 0.9rem; }
+        .links a:hover { text-decoration: underline; }
+        
+        .back-home { display: block; text-align: center; margin-top: 20px; color: var(--brown); text-decoration: none; }
+        .back-home:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>🎓 LearningHub</h1>
+            <p>Plateforme de formation</p>
+        </div>
+        
+        <div class="login-body">
+            <div id="message" class="message"></div>
+            
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="votre@email.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Mot de passe</label>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" id="btn-login">Se connecter</button>
+            </form>
+            
+            <div class="divider">ou</div>
+            
+            <button class="btn btn-secondary" onclick="signInWithGoogle()">🔑 Connexion avec Google</button>
+            
+            <a href="index.html" class="back-home">← Retour à l'accueil</a>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCHPpxXMALQOqS7VBGJ3FmFQ1rfm3D_CN4",
+            authDomain: "learninghub-1b012.firebaseapp.com",
+            projectId: "learninghub-1b012",
+            storageBucket: "learninghub-1b012.appspot.com",
+            messagingSenderId: "365508620037",
+            appId: "1:365508620037:web:9e32e20571d62135d84588"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const googleProvider = new GoogleAuthProvider();
+        
+        window.auth = auth;
+        window.db = db;
+        window.googleProvider = googleProvider;
+        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+        window.signInWithPopup = signInWithPopup;
+
+        // Check if already logged in
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                await redirectUser(user);
+            }
+        });
+
+        async function redirectUser(user) {
+            try {
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists()) {
+                    const role = userDoc.data().role;
+                    if (role === 'instructor' || role === 'admin') {
+                        window.location.href = 'instructor-dashboard.html';
+                    } else {
+                        window.location.href = 'student-dashboard.html';
+                    }
+                } else {
+                    // Default to student
+                    window.location.href = 'student-dashboard.html';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                window.location.href = 'student-dashboard.html';
+            }
+        }
+
+        window.redirectUser = redirectUser;
+    </script>
+
+    <script>
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = 'message ' + type;
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('btn-login');
+            
+            btn.disabled = true;
+            btn.textContent = 'Connexion...';
+            
+            try {
+                const userCredential = await window.signInWithEmailAndPassword(window.auth, email, password);
+                showMessage('Connexion réussie !', 'success');
+                await window.redirectUser(userCredential.user);
+            } catch (error) {
+                console.error('Login error:', error);
+                let errorMsg = 'Erreur de connexion';
+                if (error.code === 'auth/user-not-found') errorMsg = 'Utilisateur non trouvé';
+                else if (error.code === 'auth/wrong-password') errorMsg = 'Mot de passe incorrect';
+                else if (error.code === 'auth/invalid-email') errorMsg = 'Email invalide';
+                else if (error.code === 'auth/invalid-credential') errorMsg = 'Email ou mot de passe incorrect';
+                showMessage(errorMsg, 'error');
+            }
+            
+            btn.disabled = false;
+            btn.textContent = 'Se connecter';
+        }
+
+        async function signInWithGoogle() {
+            try {
+                const result = await window.signInWithPopup(window.auth, window.googleProvider);
+                showMessage('Connexion réussie !', 'success');
+                await window.redirectUser(result.user);
+            } catch (error) {
+                console.error('Google login error:', error);
+                showMessage('Erreur de connexion Google', 'error');
+            }
+        }
+    </script>
+</body>
+</html>
