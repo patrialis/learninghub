@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documents - LearningHub</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --brown: #8B6F47; --dark-brown: #6B5A3B; --beige: #E8DCC4; --light-gray: #F5F5F0; --green: #6B9F7F; --dark-green: #5A8A6E; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--light-gray); min-height: 100vh; }
+        
+        .header { background: linear-gradient(135deg, var(--brown), var(--dark-brown)); color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .header h1 { font-size: 1.5rem; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.3s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+        .btn-secondary { background: rgba(255,255,255,0.2); color: white; }
+        .btn-secondary:hover { background: rgba(255,255,255,0.3); }
+        .btn-primary { background: var(--green); color: white; }
+        .btn-primary:hover { background: var(--dark-green); }
+        .btn-download { background: var(--brown); color: white; }
+        .btn-download:hover { background: var(--dark-brown); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .container { max-width: 1000px; margin: 0 auto; padding: 30px 20px; }
+        
+        .message { padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; display: none; }
+        .message.success { background: #d4edda; color: #155724; display: block; }
+        .message.error { background: #f8d7da; color: #721c24; display: block; }
+        .message.info { background: #e7f1ff; color: #004085; display: block; }
+        
+        .documents-list { display: flex; flex-direction: column; gap: 20px; }
+        
+        .document-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .document-card-header { background: linear-gradient(135deg, var(--brown), var(--dark-brown)); color: white; padding: 20px 25px; }
+        .document-card-header h2 { font-size: 1.3rem; margin-bottom: 5px; }
+        .document-card-header .category { font-size: 0.85rem; opacity: 0.9; }
+        
+        .document-card-body { padding: 25px; }
+        
+        .document-section { margin-bottom: 25px; }
+        .document-section:last-child { margin-bottom: 0; }
+        .document-section h3 { color: var(--dark-brown); font-size: 1rem; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .document-section p { color: #555; line-height: 1.6; }
+        
+        .document-actions { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 25px; }
+        
+        .acceptance-section { background: var(--light-gray); padding: 20px; border-radius: 12px; border: 2px solid var(--beige); }
+        .acceptance-section.accepted { border-color: var(--green); background: #e8f5ec; }
+        
+        .checkbox-container { display: flex; align-items: flex-start; gap: 12px; cursor: pointer; }
+        .checkbox-container input[type="checkbox"] { width: 22px; height: 22px; cursor: pointer; accent-color: var(--green); margin-top: 2px; }
+        .checkbox-container label { color: var(--dark-brown); font-weight: 500; cursor: pointer; line-height: 1.5; }
+        
+        .accepted-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--green); color: white; padding: 10px 20px; border-radius: 8px; font-weight: 500; margin-top: 15px; }
+        
+        .empty-state { text-align: center; padding: 60px 20px; color: #888; background: white; border-radius: 15px; }
+        .empty-state h3 { color: var(--dark-brown); margin-bottom: 10px; }
+        
+        .loading { text-align: center; padding: 60px 20px; color: #888; }
+        
+        /* Modal pour visualisation PDF */
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        .modal.show { display: flex; }
+        .modal-content { background: white; border-radius: 15px; width: 100%; max-width: 900px; height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
+        .modal-header { background: var(--brown); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h3 { font-size: 1.1rem; }
+        .modal-close { background: rgba(255,255,255,0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 8px; cursor: pointer; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
+        .modal-close:hover { background: rgba(255,255,255,0.3); }
+        .modal-body { flex: 1; overflow: hidden; background: #f0f0f0; }
+        .modal-body iframe { width: 100%; height: 100%; border: none; }
+        .modal-loading { display: flex; align-items: center; justify-content: center; height: 100%; color: #888; }
+        
+        @media (max-width: 768px) {
+            .header { padding: 15px; }
+            .header h1 { font-size: 1.2rem; }
+            .container { padding: 15px; }
+            .document-actions { flex-direction: column; }
+            .document-actions .btn { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📄 Documents à consulter</h1>
+        <a href="student-dashboard.html" class="btn btn-secondary">← Retour</a>
+    </div>
+
+    <div class="container">
+        <div id="message" class="message"></div>
+        
+        <div class="documents-list" id="documents-list">
+            <div class="loading">
+                <p>⏳ Chargement des documents...</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal pour visualisation PDF -->
+    <div class="modal" id="pdf-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Document</h3>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <div class="modal-loading" id="modal-loading">
+                    <p>⏳ Chargement du document...</p>
+                </div>
+                <iframe id="pdf-viewer" src="" style="display: none;"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+        import { getFirestore, collection, doc, getDocs, getDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAVO1P9v-IBsyxF_80vQvZDlR5tIqh878U",
+            authDomain: "learncentric.firebaseapp.com",
+            projectId: "learncentric",
+            storageBucket: "learncentric.firebasestorage.app",
+            messagingSenderId: "1083770541694",
+            appId: "1:1083770541694:web:b8dbcd7852ca7d9c8fea2f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        window.db = db;
+        window.currentUser = null;
+        window.userAcceptances = {};
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                window.currentUser = user;
+                await loadUserAcceptances();
+                await loadDocuments();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        // Charger les acceptations de l'utilisateur
+        async function loadUserAcceptances() {
+            try {
+                const userDocRef = doc(db, "users", window.currentUser.uid);
+                const userDoc = await getDoc(userDocRef);
+                if (userDoc.exists() && userDoc.data().documentAcceptances) {
+                    window.userAcceptances = userDoc.data().documentAcceptances || {};
+                }
+            } catch (error) {
+                console.error('Erreur chargement acceptations:', error);
+            }
+        }
+
+        // Charger tous les documents
+        async function loadDocuments() {
+            try {
+                const snapshot = await getDocs(collection(db, "documents"));
+                const documents = [];
+                snapshot.forEach(docSnap => {
+                    documents.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                displayDocuments(documents);
+            } catch (error) {
+                console.error('Erreur chargement documents:', error);
+                document.getElementById('documents-list').innerHTML = '<div class="empty-state"><h3>Erreur de chargement</h3><p>' + error.message + '</p></div>';
+            }
+        }
+
+        // Afficher les documents
+        function displayDocuments(documents) {
+            const container = document.getElementById('documents-list');
+            
+            if (documents.length === 0) {
+                container.innerHTML = '<div class="empty-state"><h3>Aucun document</h3><p>Aucun document n\'est disponible pour le moment.</p></div>';
+                return;
+            }
+            
+            const cats = { 'policy': 'Politique / Règlement', 'guide': 'Guide / Manuel', 'form': 'Formulaire', 'certificate': 'Attestation', 'other': 'Document' };
+            
+            container.innerHTML = documents.map(d => {
+                const isAccepted = window.userAcceptances[d.id] === true;
+                const requiresAcceptance = d.requiresAcceptance !== false;
+                
+                return `
+                <div class="document-card" id="doc-${d.id}">
+                    <div class="document-card-header">
+                        <h2>📄 ${d.name || 'Sans titre'}</h2>
+                        <span class="category">${cats[d.category] || 'Document'}</span>
+                    </div>
+                    <div class="document-card-body">
+                        <div class="document-section">
+                            <h3>📝 Description</h3>
+                            <p>${d.summary || 'Aucune description disponible.'}</p>
+                        </div>
+                        
+                        <div class="document-actions">
+                            <button class="btn btn-primary" onclick="openDocument('${encodeURIComponent(d.url)}', '${(d.name || 'Document').replace(/'/g, "\\'")}')">
+                                👁️ Visualiser le document
+                            </button>
+                            <a href="${d.url}" target="_blank" class="btn btn-download">
+                                ⬇️ Télécharger
+                            </a>
+                        </div>
+                        
+                        ${requiresAcceptance ? `
+                        <div class="acceptance-section ${isAccepted ? 'accepted' : ''}" id="acceptance-${d.id}">
+                            ${isAccepted ? `
+                                <div class="accepted-badge">✅ Document accepté</div>
+                            ` : `
+                                <div class="checkbox-container">
+                                    <input type="checkbox" id="accept-${d.id}" onchange="handleAcceptance('${d.id}', this.checked)">
+                                    <label for="accept-${d.id}">J'ai lu, compris et j'accepte de me conformer à ce document.</label>
+                                </div>
+                            `}
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        // Ouvrir le document dans le modal avec Google Docs Viewer
+        window.openDocument = function(encodedUrl, title) {
+            const url = decodeURIComponent(encodedUrl);
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-loading').style.display = 'flex';
+            document.getElementById('pdf-viewer').style.display = 'none';
+            document.getElementById('pdf-modal').classList.add('show');
+            
+            // Utiliser Google Docs Viewer pour afficher le PDF
+            const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+            
+            const iframe = document.getElementById('pdf-viewer');
+            iframe.onload = function() {
+                document.getElementById('modal-loading').style.display = 'none';
+                iframe.style.display = 'block';
+            };
+            iframe.src = viewerUrl;
+        };
+
+        // Fermer le modal
+        window.closeModal = function() {
+            document.getElementById('pdf-modal').classList.remove('show');
+            document.getElementById('pdf-viewer').src = '';
+            document.getElementById('pdf-viewer').style.display = 'none';
+            document.getElementById('modal-loading').style.display = 'flex';
+        };
+
+        // Fermer avec Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // Clic en dehors du modal
+        document.getElementById('pdf-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'pdf-modal') closeModal();
+        });
+
+        // Gérer l'acceptation du document
+        window.handleAcceptance = async function(docId, accepted) {
+            if (!accepted) return;
+            
+            try {
+                // Mettre à jour les acceptations locales
+                window.userAcceptances[docId] = true;
+                
+                // Sauvegarder dans Firestore
+                const userDocRef = doc(db, "users", window.currentUser.uid);
+                const userDoc = await getDoc(userDocRef);
+                
+                if (userDoc.exists()) {
+                    await updateDoc(userDocRef, {
+                        documentAcceptances: window.userAcceptances
+                    });
+                } else {
+                    await setDoc(userDocRef, {
+                        documentAcceptances: window.userAcceptances,
+                        email: window.currentUser.email
+                    });
+                }
+                
+                // Mettre à jour l'affichage
+                const acceptanceSection = document.getElementById(`acceptance-${docId}`);
+                acceptanceSection.classList.add('accepted');
+                acceptanceSection.innerHTML = '<div class="accepted-badge">✅ Document accepté</div>';
+                
+                showMessage('Document accepté avec succès !', 'success');
+                
+            } catch (error) {
+                console.error('Erreur:', error);
+                showMessage('Erreur lors de l\'acceptation: ' + error.message, 'error');
+                // Remettre la checkbox
+                document.getElementById(`accept-${docId}`).checked = false;
+            }
+        };
+
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = 'message ' + type;
+            setTimeout(() => { msg.className = 'message'; }, 4000);
+        }
+        window.showMessage = showMessage;
+    </script>
+</body>
+</html>
