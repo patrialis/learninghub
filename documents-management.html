@@ -76,6 +76,7 @@
         .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
         
         .auth-warning { background: #fff3cd; color: #856404; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; }
+        .auth-loading { background: #e7f1ff; color: #004085; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; }
         
         @media (max-width: 768px) {
             .header { padding: 15px; }
@@ -93,73 +94,79 @@
     </div>
 
     <div class="container">
+        <div id="auth-loading" class="auth-loading">
+            ⏳ Vérification de la connexion...
+        </div>
+        
         <div id="auth-warning" class="auth-warning" style="display: none;">
             ⚠️ Vous devez être connecté pour gérer les documents. <a href="instructor-dashboard.html">Se connecter</a>
         </div>
         
         <div id="message" class="message"></div>
         
-        <div class="tabs">
-            <button class="tab active" onclick="showTab('create')">Créer un document</button>
-            <button class="tab" onclick="showTab('list')">Mes documents</button>
-        </div>
-        
-        <div id="create-section" class="section active">
-            <div class="card">
-                <h2>📝 Nouveau document</h2>
-                
-                <div class="form-group">
-                    <label for="doc-name">Nom du document *</label>
-                    <input type="text" id="doc-name" placeholder="Ex: Politique de confidentialité">
-                </div>
-                
-                <div class="form-group">
-                    <label for="doc-summary">Résumé</label>
-                    <textarea id="doc-summary" placeholder="Décrivez brièvement le contenu du document..."></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label>Fichier PDF *</label>
-                    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
-                        <input type="file" id="file-input" accept=".pdf" onchange="handleFileSelect(event)">
-                        <div class="icon">📄</div>
-                        <h3>Glissez votre PDF ici</h3>
-                        <p>ou cliquez pour sélectionner un fichier</p>
-                        <p class="file-name" id="file-name" style="display: none;"></p>
-                    </div>
-                    <div class="upload-progress" id="upload-progress">
-                        <div class="progress-bar">
-                            <div class="fill" id="progress-fill" style="width: 0%"></div>
-                        </div>
-                        <p class="progress-text" id="progress-text">Upload en cours... 0%</p>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="doc-category">Catégorie</label>
-                    <select id="doc-category">
-                        <option value="policy">Politique / Règlement</option>
-                        <option value="guide">Guide / Manuel</option>
-                        <option value="form">Formulaire</option>
-                        <option value="certificate">Attestation</option>
-                        <option value="other">Autre</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" id="doc-requires-acceptance" checked>
-                        L'étudiant doit accepter ce document (case "J'ai lu et j'accepte")
-                    </label>
-                </div>
-                
-                <button class="btn btn-primary" id="btn-save" onclick="saveDocument()">💾 Enregistrer le document</button>
+        <div id="main-content" style="display: none;">
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('create')">Créer un document</button>
+                <button class="tab" onclick="showTab('list')">Mes documents</button>
             </div>
-        </div>
-        
-        <div id="list-section" class="section">
-            <div class="documents-grid" id="documents-grid">
-                <div class="empty-state"><h3>Chargement...</h3></div>
+            
+            <div id="create-section" class="section active">
+                <div class="card">
+                    <h2>📝 Nouveau document</h2>
+                    
+                    <div class="form-group">
+                        <label for="doc-name">Nom du document *</label>
+                        <input type="text" id="doc-name" placeholder="Ex: Politique de confidentialité">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="doc-summary">Résumé</label>
+                        <textarea id="doc-summary" placeholder="Décrivez brièvement le contenu du document..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Fichier PDF *</label>
+                        <div class="upload-zone" id="upload-zone">
+                            <input type="file" id="file-input" accept=".pdf">
+                            <div class="icon">📄</div>
+                            <h3>Glissez votre PDF ici</h3>
+                            <p>ou cliquez pour sélectionner un fichier</p>
+                            <p class="file-name" id="file-name" style="display: none;"></p>
+                        </div>
+                        <div class="upload-progress" id="upload-progress">
+                            <div class="progress-bar">
+                                <div class="fill" id="progress-fill" style="width: 0%"></div>
+                            </div>
+                            <p class="progress-text" id="progress-text">Upload en cours... 0%</p>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="doc-category">Catégorie</label>
+                        <select id="doc-category">
+                            <option value="policy">Politique / Règlement</option>
+                            <option value="guide">Guide / Manuel</option>
+                            <option value="form">Formulaire</option>
+                            <option value="certificate">Attestation</option>
+                            <option value="other">Autre</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="doc-requires-acceptance" checked>
+                            L'étudiant doit accepter ce document (case "J'ai lu et j'accepte")
+                        </label>
+                    </div>
+                    
+                    <button class="btn btn-primary" id="btn-save">💾 Enregistrer le document</button>
+                </div>
+            </div>
+            
+            <div id="list-section" class="section">
+                <div class="documents-grid" id="documents-grid">
+                    <div class="empty-state"><h3>Chargement...</h3></div>
+                </div>
             </div>
         </div>
     </div>
@@ -219,31 +226,44 @@
         const db = getFirestore(app);
         const storage = getStorage(app);
         
+        // Variables globales
         window.db = db;
         window.storage = storage;
         window.ref = ref;
         window.uploadBytesResumable = uploadBytesResumable;
         window.getDownloadURL = getDownloadURL;
         window.deleteObject = deleteObject;
+        window.addDoc = addDoc;
+        window.collection = collection;
+        window.doc = doc;
+        window.getDoc = getDoc;
+        window.updateDoc = updateDoc;
+        window.deleteDoc = deleteDoc;
         window.currentUser = null;
         window.selectedFile = null;
+        window.authReady = false;
 
+        // Attendre l'authentification
         onAuthStateChanged(auth, async (user) => {
+            window.authReady = true;
+            document.getElementById('auth-loading').style.display = 'none';
+            
             if (user) {
                 window.currentUser = user;
                 document.getElementById('auth-warning').style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
                 loadDocuments();
             } else {
                 window.currentUser = null;
                 document.getElementById('auth-warning').style.display = 'block';
-                document.getElementById('documents-grid').innerHTML = '<div class="empty-state"><h3>Veuillez vous connecter</h3><p>Vous devez être connecté pour voir vos documents.</p></div>';
+                document.getElementById('main-content').style.display = 'none';
             }
         });
 
+        // Charger les documents
         async function loadDocuments() {
-            // Vérification de l'authentification
             if (!window.currentUser) {
-                document.getElementById('documents-grid').innerHTML = '<div class="empty-state"><h3>Veuillez vous connecter</h3><p>Vous devez être connecté pour voir vos documents.</p></div>';
+                document.getElementById('documents-grid').innerHTML = '<div class="empty-state"><h3>Veuillez vous connecter</h3></div>';
                 return;
             }
             
@@ -256,7 +276,8 @@
                 });
                 displayDocuments(documents);
             } catch (error) {
-                console.error('Erreur:', error);
+                console.error('Erreur chargement:', error);
+                document.getElementById('documents-grid').innerHTML = '<div class="empty-state"><h3>Erreur de chargement</h3><p>' + error.message + '</p></div>';
             }
         }
 
@@ -287,10 +308,16 @@
         }
 
         window.loadDocuments = loadDocuments;
-    </script>
 
-    <script>
+        // ==================== GESTION DES FICHIERS ====================
+        
         const uploadZone = document.getElementById('upload-zone');
+        const fileInput = document.getElementById('file-input');
+        
+        // Clic sur la zone
+        uploadZone.addEventListener('click', () => fileInput.click());
+        
+        // Drag & Drop
         uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('dragover'); });
         uploadZone.addEventListener('dragleave', () => { uploadZone.classList.remove('dragover'); });
         uploadZone.addEventListener('drop', (e) => {
@@ -303,11 +330,15 @@
             }
         });
         
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (file && file.type === 'application/pdf') handleFile(file);
-            else if (file) showMessage('Veuillez sélectionner un fichier PDF', 'error');
-        }
+        // Sélection fichier
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file && file.type === 'application/pdf') {
+                handleFile(file);
+            } else if (file) {
+                showMessage('Veuillez sélectionner un fichier PDF', 'error');
+            }
+        });
         
         function handleFile(file) {
             window.selectedFile = file;
@@ -315,16 +346,18 @@
             document.getElementById('file-name').textContent = '✅ ' + file.name;
             document.getElementById('file-name').style.display = 'block';
         }
+
+        // ==================== FONCTIONS UTILITAIRES ====================
         
-        function showTab(tab) {
+        window.showTab = function(tab) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             event.currentTarget.classList.add('active');
             document.getElementById(tab + '-section').classList.add('active');
             if (tab === 'list' && window.currentUser) {
-                window.loadDocuments();
+                loadDocuments();
             }
-        }
+        };
         
         function showMessage(text, type) {
             const msg = document.getElementById('message');
@@ -332,9 +365,11 @@
             msg.className = 'message ' + type;
             setTimeout(() => { msg.className = 'message'; }, 4000);
         }
+        window.showMessage = showMessage;
+
+        // ==================== SAUVEGARDE DOCUMENT ====================
         
-        async function saveDocument() {
-            // Vérification de l'authentification AVANT tout
+        document.getElementById('btn-save').addEventListener('click', async function() {
             if (!window.currentUser) {
                 showMessage('Veuillez vous connecter pour enregistrer un document', 'error');
                 return;
@@ -374,8 +409,7 @@
                     async () => {
                         const url = await window.getDownloadURL(uploadTask.snapshot.ref);
                         
-                        const { addDoc, collection } = await import("https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js");
-                        await addDoc(collection(window.db, "documents"), {
+                        await window.addDoc(window.collection(window.db, "documents"), {
                             name, summary, url, storagePath: fileName, category, requiresAcceptance,
                             fileName: window.selectedFile.name,
                             instructorId: window.currentUser.uid,
@@ -402,15 +436,16 @@
                 document.getElementById('btn-save').textContent = '💾 Enregistrer le document';
                 document.getElementById('upload-progress').classList.remove('show');
             }
-        }
+        });
+
+        // ==================== MODAL EDITION ====================
         
-        async function openEditModal(docId) {
+        window.openEditModal = async function(docId) {
             if (!window.currentUser) {
                 showMessage('Veuillez vous connecter', 'error');
                 return;
             }
-            const { doc, getDoc } = await import("https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js");
-            const docSnap = await getDoc(doc(window.db, "documents", docId));
+            const docSnap = await window.getDoc(window.doc(window.db, "documents", docId));
             if (docSnap.exists()) {
                 const d = docSnap.data();
                 document.getElementById('edit-doc-id').value = docId;
@@ -420,11 +455,13 @@
                 document.getElementById('edit-doc-requires-acceptance').checked = d.requiresAcceptance !== false;
                 document.getElementById('edit-modal').classList.add('show');
             }
-        }
+        };
         
-        function closeEditModal() { document.getElementById('edit-modal').classList.remove('show'); }
+        window.closeEditModal = function() { 
+            document.getElementById('edit-modal').classList.remove('show'); 
+        };
         
-        async function updateDocument() {
+        window.updateDocument = async function() {
             if (!window.currentUser) {
                 showMessage('Veuillez vous connecter', 'error');
                 return;
@@ -436,14 +473,18 @@
             const requiresAcceptance = document.getElementById('edit-doc-requires-acceptance').checked;
             if (!name) { showMessage('Le nom est obligatoire', 'error'); return; }
             
-            const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js");
-            await updateDoc(doc(window.db, "documents", docId), { name, summary, category, requiresAcceptance, updatedAt: new Date().toISOString() });
+            await window.updateDoc(window.doc(window.db, "documents", docId), { 
+                name, summary, category, requiresAcceptance, 
+                updatedAt: new Date().toISOString() 
+            });
             showMessage('Document mis à jour !', 'success');
             closeEditModal();
-            window.loadDocuments();
-        }
+            loadDocuments();
+        };
+
+        // ==================== SUPPRESSION ====================
         
-        async function deleteDocument(docId, storagePath) {
+        window.deleteDocument = async function(docId, storagePath) {
             if (!window.currentUser) {
                 showMessage('Veuillez vous connecter', 'error');
                 return;
@@ -454,15 +495,14 @@
                     const storageRef = window.ref(window.storage, storagePath);
                     await window.deleteObject(storageRef);
                 }
-                const { doc, deleteDoc } = await import("https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js");
-                await deleteDoc(doc(window.db, "documents", docId));
+                await window.deleteDoc(window.doc(window.db, "documents", docId));
                 showMessage('Document supprimé', 'success');
-                window.loadDocuments();
+                loadDocuments();
             } catch (error) {
                 console.error('Erreur:', error);
-                showMessage('Erreur suppression', 'error');
+                showMessage('Erreur suppression: ' + error.message, 'error');
             }
-        }
+        };
     </script>
 </body>
 </html>
